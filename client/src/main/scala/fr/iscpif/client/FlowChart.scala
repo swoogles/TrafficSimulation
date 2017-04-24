@@ -155,20 +155,21 @@ class GraphCreator(svg: SVGElement, _tasks: Seq[Task], _edges: Seq[Edge]) {
   def arrow = svgTags.marker(
     svgAttrs.viewBox := "0 -5 10 10",
     svgAttrs.markerWidth := "3.5",
-    svgAttrs.markerHeight := "3.5",
-    svgAttrs.orient := "auto",
-    svgAttrs.refX := 32
+    svgAttrs.markerHeight := "3.5"
+    // TODO Fix compile error in example code
+    // svgAttrs.orient := "auto",
+    // svgAttrs.refX := 32
   )
 
   def endArrowMarker = arrow(
     id := END_ARROW,
-    svgAttrs.refX := 32,
+    // svgAttrs.refX := 32,
     path.start(0, -5).l(10, 0).l(0, 5).render
   ).render
 
   def markEndArrow = arrow(
     id := MARK_END_ARROW,
-    svgAttrs.refX := 7,
+    // svgAttrs.refX := 7,
     path.start(0, -5).l(10, 0).l(0, 5).render
   ).render
 
