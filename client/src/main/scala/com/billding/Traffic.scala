@@ -31,7 +31,6 @@ trait Vehicle {
   val spatial: Spatial
   val weight: Int
   val brakingAbility: Float
-  // Should this be private and only usable via "vectorBetween" functions and the like?
 }
 
 trait PilotedVehicle {
