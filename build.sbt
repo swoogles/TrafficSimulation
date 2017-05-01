@@ -3,7 +3,7 @@ import org.scalatra.sbt.ScalatraPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
 val Organization = "fr.iscpif"
-val Name = "ScalaWUI"
+val Name = "Traffice Simulator"
 val Version = "0.1.0-SNAPSHOT"
 val ScalaVersion = "2.11.8"
 val scalatraVersion = "2.5.0"
