@@ -24,7 +24,16 @@ trait IntelligentDriverModel {
     * @param s0 minimum bumper-to-bumper distance to the front vehicle
     * @return the acceleration to apply to the following vehicle.
     */
-  def deltaV(v: Float, v0: Float, dV: Float, T: Float, a: Float, b: Float, s: Float, s0: Float): Float
+  def deltaV(
+              v: Float,
+              v0: Float,
+              dV: Float,
+              T: Float,
+              a: Float,
+              b: Float,
+              s: Float,
+              s0: Float
+              ): Float
 
   /**
     * This is one of the fundamental algorithms to this whole traffic project.

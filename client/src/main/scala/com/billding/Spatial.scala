@@ -2,6 +2,7 @@ package com.billding
 
 import breeze.linalg.DenseVector
 import breeze.linalg.normalize
+import squants.motion.Distance
 
 class PositiveVector(values: DenseVector[Float]) {
   require(values forall (_ >= 0), "List contains negative numbers")
@@ -11,7 +12,12 @@ import squants.motion.VelocityUnit
 import squants.space.LengthUnit
 
 trait Spatial {
-  val p = DenseVector.zeros[LengthUnit](3)
+//  val vector: QuantityVector[Length] = SVector(Kilometers(1.2), Kilometers(4.3), Kilometers(2.3))
+
+  val p: DenseVector[Distance] // Must enforce length 3....
+//  val p: QuantityVector[Distance]// =  = SVector(Kilometers(1.2), Kilometers(4.3), Kilometers(2.3))
+
+  // Consider
   val v = DenseVector.zeros[VelocityUnit](3)
   val dimensions: PositiveVector
 }
