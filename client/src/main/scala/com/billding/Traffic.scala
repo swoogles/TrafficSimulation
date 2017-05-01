@@ -1,6 +1,9 @@
 package com.billding
 
 import cats.data.{NonEmptyList, Validated}
+import squants.mass.MassUnit
+import squants.space.LengthUnit
+import squants.time.TimeUnit
 
 sealed trait Maneuver
 /*
@@ -23,13 +26,13 @@ trait WeightedManeuver {
 }
 
 trait Driver {
-  val reactionTime: Float
+  val reactionTime: TimeUnit
   val spatial: Spatial
 }
 
 trait Vehicle {
   val spatial: Spatial
-  val weight: Int
+  val weight: MassUnit
   val brakingAbility: Float
 }
 
@@ -37,26 +40,26 @@ trait PilotedVehicle {
   val driver: Driver
   val vehicle: Vehicle
   val currentManeuver: Maneuver
-  val maneuverTakenAt: Float
+  val maneuverTakenAt: TimeUnit
 }
 
 trait Scene {
   def vehicles(): List[PilotedVehicle]
-  val t: Float
-  val dt: Float
+  val t: TimeUnit
+  val dt: TimeUnit
 }
 
 trait VehicleSource {
   def vehicles(): Stream[PilotedVehicle]
-  def produceVehicle(t: Float): Option[PilotedVehicle]
+  def produceVehicle(t: TimeUnit): Option[PilotedVehicle]
   // Figure out how to accommodate both behaviors
-  val spacingInDistance: Float
-  val spacingInTime: Float
+  val spacingInDistance: LengthUnit
+  val spacingInTime: TimeUnit
 }
 
 object VehicleSource {
-  def withTimeSpacing(averageDt: Float): VehicleSource = ???
-  def withDistanceSpacing(averageDpos: Float): VehicleSource = ???
+  def withTimeSpacing(averageDt: TimeUnit): VehicleSource = ???
+  def withDistanceSpacing(averageDpos: LengthUnit): VehicleSource = ???
 }
 
 trait Lane {
@@ -66,7 +69,7 @@ trait Lane {
 
 trait Road {
   def lanes: List[Lane]
-  def produceVehicles(t: Float)
+  def produceVehicles(t: TimeUnit)
   def beginning: Spatial
   def end: Spatial
 }
@@ -77,7 +80,7 @@ trait Universe {
   /*
     Consider this as the first use case for Validated.
    */
-  def update(scene: Scene, dt: Float): Validated[NonEmptyList[String], Scene]
+  def update(scene: Scene, dt: TimeUnit): Validated[NonEmptyList[String], Scene]
   def reactTo(decider: PilotedVehicle, obstacle: Spatial): WeightedManeuver
   def createScene(roads: Road): Scene
   // Get vehicles that haven't taken a recent action.

@@ -7,15 +7,17 @@ class PositiveVector(values: DenseVector[Float]) {
   require(values forall (_ >= 0), "List contains negative numbers")
 }
 
+import squants.motion.VelocityUnit
+import squants.space.LengthUnit
+
 trait Spatial {
-  val p = DenseVector.zeros[Float](3)
-  val v = DenseVector.zeros[Float](3)
+  val p = DenseVector.zeros[LengthUnit](3)
+  val v = DenseVector.zeros[VelocityUnit](3)
   val dimensions: PositiveVector
-//  def blah = breeze.linalg.cross(pos, v);
 }
 object Spatial {
-  def vecBetween(observer: Spatial, target: Spatial): DenseVector[Float] = ???
-  def distanceBetween(observer: Spatial, target: Spatial): Float = ???
+  def vecBetween(observer: Spatial, target: Spatial): DenseVector[LengthUnit] = ???
+  def distanceBetween(observer: Spatial, target: Spatial): LengthUnit = ???
   def relativeVelocity(observer: Spatial, target: Spatial) = ???
   def isTouching(observer: Spatial, target: Spatial): Boolean = ???
   def onCollisionCourse(observer: Spatial, target: Spatial): Boolean = {
