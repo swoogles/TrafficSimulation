@@ -76,6 +76,12 @@ trait Road {
   def end: Spatial
 }
 
+object Road {
+  def apply(beginning: Spatial, end: Spatial, sourceEnd: Integer, carRate: Integer): Road = {
+    ???
+  }
+}
+
 trait ErrorMsg {
   val description: String
 }
@@ -93,3 +99,9 @@ trait Universe {
   def reactiveVehicles(scene: Scene): List[PilotedVehicle]
 }
 
+/*
+  Sample scene data file
+  Int after beginning/end vectors indicates which end the cars are coming from.
+  Int indicates cars per hour
+  (0, 0, 0), (100, 0, 0), 0, 1000
+ */
