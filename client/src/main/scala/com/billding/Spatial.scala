@@ -2,28 +2,23 @@ package com.billding
 
 import breeze.linalg.DenseVector
 import breeze.linalg.normalize
+import squants.{QuantityVector, SVector, Velocity}
 import squants.motion.Distance
 
 class PositiveVector(values: DenseVector[Float]) {
   require(values forall (_ >= 0), "List contains negative numbers")
 }
 
-import squants.motion.VelocityUnit
-import squants.space.LengthUnit
-
 trait Spatial {
-//  val vector: QuantityVector[Length] = SVector(Kilometers(1.2), Kilometers(4.3), Kilometers(2.3))
-
-  val p: DenseVector[Distance] // Must enforce length 3....
-//  val p: QuantityVector[Distance]// =  = SVector(Kilometers(1.2), Kilometers(4.3), Kilometers(2.3))
-
-  // Consider
-  val v = DenseVector.zeros[VelocityUnit](3)
-  val dimensions: PositiveVector
+  // Consider Breeze version
+  //  val p: DenseVector[Distance] // Must enforce length 3....
+  val p: QuantityVector[Distance] //= SVector(Kilometers(-1.2), Kilometers(4.3), Kilometers(2.3))
+  val v: QuantityVector[Velocity]
+  val dimensions: QuantityVector[Distance]
 }
 object Spatial {
-  def vecBetween(observer: Spatial, target: Spatial): DenseVector[LengthUnit] = ???
-  def distanceBetween(observer: Spatial, target: Spatial): LengthUnit = ???
+  def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
+  def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
   def relativeVelocity(observer: Spatial, target: Spatial) = ???
   def isTouching(observer: Spatial, target: Spatial): Boolean = ???
   def onCollisionCourse(observer: Spatial, target: Spatial): Boolean = {

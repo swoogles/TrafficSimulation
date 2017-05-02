@@ -1,7 +1,11 @@
 package com.billding.behavior
 
 import squants.{Length, Time}
-import squants.motion._
+import squants.motion.Distance
+import squants.motion.MetersPerSecond
+import squants.motion.MetersPerSecondSquared
+import squants.motion.Velocity
+import squants.motion.Acceleration
 import squants.space.Meters
 import scala.language.postfixOps
 import squants.time.Seconds
@@ -31,11 +35,11 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
   override def deltaV(v: Float, v0: Float, dV: Float, T: Float, a: Float, b: Float, s: Float, s0: Float): Float = {
 
     // sStar: desired dynamical distance
-    def sStar(): Double =
+    val sStar: Double =
       s0 + max(0.0, ((v*T)+ ( (v*dV)/ 2* (Math.sqrt(a*b)))))
 
     val accelerationTerm = pow(v/v0, aExp)
-    val brakingTerm = pow(sStar() / s, 2)
+    val brakingTerm = pow(sStar / s, 2)
 
     val result = a * (1 - accelerationTerm - brakingTerm)
     result.toFloat

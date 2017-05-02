@@ -44,6 +44,7 @@ trait PilotedVehicle {
 
 trait Scene {
   def vehicles(): List[PilotedVehicle]
+  def roads(): List[Road]
   val t: Time
   val dt: Time
 }
@@ -69,19 +70,23 @@ trait Lane {
 }
 
 trait Road {
-  def lanes: List[Lane]
+  def lanes: List[Lane] // Maybe should be private impl detail?
   def produceVehicles(t: Time)
   def beginning: Spatial
   def end: Spatial
 }
 
+trait ErrorMsg {
+  val description: String
+}
+
 trait Universe {
-  def calculateDriverRekponse(vehicle: PilotedVehicle, scene: Scene): Maneuver
+  def calculateDriverResponse(vehicle: PilotedVehicle, scene: Scene): Maneuver
   def getAllActions(scene: Scene): List[(PilotedVehicle, Maneuver)]
   /*
     Consider this as the first use case for Validated.
    */
-  def update(scene: Scene, dt: Time): Validated[NonEmptyList[String], Scene]
+  def update(scene: Scene, dt: Time): Validated[NonEmptyList[ErrorMsg], Scene]
   def reactTo(decider: PilotedVehicle, obstacle: Spatial): WeightedManeuver
   def createScene(roads: Road): Scene
   // Get vehicles that haven't taken a recent action.
