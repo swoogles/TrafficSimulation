@@ -1,5 +1,6 @@
 package com.billding
 
+import com.billding.behavior.IntelligentDriverImpl
 import squants.mass.Kilograms
 import squants.motion.{Acceleration, Distance, KilogramForce}
 import squants.{Mass, Time, Velocity}
@@ -28,9 +29,13 @@ case class Truck(
                 ) extends Vehicle
 
 
-trait PilotedVehicle extends Vehicle with Driver with Spatial
+trait PilotedVehicle extends Vehicle with Driver with Spatial {
+  def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
+}
 
 class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle {
+  // TODO make a parameter
+  val idm = new IntelligentDriverImpl
   val desiredSpeed: Velocity = driver.desiredSpeed
   val reactionTime: Time = driver.reactionTime
   val weight = vehicle.weight
@@ -44,6 +49,19 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
   val p = spatial.p
   val v = spatial.v
   val dimensions = spatial.dimensions
+
+  def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration = {
+    idm.deltaVDimensionallySafe(
+      spatial.v.magnitude,
+      speedLimit,
+      (spatial.v - obstacle.v).magnitude,
+      preferredDynamicSpacing,
+      accelerationAbility,
+      brakingAbility,
+      (spatial.p - obstacle.p).magnitude,
+      minimumDistance
+    )
+  }
 }
 
 object PilotedVehicle {

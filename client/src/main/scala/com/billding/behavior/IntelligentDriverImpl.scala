@@ -19,18 +19,7 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.
   val aExp: Int = 4
 
-  def reactTo(decider: PilotedVehicle, obstacle: Spatial, speedLimit: Velocity): Acceleration = {
-    deltaVDimensionallySafe(
-      decider.spatial.v.magnitude,
-      speedLimit,
-      (decider.spatial.v - obstacle.v).magnitude,
-      decider.preferredDynamicSpacing,
-      decider.accelerationAbility,
-      decider.brakingAbility,
-      (decider.spatial.p - obstacle.p).magnitude,
-      decider.minimumDistance
-    )
-  }
+  // TODO this belongs on the PilotedVehicle class! That's why it's felt so awkward to utilize it here.
 
   /**
     * This is one of the fundamental algorithms to this whole traffic project.
@@ -39,6 +28,7 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
     *
     * @param v Speed of the following vehicle
     * @param v0 desired speed when driving on a free road
+    *           as in "the v we are trying to return to. Our resting state"
     * @param dV Difference in speed between the 2 vehicles
     * @param T  Desired safety time headway when following other vehicles
     * @param a  Acceleration in everyday traffic
@@ -47,7 +37,7 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
     * @param s0 minimum bumper-to-bumper distance to the front vehicle
     * @return the acceleration to apply to the following vehicle.
     */
-  private def deltaVDimensionallySafe(
+  def deltaVDimensionallySafe(
                                v: Velocity,
                                v0: Velocity,
                                dV: Velocity,
@@ -58,33 +48,33 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
                                s0: Distance
                              ): Acceleration = {
 
-    // sStar: desired dynamical distance
-    def sStar(): Distance = {
-      val v$ = v to MetersPerSecond
-      val dV$ = dV to MetersPerSecond
-      val T$ = T to Seconds
-      val a$ = a to MetersPerSecondSquared
-      val b$ = b to MetersPerSecondSquared
-      val s0$ = s0 to Meters
-      val inner = ((v$*T$) + ( (v$*dV$)/ (2 * Math.sqrt(a$*b$))))
-      Meters(s0$ + max(0.0, inner))
-    }
-
-//    Maybe an approach like this makes more sense:
-    def sStarB(): Distance = {
-      val inner =
-        (v*T).toMeters
-      + (v.toMetersPerSecond * dV.toMetersPerSecond) /
-          2 * Math.sqrt(a.toMetersPerSecondSquared*b.toMetersPerSecondSquared)
-      Meters(s0.toMeters + max(0.0, inner))
-    }
-//    That keeps the units closer to home, and now that I've looked at it for a bit, I think
-//    it makes it pretty easy to track that all your units will cancel out as expected.
-
+    val desiredDistance = sStar( v, dV, T, a, b, s0 )
     val accelerationTerm = pow(v/v0, aExp)
-    val brakingTerm = pow(sStar() / s, 2)
+    val brakingTerm = pow(desiredDistance / s, 2)
 
     a * (1 - accelerationTerm - brakingTerm)
+  }
+
+  private def sStar(
+                     v: Velocity,
+                     dV: Velocity,
+                     T: Time,
+                     a: Acceleration,
+                     b: Acceleration,
+                     s0: Distance
+
+                   ): Distance = {
+    /*
+    If the desired distance is negative, that means:
+      - We've gotten too close to the car in front of us
+        ?Is this a Warning as opposed to a Failure?
+      -We've hit the car in front of us
+     */
+    val desiredDistance =
+      (v*T).toMeters
+    + (v.toMetersPerSecond * dV.toMetersPerSecond) /
+      2 * Math.sqrt(a.toMetersPerSecondSquared*b.toMetersPerSecondSquared)
+    Meters(s0.toMeters + max(0.0, desiredDistance)) // This prevents reversing.
   }
 
 }
