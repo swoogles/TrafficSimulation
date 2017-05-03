@@ -53,7 +53,8 @@ lazy val client = project.in(file("client")) settings(
     "org.scalanlp" %% "breeze-viz" % "0.13.1",
     "org.typelevel" %% "cats" % "0.9.0",
     "org.scala-js" %%% "scalajs-dom" % "0.9.0",
-    "org.typelevel"  %% "squants"  % "1.2.0"
+    "org.typelevel"  %%% "squants"  % "1.2.0",
+    "org.scalatest" %%% "scalatest" % "3.0.0" % "test"
   )
 ) dependsOn (shared) enablePlugins (ScalaJSPlugin)
 
