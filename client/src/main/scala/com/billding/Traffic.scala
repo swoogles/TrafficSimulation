@@ -61,10 +61,3 @@ trait Universe {
   // Get vehicles that haven't taken a recent action.
   def reactiveVehicles(scene: Scene): List[PilotedVehicle]
 }
-
-/*
-  Sample scene data file
-  Int after beginning/end vectors indicates which end the cars are coming from.
-  Int indicates cars per hour
-  (0, 0, 0), (100, 0, 0), 0, 1000
- */

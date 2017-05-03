@@ -70,6 +70,17 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
       Meters(s0$ + max(0.0, inner))
     }
 
+//    Maybe an approach like this makes more sense:
+    def sStarB(): Distance = {
+      val inner =
+        (v*T).toMeters
+      + (v.toMetersPerSecond * dV.toMetersPerSecond) /
+          2 * Math.sqrt(a.toMetersPerSecondSquared*b.toMetersPerSecondSquared)
+      Meters(s0.toMeters + max(0.0, inner))
+    }
+//    That keeps the units closer to home, and now that I've looked at it for a bit, I think
+//    it makes it pretty easy to track that all your units will cancel out as expected.
+
     val accelerationTerm = pow(v/v0, aExp)
     val brakingTerm = pow(sStar() / s, 2)
 
