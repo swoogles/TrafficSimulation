@@ -4,47 +4,72 @@ import collection.mutable.Stack
 import org.scalatest._
 import cats.data.{NonEmptyList, Validated}
 import com.billding.behavior.{IntelligentDriverImpl, IntelligentDriverModel}
-import squants.{Mass, Time, Velocity}
-import squants.motion.{Distance, KilometersPerHour, MetersPerSecond}
-import squants.space.Meters
+import squants.{Mass, Time, Velocity, motion}
+import squants.motion._
+import squants.space.{Kilometers, Meters}
 
 class TrafficSpec extends FlatSpec {
+  val idm = new IntelligentDriverImpl
 
-  "A Stack" should "pop values in last-in-first-out order" in {
-    val stack = new Stack[Int]
-    stack.push(1)
-    stack.push(2)
-    assert(stack.pop() === 2)
-    assert(stack.pop() === 1)
-  }
-
-  it should "throw NoSuchElementException if an empty stack is popped" in {
-    TestValues.run()
-  }
-}
-
-object TestValues {
-  def run() = {
-    val spatial1: Spatial = Spatial(
-      (0, 0, 0, Meters),
+  it should "accelerate a slow car when obstacle is far away" in {
+    val drivenVehicle1 = PilotedVehicle.commuter(Spatial(
+      (0, 0, 0, Kilometers),
       (120, 0, 0, KilometersPerHour)
-    )
+    ))
 
-    val spatial2: Spatial = Spatial(
-      (50, 0, 0, Meters),
-      (100, 0, 0, KilometersPerHour)
-    )
+    val drivenVehicle2 = PilotedVehicle.commuter(Spatial(
+      (2, 0, 0, Kilometers),
+      (40, 0, 0, KilometersPerHour)
+    ))
 
-    val drivenVehicle1 =
-      new PilotedVehicleImpl(
-        Commuter(spatial1), Car(spatial1))
-
-    val drivenVehicle2 =
-      new PilotedVehicleImpl(
-        Commuter(spatial2), Car(spatial2))
-
-    val idm = new IntelligentDriverImpl
-    val res = idm.reactTo(drivenVehicle1, drivenVehicle2, MetersPerSecond(20))
-    println("res: " + res)
+    val res: Acceleration = idm.reactTo(drivenVehicle1, drivenVehicle2, KilometersPerHour(150))
+    assert( res.toMetersPerSecondSquared > 0)
   }
+
+  it should "accelerate a slow car when obstacle is close but moving faster" in {
+    val drivenVehicle1 = PilotedVehicle.commuter(Spatial(
+      (0, 0, 0, Kilometers),
+      (120, 0, 0, KilometersPerHour)
+    ))
+
+    val drivenVehicle2 = PilotedVehicle.commuter(Spatial(
+      (0.5, 0, 0, Kilometers),
+      (100, 0, 0, KilometersPerHour)
+    ))
+
+    val res: Acceleration = idm.reactTo(drivenVehicle1, drivenVehicle2, KilometersPerHour(150))
+    assert( res.toMetersPerSecondSquared > 0)
+  }
+
+  it should "slow down a when obstacle is close, even if it's moving fast" in {
+    val drivenVehicle1 = PilotedVehicle.commuter(Spatial(
+      (0, 0, 0, Kilometers),
+      (120, 0, 0, KilometersPerHour)
+    ))
+
+    val drivenVehicle2 = PilotedVehicle.commuter(Spatial(
+      (0.1, 0, 0, Kilometers),
+      (140, 0, 0, KilometersPerHour)
+    ))
+
+    val res: Acceleration = idm.reactTo(drivenVehicle1, drivenVehicle2, KilometersPerHour(150))
+    assert( res.toMetersPerSecondSquared < 0)
+  }
+
+  it should "slow down a when obstacle is far away, if it's stopped/slow" in {
+    val drivenVehicle1 = PilotedVehicle.commuter(Spatial(
+      (0, 0, 0, Kilometers),
+      (150, 0, 0, KilometersPerHour)
+    ))
+
+    val drivenVehicle2 = PilotedVehicle.commuter(Spatial(
+      (1.0, 0, 0, Kilometers),
+      (10, 0, 0, KilometersPerHour)
+    ))
+
+    val res: Acceleration = idm.reactTo(drivenVehicle1, drivenVehicle2, KilometersPerHour(150))
+    assert( res.toMetersPerSecondSquared < 0)
+  }
+
 }
+

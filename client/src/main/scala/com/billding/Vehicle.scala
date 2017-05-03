@@ -28,9 +28,9 @@ case class Truck(
                 ) extends Vehicle
 
 
-trait PilotedVehicle extends Vehicle with Driver
+trait PilotedVehicle extends Vehicle with Driver with Spatial
 
-class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle with Spatial {
+class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle {
   val desiredSpeed: Velocity = driver.desiredSpeed
   val reactionTime: Time = driver.reactionTime
   val weight = vehicle.weight
@@ -44,5 +44,13 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
   val p = spatial.p
   val v = spatial.v
   val dimensions = spatial.dimensions
+}
+
+object PilotedVehicle {
+  def commuter(spatial: Spatial): PilotedVehicle = {
+      new PilotedVehicleImpl(
+        Commuter(spatial), Car(spatial))
+  }
+
 }
 
