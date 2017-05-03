@@ -1,5 +1,6 @@
 package com.billding.behavior
 
+import com.billding.{PilotedVehicle, Spatial, WeightedManeuver}
 import squants.{Length, Time}
 import squants.motion.Distance
 import squants.motion.MetersPerSecond
@@ -7,6 +8,7 @@ import squants.motion.MetersPerSecondSquared
 import squants.motion.Velocity
 import squants.motion.Acceleration
 import squants.space.Meters
+
 import scala.language.postfixOps
 import squants.time.Seconds
 
@@ -17,32 +19,17 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.
   val aExp: Int = 4
 
-  /**
-    * This is one of the fundamental algorithms to this whole traffic project.
-    * It is an established formula that produces realistic behavior in a single lane.
-    * It continues to play this role when implementing a more complex, multi-lane MOBIL simulation.
-    *
-    * @param v Speed of the following vehicle
-    * @param v0 desired speed when driving on a free road
-    * @param dV Difference in speed between the 2 vehicles
-    * @param T  Desired safety time headway when following other vehicles
-    * @param a  Acceleration in everyday traffic
-    * @param b  "Comfortable" braking deceleration in everyday traffic
-    * @param s Actual gap between vehicles
-    * @param s0 minimum bumper-to-bumper distance to the front vehicle
-    * @return the acceleration to apply to the following vehicle.
-    */
-  override def deltaV(v: Float, v0: Float, dV: Float, T: Float, a: Float, b: Float, s: Float, s0: Float): Float = {
-
-    // sStar: desired dynamical distance
-    val sStar: Double =
-      s0 + max(0.0, ((v*T)+ ( (v*dV)/ 2* (Math.sqrt(a*b)))))
-
-    val accelerationTerm = pow(v/v0, aExp)
-    val brakingTerm = pow(sStar / s, 2)
-
-    val result = a * (1 - accelerationTerm - brakingTerm)
-    result.toFloat
+  def reactTo(decider: PilotedVehicle, obstacle: Spatial, speedLimit: Velocity): Acceleration = {
+    deltaVDimensionallySafe(
+      decider.spatial.v.magnitude,
+      speedLimit,
+      (decider.spatial.v - obstacle.v).magnitude,
+      decider.preferredDynamicSpacing,
+      decider.accelerationAbility,
+      decider.brakingAbility,
+      (decider.spatial.p - obstacle.p).magnitude,
+      decider.minimumDistance
+    )
   }
 
   /**
@@ -60,7 +47,7 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
     * @param s0 minimum bumper-to-bumper distance to the front vehicle
     * @return the acceleration to apply to the following vehicle.
     */
-  def deltaVDimensionallySafe(
+  private def deltaVDimensionallySafe(
                                v: Velocity,
                                v0: Velocity,
                                dV: Velocity,

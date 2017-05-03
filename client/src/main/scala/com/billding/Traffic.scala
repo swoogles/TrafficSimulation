@@ -1,46 +1,10 @@
 package com.billding
 
 import cats.data.{NonEmptyList, Validated}
-import squants.{Mass, Time}
-import squants.motion.Distance
-
-sealed trait Maneuver
-/*
-  Decide how much of a spectrum Braking and Accelerating can use..
-  Version 1 will probably only have 1 hard setting for each.
- */
-case object Brake extends Maneuver
-case object Accelerate extends Maneuver
-case object Maintain extends Maneuver // Should this also be the move when driver is "cooling down" ?
-/*
-  This will be a slight decrease in speed. To be more accurate, it would be a larger decrease when travelling
-  at a higher speed with increased wind resistance.
-  Probably going to save this for a later version, as a simple simulation can run without this.
- */
-case object Coast extends Maneuver
-
-trait WeightedManeuver {
-  val maneuver: Maneuver
-  val urgency: Float
-}
-
-trait Driver {
-  val reactionTime: Time
-  val spatial: Spatial
-}
-
-trait Vehicle {
-  val spatial: Spatial
-  val weight: Mass
-  val brakingAbility: Float
-}
-
-trait PilotedVehicle {
-  val driver: Driver
-  val vehicle: Vehicle
-  val currentManeuver: Maneuver
-  val maneuverTakenAt: Time
-}
+import com.billding.behavior.{IntelligentDriverImpl, IntelligentDriverModel}
+import squants.{Mass, Time, Velocity}
+import squants.motion.{Distance, MetersPerSecond}
+import squants.space.Meters
 
 trait Scene {
   def vehicles(): List[PilotedVehicle]
@@ -50,7 +14,6 @@ trait Scene {
 }
 
 trait VehicleSource {
-  def vehicles(): Stream[PilotedVehicle]
   def produceVehicle(t: Time): Option[PilotedVehicle]
   // Figure out how to accommodate both behaviors
   val spacingInDistance: Distance
@@ -86,14 +49,36 @@ trait ErrorMsg {
   val description: String
 }
 
+object TestValues {
+  val spatial1: Spatial = Spatial(
+    (0, 0, 0), Meters,
+    (2, 0, 0), MetersPerSecond
+  )
+  val commuter1 = Commuter(spatial1)
+  val vehicle1 = Car(spatial1)
+
+
+  val spatial2: Spatial = Spatial(
+    (10, 0, 0), Meters,
+    (2, 0, 0), MetersPerSecond
+  )
+  val commuter2 = Commuter(spatial1)
+  val vehicle2 = Car(spatial1)
+
+  val drivenVehicle1 = new PilotedVehicleImpl(commuter1, vehicle1)
+  val drivenVehicle2 = new PilotedVehicleImpl(commuter2, vehicle2)
+
+  val idm = new IntelligentDriverImpl
+  val res = idm.reactTo(drivenVehicle1, drivenVehicle2, MetersPerSecond(20))
+}
+
 trait Universe {
+  // NOTE: Assumes vehicles travelling in same direction
+  val speedLimit: Velocity
+  val idm: IntelligentDriverModel
   def calculateDriverResponse(vehicle: PilotedVehicle, scene: Scene): Maneuver
   def getAllActions(scene: Scene): List[(PilotedVehicle, Maneuver)]
-  /*
-    Consider this as the first use case for Validated.
-   */
   def update(scene: Scene, dt: Time): Validated[NonEmptyList[ErrorMsg], Scene]
-  def reactTo(decider: PilotedVehicle, obstacle: Spatial): WeightedManeuver
   def createScene(roads: Road): Scene
   // Get vehicles that haven't taken a recent action.
   def reactiveVehicles(scene: Scene): List[PilotedVehicle]
