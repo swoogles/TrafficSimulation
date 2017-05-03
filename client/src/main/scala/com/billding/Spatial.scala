@@ -3,7 +3,10 @@ package com.billding
 import breeze.linalg.DenseVector
 import breeze.linalg.normalize
 import squants.{DoubleVector, QuantityVector, SVector, Velocity, motion}
-import squants.motion.{Distance, MetersPerSecondSquared}
+import squants.motion._
+import squants.space.LengthConversions._
+import squants.space.LengthUnit
+import squants.time.TimeConversions._
 
 class PositiveVector(values: DenseVector[Float]) {
   require(values forall (_ >= 0), "List contains negative numbers")
@@ -16,6 +19,13 @@ trait Spatial {
   val v: QuantityVector[Velocity]
   val dimensions: QuantityVector[Distance]
 }
+case class SpatialImpl (
+  p: QuantityVector[Distance],
+  v: QuantityVector[Velocity] = SVector(0.meters.per(1 seconds), 0.meters.per(1 seconds), 0.meters.per(1 seconds)),
+  dimensions: QuantityVector[Distance] = SVector(0.meters, 0.meters, 0.meters)
+) extends Spatial {
+}
+  
 object Spatial {
   def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
@@ -31,50 +41,21 @@ object Spatial {
     // Alternate solution: Determe in observer.p lines on the line defined by target.p + target.v
     ???
   }
+
+  def apply(
+             pIn: (Double, Double, Double),
+             pUnit: LengthUnit,
+             vIn: (Double, Double, Double) = (0, 0, 0),
+              vUnits: VelocityUnit
+
+           ): Spatial = {
+
+    val p: QuantityVector[Distance] = SVector(pIn._1, pIn._2, pIn._3 ) .map(pUnit(_))
+    val v: QuantityVector[Velocity] = SVector(vIn._1, vIn._2, vIn._3 ).map(vUnits(_))
+    new SpatialImpl(p, v)
+  }
+
 }
 
 
-trait Forces {
-  import squants.energy.Energy
-  import squants.energy.EnergyConversions._
-  import squants.mass.{Density, Mass}
-  import squants.mass.MassConversions._
-  import squants.motion.{Acceleration, Velocity, VolumeFlow}
-  import squants.motion.AccelerationConversions._
-  import squants.space.LengthConversions._
-  import squants.space.VolumeConversions._
-  import squants.time.Time
-  import squants.time.TimeConversions._
-  import squants.Length
-  import squants.space.Kilometers
 
-  val pos: QuantityVector[Length] =
-    SVector(Kilometers(0.0), Kilometers(0.0), Kilometers(0.0))
-
-  val vDt = 1 seconds
-  val v = SVector(
-    10.meters.per(vDt),
-    5.meters.per(vDt),
-    0.meters.per(vDt))
-
-  val pDt = 1 minutes
-  val makeMomentumDimension = (x: Double) =>x.meters.per(pDt.squared)
-
-  val wind = SVector(
-    -1.meters.per(pDt.squared),
-    0.meters.per(pDt.squared),
-    0.meters.per(pDt.squared))
-
-  val gasAcceleration =
-    SVector( 5, 0, 0 )
-      .map(makeMomentumDimension)
-
-  val gasAccelerationB =
-    SVector( 5, 0, 0)
-      .map((x: Double) =>x.meters.per(pDt.squared)  )
-
-
-  val dt = 1.hours
-  pos + v.map(_ * 1.hours) + ( wind.map( _ * 1.hours.squared))
-  pos + v.map(_ * dt) + ( wind.map( _ * dt.squared))
-}
