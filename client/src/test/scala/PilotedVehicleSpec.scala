@@ -29,6 +29,19 @@ class PilotedVehicleSpec extends FlatSpec {
     assert( res.toMetersPerSecondSquared > 0)
   }
 
+  it should "hold steady when pacing the target car" in {
+    val res = accelerationTest(
+      (0, 0, 0, Meters),
+      (120, 0, 0, KilometersPerHour),
+      // I just wack-a-moled my way to this value...
+      // It would be better
+      (45, 0, 0, Meters),
+      (120, 0, 0, KilometersPerHour)
+    )
+    implicit val tolerance: Acceleration = MetersPerSecondSquared(0.01)
+    assert(res =~ (MetersPerSecondSquared(0)), true)
+  }
+
   it should "accelerate a slow car when obstacle is close but moving faster" in {
     val res = accelerationTest(
       (0, 0, 0, Kilometers),
