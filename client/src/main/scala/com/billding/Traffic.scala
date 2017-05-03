@@ -49,28 +49,6 @@ trait ErrorMsg {
   val description: String
 }
 
-object TestValues {
-  val spatial1: Spatial = Spatial(
-    (0, 0, 0), Meters,
-    (2, 0, 0), MetersPerSecond
-  )
-  val commuter1 = Commuter(spatial1)
-  val vehicle1 = Car(spatial1)
-
-
-  val spatial2: Spatial = Spatial(
-    (10, 0, 0), Meters,
-    (2, 0, 0), MetersPerSecond
-  )
-  val commuter2 = Commuter(spatial1)
-  val vehicle2 = Car(spatial1)
-
-  val drivenVehicle1 = new PilotedVehicleImpl(commuter1, vehicle1)
-  val drivenVehicle2 = new PilotedVehicleImpl(commuter2, vehicle2)
-
-  val idm = new IntelligentDriverImpl
-  val res = idm.reactTo(drivenVehicle1, drivenVehicle2, MetersPerSecond(20))
-}
 
 trait Universe {
   // NOTE: Assumes vehicles travelling in same direction

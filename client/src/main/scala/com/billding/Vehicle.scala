@@ -2,7 +2,7 @@ package com.billding
 
 import squants.mass.Kilograms
 import squants.motion.{Acceleration, Distance, KilogramForce}
-import squants.{Mass, Time}
+import squants.{Mass, Time, Velocity}
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
 
@@ -31,6 +31,7 @@ case class Truck(
 trait PilotedVehicle extends Vehicle with Driver
 
 class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle with Spatial {
+  val desiredSpeed: Velocity = driver.desiredSpeed
   val reactionTime: Time = driver.reactionTime
   val weight = vehicle.weight
   val spatial = vehicle.spatial

@@ -43,15 +43,14 @@ object Spatial {
   }
 
   def apply(
-             pIn: (Double, Double, Double),
-             pUnit: LengthUnit,
-             vIn: (Double, Double, Double) = (0, 0, 0),
-              vUnits: VelocityUnit
-
+             pIn: (Double, Double, Double, LengthUnit),
+             vIn: (Double, Double, Double, VelocityUnit) = (0, 0, 0, MetersPerSecond)
            ): Spatial = {
+    val (pX, pY, pZ, pUnit) = pIn
+    val (vX, vY, vZ, vUnit) = vIn
 
-    val p: QuantityVector[Distance] = SVector(pIn._1, pIn._2, pIn._3 ) .map(pUnit(_))
-    val v: QuantityVector[Velocity] = SVector(vIn._1, vIn._2, vIn._3 ).map(vUnits(_))
+    val p: QuantityVector[Distance] = SVector(pX, pY, pZ) .map(pUnit(_))
+    val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
     new SpatialImpl(p, v)
   }
 
