@@ -39,6 +39,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (120, 0, 0, KilometersPerHour)
     )
     implicit val tolerance: Acceleration = MetersPerSecondSquared(0.01)
+
     assert(res =~ (MetersPerSecondSquared(0)), true)
   }
 

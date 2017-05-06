@@ -29,8 +29,10 @@ case class Truck(
                 ) extends Vehicle
 
 
-trait PilotedVehicle extends Vehicle with Driver with Spatial {
+trait PilotedVehicle {
+  val spatial: Spatial // Can this be hidden? I'd really like that.
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
+  def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration
 }
 
 class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle {
@@ -39,7 +41,7 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
   val desiredSpeed: Velocity = driver.desiredSpeed
   val reactionTime: Time = driver.reactionTime
   val weight = vehicle.weight
-  val spatial = vehicle.spatial
+  override val spatial: Spatial = vehicle.spatial
   val maneuverTakenAt: Time = 1 seconds
   val accelerationAbility = vehicle.accelerationAbility
   val brakingAbility = vehicle.brakingAbility
@@ -55,7 +57,7 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
     idm.deltaVDimensionallySafe(
       spatial.v.magnitude, // TODO Make a Spatial function
       speedLimit,
-      (spatial.v - obstacle.v).magnitude, // TODO Make a Spatial function
+      spatial.relativeVelocityMag(obstacle),
       preferredDynamicSpacing,
       accelerationAbility,
       brakingAbility,
@@ -63,6 +65,9 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
       minimumDistance
     )
   }
+
+  def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration =
+    this.reactTo(obstacle.spatial, speedLimit)
 }
 
 object PilotedVehicle {
