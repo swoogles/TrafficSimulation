@@ -2,10 +2,10 @@ package com.billding
 
 import breeze.linalg.DenseVector
 import breeze.linalg.normalize
-import squants.{DoubleVector, QuantityVector, SVector, Velocity, motion}
+import squants.{DoubleVector, Length, QuantityVector, SVector, Time, Velocity, motion}
 import squants.motion._
 import squants.space.LengthConversions._
-import squants.space.LengthUnit
+import squants.space.{LengthUnit, Meters}
 import squants.time.TimeConversions._
 
 class PositiveVector(values: DenseVector[Float]) {
@@ -40,6 +40,21 @@ object Spatial {
      */
     // Alternate solution: Determe in observer.p lines on the line defined by target.p + target.v
     ???
+  }
+
+  /*
+  new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
+  new position:   	x(t+Δt) = x(t) + v(t)Δt + 1/2 (dv/dt) (Δt)2,
+  new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
+  */
+  def update(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
+    val vUnit = spatial.v.valueUnit
+    val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] = (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
+    val newV = spatial.v.map{ x: Velocity =>x + dP * dt}
+    val dPwithNewV = newV.map{ v: Velocity => v * dt }
+    val betterMomentumFactor: QuantityVector[Length] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
+    val newP = spatial.p + dPwithNewV + betterMomentumFactor
+    new SpatialImpl(newP, newV, spatial.dimensions)
   }
 
   def apply(

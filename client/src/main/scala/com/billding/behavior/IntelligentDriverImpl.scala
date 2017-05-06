@@ -1,7 +1,7 @@
 package com.billding.behavior
 
 import com.billding.{PilotedVehicle, Spatial, WeightedManeuver}
-import squants.{Length, Time}
+import squants.{Length, QuantityVector, Time}
 import squants.motion.Distance
 import squants.motion.MetersPerSecond
 import squants.motion.MetersPerSecondSquared
@@ -54,6 +54,8 @@ class IntelligentDriverImpl extends IntelligentDriverModel {
 
     a * (1 - accelerationTerm - brakingTerm)
   }
+
+
 
   private def sStar(
                      v: Velocity,

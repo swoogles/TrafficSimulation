@@ -34,7 +34,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (0, 0, 0, Meters),
       (120, 0, 0, KilometersPerHour),
       // I just wack-a-moled my way to this value...
-      // It would be better
+      // It could be better to utilize the T calculation in some way
       (45, 0, 0, Meters),
       (120, 0, 0, KilometersPerHour)
     )
@@ -42,16 +42,27 @@ class PilotedVehicleSpec extends FlatSpec {
     assert(res =~ (MetersPerSecondSquared(0)), true)
   }
 
-  it should "accelerate a slow car when obstacle is close but moving faster" in {
+  it should "accelerate when obstacle is close but moving faster" in {
     val res = accelerationTest(
       (0, 0, 0, Kilometers),
       (120, 0, 0, KilometersPerHour),
-      (0.5, 0, 0, Kilometers),
-      (100, 0, 0, KilometersPerHour)
+      (50, 0, 0, Meters),
+      (140, 0, 0, KilometersPerHour)
     )
 
     assert( res.toMetersPerSecondSquared > 0)
   }
+
+  // TODO don't seem to be getting the desire behavior here...
+//  it should "decelerate when obstacle is close but moving slower" in {
+//    val res = accelerationTest(
+//      (0, 0, 0, Kilometers),
+//      (120, 0, 0, KilometersPerHour),
+//      (50, 0, 0, Meters),
+//      (60, 0, 0, KilometersPerHour)
+//    )
+//    assert( res.toMetersPerSecondSquared < 0)
+//  }
 
   it should "slow down a when obstacle is close, even if it's moving fast" in {
     // Oh shit. Being able to hop to a different scale here is GREAT.

@@ -3,7 +3,7 @@ package com.billding
 import cats.data.{NonEmptyList, Validated}
 import com.billding.behavior.{IntelligentDriverImpl, IntelligentDriverModel}
 import squants.{Mass, Time, Velocity}
-import squants.motion.{Distance, MetersPerSecond}
+import squants.motion.{Acceleration, Distance, MetersPerSecond}
 import squants.space.Meters
 
 trait Scene {
