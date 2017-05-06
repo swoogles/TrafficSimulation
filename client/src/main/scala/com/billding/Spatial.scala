@@ -19,7 +19,7 @@ trait Spatial {
   def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] = {
     (this.v - obstacle.v) //.magnitude
   }
-  def relativeVelocityjag(obstacle: Spatial): Velocity = {
+  def relativeVelocityMag(obstacle: Spatial): Velocity = {
     val z= (relativeVelocity _) andThen (_.magnitude)
     z.apply(obstacle)
   }
@@ -78,6 +78,14 @@ object Spatial {
 
     val p: QuantityVector[Distance] = SVector(pX, pY, pZ) .map(pUnit(_))
     val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
+    new SpatialImpl(p, v)
+  }
+
+  def withVecs(
+           p: QuantityVector[Distance],
+            v: QuantityVector[Velocity]
+           ): Spatial = {
+
     new SpatialImpl(p, v)
   }
 

@@ -32,9 +32,11 @@ case class Truck(
 sealed trait PilotedVehicle {
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
   def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration
+  def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle
+  def createInfiniteVehicle: PilotedVehicle
 }
 
-class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle {
+case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVehicle {
   // TODO make a parameter
   private val idm = driver.idm
   private val weight = vehicle.weight
@@ -65,6 +67,24 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
     import com.billding.SpatialForDefaults.spatialForPilotedVehicle
     this.reactTo(SpatialForDefaults.disect(obstacle), speedLimit)
   }
+
+  def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle = {
+    import com.billding.SpatialForDefaults.spatialForPilotedVehicle
+    val updatedSpatial = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP)
+    this.copy(driver=
+    driver.copy(spatial=updatedSpatial),
+    vehicle = vehicle.copy(spatial=updatedSpatial))
+  }
+
+  def createInfiniteVehicle: PilotedVehicle = {
+    val newPosition = this.spatial.p + this.spatial.v.map{x: Velocity =>x * 1.hours}
+    val newVelocity = this.spatial.v.map{x: Velocity =>x *2}
+    this.copy(vehicle=
+      vehicle.copy(spatial=
+        Spatial.withVecs(newPosition, newVelocity)
+      )
+    )
+  }
 }
 
 object PilotedVehicle {
@@ -78,8 +98,8 @@ object PilotedVehicle {
 object TypeClassUsage {
   import com.billding.SpatialForDefaults.spatialForPilotedVehicle
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
-  val drivenVehicle1 = PilotedVehicle.commuter(Spatial( (0, 0, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
-  val drivenVehicle2 = PilotedVehicle.commuter(Spatial( (0, 2, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
+  val drivenVehicle1: PilotedVehicle = PilotedVehicle.commuter(Spatial( (0, 0, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
+  val drivenVehicle2: PilotedVehicle = PilotedVehicle.commuter(Spatial( (0, 2, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
 
   val res: Spatial = SpatialForDefaults.disect(drivenVehicle1)
 

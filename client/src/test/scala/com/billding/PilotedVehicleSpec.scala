@@ -10,18 +10,28 @@ import squants.space.{Kilometers, LengthUnit, Meters}
 class PilotedVehicleSpec extends FlatSpec {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
 
+  def createVehiclePair (
+                         pIn1: (Double, Double, Double, LengthUnit),
+                         vIn1: (Double, Double, Double, VelocityUnit),
+                         pIn2: (Double, Double, Double, LengthUnit),
+                         vIn2: (Double, Double, Double, VelocityUnit)
+                       ): (PilotedVehicle, PilotedVehicle) = {
+    (PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm),
+      PilotedVehicle.commuter(Spatial(pIn2, vIn2), idm))
+  }
+
   def accelerationTest (
     pIn1: (Double, Double, Double, LengthUnit),
     vIn1: (Double, Double, Double, VelocityUnit),
     pIn2: (Double, Double, Double, LengthUnit),
     vIn2: (Double, Double, Double, VelocityUnit)
   ): Acceleration = {
-    val drivenVehicle1 = PilotedVehicle.commuter(Spatial( pIn1, vIn1 ), idm)
-    val drivenVehicle2 = PilotedVehicle.commuter(Spatial( pIn2, vIn2 ), idm)
-
+    val (drivenVehicle1, drivenVehicle2)  = createVehiclePair( pIn1, vIn1 , pIn2, vIn2 )
     // TODO Get rid of magic value
     drivenVehicle1.reactTo(drivenVehicle2, KilometersPerHour(150))
   }
+
+//  it should "drive cars over a period"
 
   it should "accelerate a slow car when obstacle is far away" in {
     val res = accelerationTest(

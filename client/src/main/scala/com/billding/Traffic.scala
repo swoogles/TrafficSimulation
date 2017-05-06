@@ -2,7 +2,7 @@ package com.billding
 
 import cats.data.{NonEmptyList, Validated}
 import squants.{Mass, Time, Velocity}
-import squants.motion.{Acceleration, Distance, MetersPerSecond}
+import squants.motion.{Acceleration, Distance, MetersPerSecond, MetersPerSecondSquared}
 import squants.space.Meters
 
 trait Scene {
@@ -31,6 +31,29 @@ trait Lane {
   def end: Spatial
 }
 
+object Lane {
+
+  def responsesInOneLanePrep(vehicles: List[PilotedVehicle], speedLimit: Velocity): List[Acceleration] = {
+
+    vehicles match {
+      case Nil => Nil
+      case head :: tail => responsesInOneLane(NonEmptyList(head.createInfiniteVehicle, vehicles), speedLimit).toList
+    }
+  }
+
+  private def responsesInOneLane(vehicles: NonEmptyList[PilotedVehicle], speedLimit: Velocity): NonEmptyList[Acceleration] = {
+    val target = vehicles.head
+    vehicles.tail match {
+      case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil) // :: responsesInOneLane(follower :: rest)
+      case follower :: rest => {
+        println("going deeeeeeperrrrr!")
+        follower.reactTo(target, speedLimit)  :: responsesInOneLane(NonEmptyList(follower,rest), speedLimit)
+      }
+    }
+  }
+
+}
+
 trait Road {
   def lanes: List[Lane] // Maybe should be private impl detail?
   def produceVehicles(t: Time)
@@ -54,6 +77,7 @@ trait Universe {
   val speedLimit: Velocity
 //  val idm: IntelligentDriverModel
   def calculateDriverResponse(vehicle: PilotedVehicle, scene: Scene): Acceleration
+  // TODO Work on this after Lane processing functions.
   def getAllActions(scene: Scene): List[(PilotedVehicle, Acceleration)]
   def update(scene: Scene, dt: Time): Validated[NonEmptyList[ErrorMsg], Scene]
   def createScene(roads: Road): Scene
