@@ -1,10 +1,9 @@
 package com.billding
 
 import breeze.linalg.DenseVector
-import squants.{Length, QuantityVector, SVector, Time, Velocity}
+import squants.{QuantityVector, SVector, Time, Velocity}
 import squants.motion._
 import squants.space.LengthConversions._
-import squants.space.{LengthUnit}
 import squants.time.TimeConversions._
 
 class PositiveVector(values: DenseVector[Float]) {
@@ -20,7 +19,7 @@ trait Spatial {
   def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] = {
     (this.v - obstacle.v) //.magnitude
   }
-  def relativeVelocityMag(obstacle: Spatial): Velocity = {
+  def relativeVelocityjag(obstacle: Spatial): Velocity = {
     val z= (relativeVelocity _) andThen (_.magnitude)
     z.apply(obstacle)
   }
@@ -65,13 +64,13 @@ object Spatial {
     val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] = (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
     val newV = spatial.v.map{ x: Velocity =>x + dP * dt}
     val dPwithNewV = newV.map{ v: Velocity => v * dt }
-    val betterMomentumFactor: QuantityVector[Length] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
+    val betterMomentumFactor: QuantityVector[Distance] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
     val newP = spatial.p + dPwithNewV + betterMomentumFactor
     SpatialImpl(newP, newV, spatial.dimensions)
   }
 
   def apply(
-             pIn: (Double, Double, Double, LengthUnit),
+             pIn: (Double, Double, Double, DistanceUnit),
              vIn: (Double, Double, Double, VelocityUnit) = (0, 0, 0, MetersPerSecond)
            ): Spatial = {
     val (pX, pY, pZ, pUnit) = pIn
@@ -91,5 +90,22 @@ object Spatial {
   But maybe that's not needed... I dunno. It's late.
  */
 trait SpatialFor[A] {
+  def makeSpatial(a: A): Spatial
+}
+
+object SpatialForDefaults {
+  /*
+    def mostUsedWords[T : SpatialFor](t: T): List[(String, Int)] =
+    LiteraryAnalyzer.mostUsedWords(makeSpatial(t))
+   */
+  def disect[T : SpatialFor](t: T): Spatial = implicitly[SpatialFor[T]].makeSpatial(t)
+
+  implicit val spatialForPilotedVehicle = new SpatialFor[PilotedVehicle] {
+    def makeSpatial(a: PilotedVehicle): Spatial = {
+      a match {
+        case vehicle: PilotedVehicleImpl => vehicle.otherSpatial
+      }
+    }
+  }
 
 }

@@ -1,7 +1,8 @@
 package com.billding
 
 import squants.mass.Kilograms
-import squants.motion.{Acceleration, Distance, KilogramForce}
+import squants.motion.{Acceleration, Distance, KilogramForce, KilometersPerHour}
+import squants.space.Kilometers
 import squants.{Mass, Time, Velocity}
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
@@ -28,29 +29,24 @@ case class Truck(
                 ) extends Vehicle
 
 
-trait PilotedVehicle {
-  val spatial: Spatial // Can this be hidden? I'd really like that.
+sealed trait PilotedVehicle {
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
   def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration
 }
 
 class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle {
   // TODO make a parameter
-  val idm = driver.idm
-  val desiredSpeed: Velocity = driver.desiredSpeed
-  val reactionTime: Time = driver.reactionTime
-  val weight = vehicle.weight
-  override val spatial: Spatial = vehicle.spatial
-  val maneuverTakenAt: Time = 1 seconds
-  val accelerationAbility = vehicle.accelerationAbility
-  val brakingAbility = vehicle.brakingAbility
-  val preferredDynamicSpacing = driver.preferredDynamicSpacing
-  val minimumDistance = driver.minimumDistance
+  private val idm = driver.idm
+  private val weight = vehicle.weight
+  val spatial: Spatial = vehicle.spatial
+  val otherSpatial = spatial
+  private val accelerationAbility = vehicle.accelerationAbility
+  private val brakingAbility = vehicle.brakingAbility
+  private val preferredDynamicSpacing = driver.preferredDynamicSpacing
+  private val minimumDistance = driver.minimumDistance
   // TODO Get rid of this meddling junk of p, v, and dimensions!!
   // Use a SpatialFor[PilotedVehicle] instead.
-  val p = spatial.p
-  val v = spatial.v
-  val dimensions = spatial.dimensions
+  private val dimensions = spatial.dimensions
 
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration = {
     idm.deltaVDimensionallySafe(
@@ -65,8 +61,10 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
     )
   }
 
-  def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration =
-    this.reactTo(obstacle.spatial, speedLimit)
+  def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration = {
+    import com.billding.SpatialForDefaults.spatialForPilotedVehicle
+    this.reactTo(SpatialForDefaults.disect(obstacle), speedLimit)
+  }
 }
 
 object PilotedVehicle {
@@ -77,3 +75,12 @@ object PilotedVehicle {
 
 }
 
+object TypeClassUsage {
+  import com.billding.SpatialForDefaults.spatialForPilotedVehicle
+  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
+  val drivenVehicle1 = PilotedVehicle.commuter(Spatial( (0, 0, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
+  val drivenVehicle2 = PilotedVehicle.commuter(Spatial( (0, 2, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
+
+  val res: Spatial = SpatialForDefaults.disect(drivenVehicle1)
+
+}

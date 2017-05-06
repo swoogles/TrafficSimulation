@@ -2,10 +2,8 @@ package com.billding
 package com.billding
 
 import org.scalatest._
-import squants.Length
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
-import squants.time.Seconds
 import scala.language.postfixOps
 import squants.time.TimeConversions._
 
