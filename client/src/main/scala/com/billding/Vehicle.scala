@@ -40,25 +40,26 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
   val reactionTime: Time = driver.reactionTime
   val weight = vehicle.weight
   val spatial = vehicle.spatial
-  val currentManeuver = Coast
   val maneuverTakenAt: Time = 1 seconds
   val accelerationAbility = vehicle.accelerationAbility
   val brakingAbility = vehicle.brakingAbility
   val preferredDynamicSpacing = driver.preferredDynamicSpacing
   val minimumDistance = driver.minimumDistance
+  // TODO Get rid of this meddling junk of p, v, and dimensions!!
+  // Use a SpatialFor[PilotedVehicle] instead.
   val p = spatial.p
   val v = spatial.v
   val dimensions = spatial.dimensions
 
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration = {
     idm.deltaVDimensionallySafe(
-      spatial.v.magnitude,
+      spatial.v.magnitude, // TODO Make a Spatial function
       speedLimit,
-      (spatial.v - obstacle.v).magnitude,
+      (spatial.v - obstacle.v).magnitude, // TODO Make a Spatial function
       preferredDynamicSpacing,
       accelerationAbility,
       brakingAbility,
-      (spatial.p - obstacle.p).magnitude,
+      spatial.distanceTo(obstacle),
       minimumDistance
     )
   }

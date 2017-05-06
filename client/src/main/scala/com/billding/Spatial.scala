@@ -1,11 +1,10 @@
 package com.billding
 
 import breeze.linalg.DenseVector
-import breeze.linalg.normalize
-import squants.{DoubleVector, Length, QuantityVector, SVector, Time, Velocity, motion}
+import squants.{Length, QuantityVector, SVector, Time, Velocity}
 import squants.motion._
 import squants.space.LengthConversions._
-import squants.space.{LengthUnit, Meters}
+import squants.space.{LengthUnit}
 import squants.time.TimeConversions._
 
 class PositiveVector(values: DenseVector[Float]) {
@@ -18,6 +17,19 @@ trait Spatial {
   val p: QuantityVector[Distance] //= SVector(Kilometers(-1.2), Kilometers(4.3), Kilometers(2.3))
   val v: QuantityVector[Velocity]
   val dimensions: QuantityVector[Distance]
+  def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] = {
+    (this.v - obstacle.v) //.magnitude
+  }
+  def relativeVelocityMag(obstacle: Spatial): Velocity = {
+    val z= (relativeVelocity _) andThen (_.magnitude)
+    z.apply(obstacle)
+  }
+  def vectorTo(obstacle: Spatial): QuantityVector[Distance] = (obstacle.p - this.p)
+  def vectorToMag(vectorTo: QuantityVector[Distance]): Distance = vectorTo.magnitude
+  def distanceTo(obstacle: Spatial): Distance = {
+    val z= (vectorTo _) andThen (_.magnitude)
+    z.apply(obstacle)
+  }
 }
 case class SpatialImpl (
   p: QuantityVector[Distance],
@@ -41,20 +53,21 @@ object Spatial {
     // Alternate solution: Determe in observer.p lines on the line defined by target.p + target.v
     ???
   }
+//  (spatial.p - obstacle.p).magnitude, // TODO Make a Spatial function
 
   /*
   new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
   new position:   	x(t+Δt) = x(t) + v(t)Δt + 1/2 (dv/dt) (Δt)2,
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
   */
-  def update(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
+  def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
     val vUnit = spatial.v.valueUnit
     val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] = (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
     val newV = spatial.v.map{ x: Velocity =>x + dP * dt}
     val dPwithNewV = newV.map{ v: Velocity => v * dt }
     val betterMomentumFactor: QuantityVector[Length] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
     val newP = spatial.p + dPwithNewV + betterMomentumFactor
-    new SpatialImpl(newP, newV, spatial.dimensions)
+    SpatialImpl(newP, newV, spatial.dimensions)
   }
 
   def apply(
@@ -73,3 +86,10 @@ object Spatial {
 
 
 
+/*
+  TODO: This class will enable spatial behavior with a class.
+  But maybe that's not needed... I dunno. It's late.
+ */
+trait SpatialFor[A] {
+
+}

@@ -1,6 +1,5 @@
 package com.billding.behavior
 
-import com.billding.{PilotedVehicle, Spatial, WeightedManeuver}
 import squants.motion.Distance
 import squants.{Acceleration, Time, Velocity}
 

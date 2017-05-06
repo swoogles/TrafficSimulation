@@ -1,7 +1,6 @@
 package com.billding
 
 import cats.data.{NonEmptyList, Validated}
-import com.billding.behavior.{IntelligentDriverImpl, IntelligentDriverModel}
 import squants.{Mass, Time, Velocity}
 import squants.motion.{Acceleration, Distance, MetersPerSecond}
 import squants.space.Meters
@@ -53,9 +52,9 @@ trait ErrorMsg {
 trait Universe {
   // NOTE: Assumes vehicles travelling in same direction
   val speedLimit: Velocity
-  val idm: IntelligentDriverModel
-  def calculateDriverResponse(vehicle: PilotedVehicle, scene: Scene): Maneuver
-  def getAllActions(scene: Scene): List[(PilotedVehicle, Maneuver)]
+//  val idm: IntelligentDriverModel
+  def calculateDriverResponse(vehicle: PilotedVehicle, scene: Scene): Acceleration
+  def getAllActions(scene: Scene): List[(PilotedVehicle, Acceleration)]
   def update(scene: Scene, dt: Time): Validated[NonEmptyList[ErrorMsg], Scene]
   def createScene(roads: Road): Scene
   // Get vehicles that haven't taken a recent action.

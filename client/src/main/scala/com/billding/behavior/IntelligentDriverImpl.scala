@@ -1,25 +1,20 @@
 package com.billding.behavior
 
-import com.billding.{PilotedVehicle, Spatial, WeightedManeuver}
-import squants.{Length, QuantityVector, Time}
+import squants.Time
 import squants.motion.Distance
-import squants.motion.MetersPerSecond
-import squants.motion.MetersPerSecondSquared
 import squants.motion.Velocity
 import squants.motion.Acceleration
 import squants.space.Meters
 
 import scala.language.postfixOps
-import squants.time.Seconds
 
 import scala.math.pow
 import scala.math.max
 
 class IntelligentDriverImpl extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.
+  // It's basically a magic value via research done by others.
   val aExp: Int = 4
-
-  // TODO this belongs on the PilotedVehicle class! That's why it's felt so awkward to utilize it here.
 
   /**
     * This is one of the fundamental algorithms to this whole traffic project.
