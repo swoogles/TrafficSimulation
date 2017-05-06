@@ -1,6 +1,5 @@
 package com.billding
 
-import com.billding.behavior.IntelligentDriverImpl
 import squants.mass.Kilograms
 import squants.motion.{Acceleration, Distance, KilogramForce}
 import squants.{Mass, Time, Velocity}
@@ -37,7 +36,7 @@ trait PilotedVehicle {
 
 class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicle {
   // TODO make a parameter
-  val idm = new IntelligentDriverImpl
+  val idm = driver.idm
   val desiredSpeed: Velocity = driver.desiredSpeed
   val reactionTime: Time = driver.reactionTime
   val weight = vehicle.weight
@@ -71,9 +70,9 @@ class PilotedVehicleImpl(driver: Driver, vehicle: Vehicle) extends PilotedVehicl
 }
 
 object PilotedVehicle {
-  def commuter(spatial: Spatial): PilotedVehicle = {
+  def commuter(spatial: Spatial, idm: IntelligentDriverModel): PilotedVehicle = {
       new PilotedVehicleImpl(
-        Commuter(spatial), Car(spatial))
+        Commuter(spatial, idm), Car(spatial))
   }
 
 }

@@ -4,7 +4,11 @@ import org.scalatest._
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 
+/*
+  I think these tests are specific to the IDM, rather than Piloted Vehicle.
+ */
 class PilotedVehicleSpec extends FlatSpec {
+  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
 
   def accelerationTest (
     pIn1: (Double, Double, Double, LengthUnit),
@@ -12,8 +16,8 @@ class PilotedVehicleSpec extends FlatSpec {
     pIn2: (Double, Double, Double, LengthUnit),
     vIn2: (Double, Double, Double, VelocityUnit)
   ): Acceleration = {
-    val drivenVehicle1 = PilotedVehicle.commuter(Spatial( pIn1, vIn1 ))
-    val drivenVehicle2 = PilotedVehicle.commuter(Spatial( pIn2, vIn2 ))
+    val drivenVehicle1 = PilotedVehicle.commuter(Spatial( pIn1, vIn1 ), idm)
+    val drivenVehicle2 = PilotedVehicle.commuter(Spatial( pIn2, vIn2 ), idm)
 
     // TODO Get rid of magic value
     drivenVehicle1.reactTo(drivenVehicle2, KilometersPerHour(150))

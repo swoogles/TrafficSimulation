@@ -1,15 +1,11 @@
-package com.billding.behavior
+package com.billding
 
 import squants.Time
-import squants.motion.Distance
-import squants.motion.Velocity
-import squants.motion.Acceleration
+import squants.motion.{Acceleration, Distance, Velocity}
 import squants.space.Meters
 
 import scala.language.postfixOps
-
-import scala.math.pow
-import scala.math.max
+import scala.math.{max, pow}
 
 class IntelligentDriverModelImpl extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.

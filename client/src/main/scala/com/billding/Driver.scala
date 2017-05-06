@@ -11,10 +11,12 @@ trait Driver {
   val preferredDynamicSpacing: Time
   val minimumDistance: Distance
   val desiredSpeed: Velocity
+  val idm: IntelligentDriverModel
 }
 
 case class Commuter(
                      spatial: Spatial,
+                     idm: IntelligentDriverModel,
                      reactionTime: Time = (0.5 seconds),
                      preferredDynamicSpacing: Time = (1 seconds),
                      minimumDistance: Distance = (1 meters),

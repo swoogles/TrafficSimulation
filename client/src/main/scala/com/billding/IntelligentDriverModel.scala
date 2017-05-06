@@ -1,4 +1,4 @@
-package com.billding.behavior
+package com.billding
 
 import squants.motion.Distance
 import squants.{Acceleration, Time, Velocity}
