@@ -1,8 +1,9 @@
 package com.billding
 
 import org.scalatest.FlatSpec
-import squants.motion.{Acceleration, KilometersPerHour, VelocityUnit}
+import squants.motion.{Acceleration, KilometersPerHour, MetersPerSecondSquared, VelocityUnit}
 import squants.space.{Kilometers, LengthUnit, Meters}
+import org.scalatest.Matchers._
 
 /**
   * Created by bfrasure on 5/6/17.
@@ -46,15 +47,6 @@ class LaneSpec extends  FlatSpec {
   }
 
   it should "make all vehicles accelerate from a stop together" in {
-    val (drivenVehicle1, drivenVehicle2) = createVehiclePair(
-      (200, 0, 0, Meters), (40, 0, 0, KilometersPerHour),
-      (180, 0, 0, Meters), (120, 0, 0, KilometersPerHour)
-    )
-
-    val (drivenVehicle3, drivenVehicle4) = createVehiclePair(
-      (100, 0, 0, Meters), (70, 0, 0, KilometersPerHour),
-      (80, 0, 0, Meters), (150, 0, 0, KilometersPerHour)
-    )
     val vehicles = List(
       createVehicle((100, 0, 0, Meters), (1, 0, 0, KilometersPerHour)),
       createVehicle((95, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
@@ -62,6 +54,18 @@ class LaneSpec extends  FlatSpec {
     )
     val acccelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
     acccelerations.foreach { x => println("accceleration together: " + x) }
+    every(acccelerations) shouldBe > (MetersPerSecondSquared(0))
+  }
+
+  it should "make all following vehicles slow down if the lead car is stopped" in {
+    val vehicles = List(
+      createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+      createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
+      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
+    )
+    val acccelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    acccelerations.foreach { x => println("accceleration together: " + x) }
+    every(acccelerations.tail) shouldBe < (MetersPerSecondSquared(0))
   }
 
 }
