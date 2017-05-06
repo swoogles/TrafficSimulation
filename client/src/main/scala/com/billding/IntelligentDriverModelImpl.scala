@@ -11,7 +11,7 @@ import scala.language.postfixOps
 import scala.math.pow
 import scala.math.max
 
-class IntelligentDriverImpl extends IntelligentDriverModel {
+class IntelligentDriverModelImpl extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.
   // It's basically a magic value via research done by others.
   val aExp: Int = 4
