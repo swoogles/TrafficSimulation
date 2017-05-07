@@ -41,7 +41,6 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
   private val idm = driver.idm
   private val weight = vehicle.weight
   val spatial: Spatial = vehicle.spatial
-  val otherSpatial = spatial
   private val accelerationAbility = vehicle.accelerationAbility
   private val brakingAbility = vehicle.brakingAbility
   private val preferredDynamicSpacing = driver.preferredDynamicSpacing
@@ -85,6 +84,7 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
       )
     )
   }
+
 }
 
 object PilotedVehicle {

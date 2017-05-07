@@ -111,7 +111,7 @@ object SpatialForDefaults {
   implicit val spatialForPilotedVehicle = new SpatialFor[PilotedVehicle] {
     def makeSpatial(a: PilotedVehicle): Spatial = {
       a match {
-        case vehicle: PilotedVehicleImpl => vehicle.otherSpatial
+        case vehicle: PilotedVehicleImpl => vehicle.spatial
       }
     }
   }

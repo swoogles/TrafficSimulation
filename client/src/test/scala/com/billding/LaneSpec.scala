@@ -1,9 +1,10 @@
 package com.billding
 
 import org.scalatest.FlatSpec
-import squants.motion.{Acceleration, KilometersPerHour, MetersPerSecondSquared, VelocityUnit}
+import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import org.scalatest.Matchers._
+import squants.time.{Milliseconds, Seconds}
 
 /**
   * Created by bfrasure on 5/6/17.
@@ -81,7 +82,6 @@ class LaneSpec extends  FlatSpec {
     acc2 shouldBe > (MetersPerSecondSquared(0))
     assert(acc3 =~ MetersPerSecondSquared(0))
     acc4 shouldBe < (MetersPerSecondSquared(0))
-    accelerations.foreach { x => println("accceleration together: " + x) }
   }
 
   it should "should only accelerate lead car in bumper-to-bumper traffic" in {
@@ -97,6 +97,31 @@ class LaneSpec extends  FlatSpec {
     for (acceleration <- accelerations.tail) {
       assert(acceleration =~ MetersPerSecondSquared(0))
     }
+  }
+
+  it should "correctly update all cars in a lane" in {
+    val startingSpec: ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit)) =
+      ((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
+
+    val endingSpec: ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit)) =
+      ((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
+    val vehicles = List(
+      createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+      createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
+      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
+    )
+    val originSpatial = Spatial(startingSpec._1, startingSpec._2)
+    val endingSpatial =Spatial(endingSpec._1, endingSpec._2)
+
+//      p: QuantityVector[Distance],
+//      v: QuantityVector[Velocity] = SVector(0.meters.per(1 seconds), 0.meters.per(1 seconds), 0.meters.per(1 seconds)),
+//    dimensions: QuantityVector[Distance] = SVector(0.meters, 0.meters, 0.meters)
+  val source = VehicleSourceImpl(Seconds(1), originSpatial)
+    val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
+    val updatedLane: Lane = Lane.update(lane, speedLimit, Seconds(1), Milliseconds(100))
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    accelerations.head shouldBe > (MetersPerSecondSquared(0))
+    every(accelerations.tail) shouldBe < (MetersPerSecondSquared(0))
   }
 
 }

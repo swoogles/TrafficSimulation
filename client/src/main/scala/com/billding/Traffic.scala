@@ -1,9 +1,8 @@
 package com.billding
 
 import cats.data.{NonEmptyList, Validated}
-import squants.{Mass, Time, Velocity}
-import squants.motion.{Acceleration, Distance, MetersPerSecond, MetersPerSecondSquared}
-import squants.space.Meters
+import squants.{Time, Velocity}
+import squants.motion._
 
 trait Scene {
   def vehicles(): List[PilotedVehicle]
@@ -12,46 +11,6 @@ trait Scene {
   val dt: Time
 }
 
-trait VehicleSource {
-  def produceVehicle(t: Time): Option[PilotedVehicle]
-  // Figure out how to accommodate both behaviors
-  val spacingInDistance: Distance
-  val spacingInTime: Time
-}
-
-object VehicleSource {
-  def withTimeSpacing(averageDt: Time): VehicleSource = ???
-  def withDistanceSpacing(averageDpos: Distance): VehicleSource = ???
-}
-
-trait Lane {
-  def vehicles(): List[PilotedVehicle]
-  val vehicleSource: VehicleSource
-  def beginning: Spatial
-  def end: Spatial
-}
-
-object Lane {
-
-  def responsesInOneLanePrep(vehicles: List[PilotedVehicle], speedLimit: Velocity): List[Acceleration] = {
-
-    vehicles match {
-      case Nil => Nil
-      case head :: tail => responsesInOneLane(NonEmptyList(head.createInfiniteVehicle, vehicles), speedLimit).toList
-    }
-  }
-
-  private def responsesInOneLane(vehicles: NonEmptyList[PilotedVehicle], speedLimit: Velocity): NonEmptyList[Acceleration] = {
-    val target = vehicles.head
-    vehicles.tail match {
-      case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil) // :: responsesInOneLane(follower :: rest)
-      case follower :: rest => {
-        follower.reactTo(target, speedLimit)  :: responsesInOneLane(NonEmptyList(follower,rest), speedLimit)
-      }
-    }
-  }
-
-}
 
 trait Road {
   def lanes: List[Lane] // Maybe should be private impl detail?
