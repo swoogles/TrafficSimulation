@@ -5,12 +5,24 @@ import squants.{Time, Velocity}
 import squants.motion._
 
 trait Scene {
-  def vehicles(): List[PilotedVehicle]
-  def lanes(): List[Lane]
+  val lanes: List[Lane]
   val t: Time
   val dt: Time
+  val speedLimit: Velocity
+  private val updateLane = (lane: Lane) => Lane.update(lane,speedLimit, t, dt)
+
+  def update(scene: Scene, speedLimit: Velocity, t: Time, dt: Time): Scene = {
+    val res = lanes.map { updateLane }
+    SceneImpl(res, scene.t + scene.dt, scene.dt, speedLimit)
+  }
 }
 
+case class SceneImpl(
+  lanes: List[Lane],
+  t: Time,
+  dt: Time,
+  speedLimit: Velocity
+) extends Scene
 
 
 trait ErrorMsg {

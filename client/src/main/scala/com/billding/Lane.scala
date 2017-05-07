@@ -34,9 +34,8 @@ object Lane {
     val target = vehicles.head
     vehicles.tail match {
       case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil) // :: responsesInOneLane(follower :: rest)
-      case follower :: rest => {
+      case follower :: rest =>
         follower.reactTo(target, speedLimit)  :: responsesInOneLane(NonEmptyList(follower,rest), speedLimit)
-      }
     }
   }
 
