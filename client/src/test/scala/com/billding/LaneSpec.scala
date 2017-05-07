@@ -6,9 +6,6 @@ import squants.space.{Kilometers, LengthUnit, Meters}
 import org.scalatest.Matchers._
 import squants.time.{Milliseconds, Seconds}
 
-/**
-  * Created by bfrasure on 5/6/17.
-  */
 class LaneSpec extends  FlatSpec {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)
@@ -102,6 +99,11 @@ class LaneSpec extends  FlatSpec {
   type basicSpatial = ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit))
   // TODO enact real tests here to ensure correct behavior
   // This might involve reusing code/test code from Spatial tests?
+  /*
+  These tests need to check p and v.
+  At least, at first inspection.
+  Is it possible to do all lane updating while ignoring that?
+   */
   it should "correctly update all cars in a lane" in {
     val startingSpec: basicSpatial = ((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
     val endingSpec: basicSpatial = ((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))

@@ -14,9 +14,15 @@ private case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: Vehic
 
 object Lane {
 
+  // TODO: Test new vehicles from source
   def update(lane: Lane, speedLimit: Velocity, t: Time, dt: Time): Lane = {
-    val dMomentumList = responsesInOneLanePrep(lane.vehicles, speedLimit)
-    val vehiclesAndUpdates = lane.vehicles.zip(dMomentumList)
+    val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t)
+    val newVehicleList: List[PilotedVehicle] =
+      if ( newVehicleOption.isDefined ) lane.vehicles :+ newVehicleOption.get
+      else lane.vehicles
+
+    val dMomentumList = responsesInOneLanePrep(newVehicleList, speedLimit)
+    val vehiclesAndUpdates = newVehicleList.zip(dMomentumList)
     val newVehicles = vehiclesAndUpdates map {
       case (vehicle, dMomentum) => vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
     }

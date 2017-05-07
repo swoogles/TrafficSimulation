@@ -7,13 +7,14 @@ import squants.motion._
 trait Scene {
   val lanes: List[Lane]
   val t: Time
-  val dt: Time
+  implicit val dt: Time
   val speedLimit: Velocity
   private val updateLane = (lane: Lane) => Lane.update(lane,speedLimit, t, dt)
 
-  def update(scene: Scene, speedLimit: Velocity, t: Time, dt: Time): Scene = {
-    val res = lanes.map { updateLane }
-    SceneImpl(res, scene.t + scene.dt, scene.dt, speedLimit)
+  def update(speedLimit: Velocity, t: Time)(implicit dt: Time): Scene = {
+    val nextT =  this.t + this.dt
+    val res: List[Lane] = lanes map updateLane
+    SceneImpl(res, nextT, this.dt, speedLimit)
   }
 }
 
