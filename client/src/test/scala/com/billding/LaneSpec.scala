@@ -99,24 +99,23 @@ class LaneSpec extends  FlatSpec {
     }
   }
 
+  type basicSpatial = ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit))
+  // TODO enact real tests here to ensure correct behavior
+  // This might involve reusing code/test code from Spatial tests?
   it should "correctly update all cars in a lane" in {
-    val startingSpec: ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit)) =
-      ((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
+    val startingSpec: basicSpatial = ((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
+    val endingSpec: basicSpatial = ((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
 
-    val endingSpec: ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit)) =
-      ((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
+    val originSpatial = Spatial(startingSpec._1, startingSpec._2)
+    val endingSpatial =Spatial(endingSpec._1, endingSpec._2)
+
     val vehicles = List(
       createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
       createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
-    val originSpatial = Spatial(startingSpec._1, startingSpec._2)
-    val endingSpatial =Spatial(endingSpec._1, endingSpec._2)
 
-//      p: QuantityVector[Distance],
-//      v: QuantityVector[Velocity] = SVector(0.meters.per(1 seconds), 0.meters.per(1 seconds), 0.meters.per(1 seconds)),
-//    dimensions: QuantityVector[Distance] = SVector(0.meters, 0.meters, 0.meters)
-  val source = VehicleSourceImpl(Seconds(1), originSpatial)
+    val source = VehicleSourceImpl(Seconds(1), originSpatial)
     val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
     val updatedLane: Lane = Lane.update(lane, speedLimit, Seconds(1), Milliseconds(100))
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
