@@ -42,8 +42,7 @@ class LaneSpec extends  FlatSpec {
     val vehicles = List(
       drivenVehicle1, drivenVehicle2, drivenVehicle3, drivenVehicle4
     )
-    val acccelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    acccelerations.foreach { x => println("accceleration: " + x) }
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
   }
 
   it should "make all vehicles accelerate from a stop together" in {
@@ -52,9 +51,8 @@ class LaneSpec extends  FlatSpec {
       createVehicle((95, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
       createVehicle((90, 0, 0, Meters), (0, 0, 0, KilometersPerHour))
     )
-    val acccelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    acccelerations.foreach { x => println("accceleration together: " + x) }
-    every(acccelerations) shouldBe > (MetersPerSecondSquared(0))
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    every(accelerations) shouldBe > (MetersPerSecondSquared(0))
   }
 
   it should "make all following vehicles slow down if the lead car is stopped" in {
@@ -63,9 +61,42 @@ class LaneSpec extends  FlatSpec {
       createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
-    val acccelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    acccelerations.foreach { x => println("accceleration together: " + x) }
-    every(acccelerations.tail) shouldBe < (MetersPerSecondSquared(0))
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    accelerations.head shouldBe > (MetersPerSecondSquared(0))
+    every(accelerations.tail) shouldBe < (MetersPerSecondSquared(0))
+  }
+
+  implicit val speedTolerance = MetersPerSecondSquared(0.01)
+
+  it should "have 1 car decelerate as it approaches a stopped car, and another accelerate away in front of it" in {
+    val vehicles = List(
+      createVehicle((1000, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+      createVehicle((81, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
+      createVehicle((80, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
+      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
+    )
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    val (acc1 :: acc2 :: acc3 :: acc4 :: Nil) = accelerations
+    acc1 shouldBe > (MetersPerSecondSquared(0))
+    acc2 shouldBe > (MetersPerSecondSquared(0))
+    assert(acc3 =~ MetersPerSecondSquared(0))
+    acc4 shouldBe < (MetersPerSecondSquared(0))
+    accelerations.foreach { x => println("accceleration together: " + x) }
+  }
+
+  it should "should only accelerate lead car in bumper-to-bumper traffic" in {
+    val vehicles = List(
+      createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+      createVehicle((99, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
+      createVehicle((98, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
+      createVehicle((97, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
+      createVehicle((96, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
+    )
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    accelerations.head shouldBe > (MetersPerSecondSquared(0))
+    for (acceleration <- accelerations.tail) {
+      assert(acceleration =~ MetersPerSecondSquared(0))
+    }
   }
 
 }

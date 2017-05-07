@@ -46,7 +46,6 @@ object Lane {
     vehicles.tail match {
       case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil) // :: responsesInOneLane(follower :: rest)
       case follower :: rest => {
-        println("going deeeeeeperrrrr!")
         follower.reactTo(target, speedLimit)  :: responsesInOneLane(NonEmptyList(follower,rest), speedLimit)
       }
     }
