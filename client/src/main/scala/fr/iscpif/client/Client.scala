@@ -1,11 +1,17 @@
 package client
 
+import com.billding._
+import fr.iscpif.client.{GraphOriginal, WindowOriginal}
 import org.scalajs.dom
+
 import scala.concurrent.Future
 import rx._
+
 import scala.scalajs.js.annotation.JSExport
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
-
+import squants.motion._
+import squants.space.{Kilometers, LengthUnit, Meters}
+import squants.time.{Milliseconds, Seconds}
 
 @JSExport("Client")
 object Client {
@@ -13,21 +19,48 @@ object Client {
   val helloValue = Var(0)
   val caseClassValue = Var("empty")
 
+  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
+  val speedLimit = KilometersPerHour(150)
+
+  def createVehicle(
+                     pIn1: (Double, Double, Double, LengthUnit),
+                     vIn1: (Double, Double, Double, VelocityUnit)): PilotedVehicle = {
+    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm)
+  }
+
+  val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
+  val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
+
+  val vehicles = List(
+    createVehicle((500, 0, 0, Meters), (10, 0, 0, KilometersPerHour)),
+//    createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
+    createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
+  )
+
+  val source = VehicleSourceImpl(Seconds(1), originSpatial)
+  val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
+  val t = Seconds(500)
+  implicit val dt = Milliseconds(500)
+  val scene: Scene = SceneImpl(
+    List(lane),
+    t,
+    dt,
+    speedLimit
+  )
+
   @JSExport
   def run() {
-    val nodes = Seq(
-      Graph.task("one", 400, 600),
-      Graph.task("two", 1000, 600),
-      Graph.task("three", 400, 100),
-      Graph.task("four", 1000, 100),
-      Graph.task("five", 105, 60)
-    )
-    val edges = Seq(
-      Graph.edge(nodes(0), nodes(1)),
-      Graph.edge(nodes(0), nodes(2)),
-      Graph.edge(nodes(3), nodes(1)),
-      Graph.edge(nodes(3), nodes(2)))
-    val window = new Window(nodes, edges)
+    val nodes = Seq( )
+    val edges = Seq( )
+    val millisecondsPerRefresh = 100
+    var sceneVolatile = scene
+    var window = new Window(sceneVolatile, nodes, edges)
+    dom.window.setInterval(() => {
+      sceneVolatile = sceneVolatile.update(speedLimit)
+      window = new Window(sceneVolatile, nodes, edges)
+      window.svgNode.forceRedraw()
+//      println("1st vehicle: " + sceneVolatile.lanes.head.vehicles.head)
+    }, millisecondsPerRefresh)
   }
 }
 

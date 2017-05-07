@@ -4,6 +4,7 @@ import org.scalatest.FlatSpec
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import org.scalatest.Matchers._
+import SquantsMatchers._
 import squants.time.{Milliseconds, Seconds}
 
 class LaneSpec extends  FlatSpec {
@@ -50,7 +51,7 @@ class LaneSpec extends  FlatSpec {
       createVehicle((90, 0, 0, Meters), (0, 0, 0, KilometersPerHour))
     )
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    every(accelerations) shouldBe > (MetersPerSecondSquared(0))
+    every(accelerations) shouldBe speedingUp
   }
 
   it should "make all following vehicles slow down if the lead car is stopped" in {
@@ -60,8 +61,8 @@ class LaneSpec extends  FlatSpec {
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    accelerations.head shouldBe > (MetersPerSecondSquared(0))
-    every(accelerations.tail) shouldBe < (MetersPerSecondSquared(0))
+    accelerations.head shouldBe speedingUp
+    every(accelerations.tail) shouldBe slowingDown
   }
 
   implicit val speedTolerance = MetersPerSecondSquared(0.01)
@@ -75,10 +76,10 @@ class LaneSpec extends  FlatSpec {
     )
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
     val (acc1 :: acc2 :: acc3 :: acc4 :: Nil) = accelerations
-    acc1 shouldBe > (MetersPerSecondSquared(0))
-    acc2 shouldBe > (MetersPerSecondSquared(0))
-    assert(acc3 =~ MetersPerSecondSquared(0))
-    acc4 shouldBe < (MetersPerSecondSquared(0))
+    acc1 shouldBe speedingUp
+    acc2 shouldBe speedingUp
+    acc3 shouldBe maintainingVelocity
+    acc4 shouldBe slowingDown
   }
 
   it should "should only accelerate lead car in bumper-to-bumper traffic" in {
@@ -90,7 +91,7 @@ class LaneSpec extends  FlatSpec {
       createVehicle((96, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
     )
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    accelerations.head shouldBe > (MetersPerSecondSquared(0))
+    accelerations.head shouldBe speedingUp
     for (acceleration <- accelerations.tail) {
       assert(acceleration =~ MetersPerSecondSquared(0))
     }
@@ -105,11 +106,8 @@ class LaneSpec extends  FlatSpec {
   Is it possible to do all lane updating while ignoring that?
    */
   it should "correctly update all cars in a lane" in {
-    val startingSpec: basicSpatial = ((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
-    val endingSpec: basicSpatial = ((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
-
-    val originSpatial = Spatial(startingSpec._1, startingSpec._2)
-    val endingSpatial =Spatial(endingSpec._1, endingSpec._2)
+    val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
+    val endingSpatial =Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
 
     val vehicles = List(
       createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
@@ -121,8 +119,8 @@ class LaneSpec extends  FlatSpec {
     val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
     val updatedLane: Lane = Lane.update(lane, speedLimit, Seconds(1), Milliseconds(100))
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    accelerations.head shouldBe > (MetersPerSecondSquared(0))
-    every(accelerations.tail) shouldBe < (MetersPerSecondSquared(0))
+    accelerations.head shouldBe speedingUp
+    every(accelerations.tail) shouldBe slowingDown
   }
 
 }

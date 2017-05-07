@@ -11,7 +11,7 @@ trait Scene {
   val speedLimit: Velocity
   private val updateLane = (lane: Lane) => Lane.update(lane,speedLimit, t, dt)
 
-  def update(speedLimit: Velocity, t: Time)(implicit dt: Time): Scene = {
+  def update(speedLimit: Velocity)(implicit dt: Time): Scene = {
     val nextT =  this.t + this.dt
     val res: List[Lane] = lanes map updateLane
     SceneImpl(res, nextT, this.dt, speedLimit)

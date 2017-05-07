@@ -3,6 +3,8 @@ package com.billding
 import org.scalatest._
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
+import SquantsMatchers._
+import org.scalatest.Matchers._
 
 /*
   I think these tests are specific to the IDM, rather than Piloted Vehicle.
@@ -40,7 +42,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (2, 0, 0, Kilometers),
       (40, 0, 0, KilometersPerHour)
     )
-    assert( res.toMetersPerSecondSquared > 0)
+    res shouldBe speedingUp
   }
 
   it should "hold steady when pacing the target car" in {
@@ -54,7 +56,7 @@ class PilotedVehicleSpec extends FlatSpec {
     )
     implicit val tolerance: Acceleration = MetersPerSecondSquared(0.01)
 
-    assert(res =~ (MetersPerSecondSquared(0)), true)
+    res shouldBe maintainingVelocity
   }
 
   it should "accelerate when obstacle is close but moving faster" in {
@@ -65,7 +67,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (140, 0, 0, KilometersPerHour)
     )
 
-    assert( res.toMetersPerSecondSquared > 0)
+    res shouldBe speedingUp
   }
 
   // TODO don't seem to be getting the desire behavior here...
@@ -88,7 +90,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (140, 0, 0, KilometersPerHour)
     )
 
-    assert( res.toMetersPerSecondSquared < 0)
+    res shouldBe slowingDown
   }
 
   it should "slow down a when obstacle is far away, if it's stopped/slow" in {
@@ -99,7 +101,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (10, 0, 0, KilometersPerHour)
     )
 
-    assert( res.toMetersPerSecondSquared < 0)
+    res shouldBe slowingDown
   }
 
 }

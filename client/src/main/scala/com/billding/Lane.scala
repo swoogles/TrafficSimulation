@@ -10,7 +10,7 @@ trait Lane {
   def end: Spatial
 }
 
-private case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource, beginning: Spatial, end: Spatial) extends Lane
+case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource, beginning: Spatial, end: Spatial) extends Lane
 
 object Lane {
 
