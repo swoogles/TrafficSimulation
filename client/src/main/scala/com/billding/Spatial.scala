@@ -60,6 +60,7 @@ object Spatial {
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
   */
   def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
+    // TODO Look for problems here that result in pure-x acceleration affecting all dimensions.
     val vUnit = spatial.v.valueUnit
     val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] = (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
     val newV = spatial.v.map{ x: Velocity =>x + dP * dt}

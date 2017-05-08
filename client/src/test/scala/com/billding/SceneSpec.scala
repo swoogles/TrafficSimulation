@@ -39,7 +39,14 @@ class SceneSpec extends  FlatSpec{
       dt,
       speedLimit
     )
-    val updateScene: Scene = scene.update(speedLimit, t)
+    // TODO figure out weird drift happening here
+    val updateScene: Scene = scene.update(speedLimit)
+    val updateScene2: Scene = updateScene.update(speedLimit)
+    import SpatialForDefaults.spatialForPilotedVehicle
+//    import com.billding.SpatialForDefaults
+    pprint.pprintln("original vehicle 0: " + SpatialForDefaults.disect(scene.lanes.head.vehicles.tail.head).v)
+    pprint.pprintln("updated vehicle  1: " + SpatialForDefaults.disect(updateScene.lanes.head.vehicles.tail.head).v)
+    pprint.pprintln("updated vehicle  2: " + SpatialForDefaults.disect(updateScene2.lanes.head.vehicles.tail.head).v)
     val updatedLane: Lane = Lane.update(lane, speedLimit, Seconds(1), Milliseconds(100))
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
     accelerations.head shouldBe >(MetersPerSecondSquared(0))
