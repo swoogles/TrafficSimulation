@@ -70,9 +70,10 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle = {
     import com.billding.SpatialForDefaults.spatialForPilotedVehicle
     val updatedSpatial = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP)
-    this.copy(driver=
-    driver.copy(spatial=updatedSpatial),
-    vehicle = vehicle.copy(spatial=updatedSpatial))
+    this.copy(
+      driver = driver.copy(spatial=updatedSpatial),
+      vehicle = vehicle.copy(spatial=updatedSpatial)
+    )
   }
 
   def createInfiniteVehicle: PilotedVehicle = {

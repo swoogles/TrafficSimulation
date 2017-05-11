@@ -52,7 +52,6 @@ object Spatial {
     // Alternate solution: Determe in observer.p lines on the line defined by target.p + target.v
     ???
   }
-//  (spatial.p - obstacle.p).magnitude, // TODO Make a Spatial function
 
   /*
   new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
@@ -62,8 +61,10 @@ object Spatial {
   def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
     // TODO Look for problems here that result in pure-x acceleration affecting all dimensions.
     val vUnit = spatial.v.valueUnit
+    val vUnitVec: QuantityVector[Velocity] = spatial.v.normalize
     val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] = (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
-    val newV = spatial.v.map{ x: Velocity =>x + dP * dt}
+    val accelerationWithTime = accelerationOppositeOfTravelDirection.map{accelerationComponent: Acceleration =>accelerationComponent*dt}
+    val newV = spatial.v.plus(accelerationWithTime)
     val dPwithNewV = newV.map{ v: Velocity => v * dt }
     val betterMomentumFactor: QuantityVector[Distance] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
     val newP = spatial.p + dPwithNewV + betterMomentumFactor

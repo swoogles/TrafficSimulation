@@ -1,5 +1,4 @@
 package com.billding
-package com.billding
 
 import org.scalatest._
 import squants.motion._
@@ -16,13 +15,15 @@ class SpatialTest extends FlatSpec {
   private val dt = 1 seconds
 
   it should "accelerate a spatial in the direction of travel." in {
-    val startingSpacial = Spatial(
+    val startingSpatial = Spatial(
       (0, 0, 0, Kilometers),
       (120, 0, 0, KilometersPerHour)
     )
     val acceleration = MetersPerSecondSquared(1)
-    val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpacial, dt, acceleration)
-    endingSpatial.p.magnitude > startingSpacial.p.magnitude
+    val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpatial, dt, acceleration)
+    println("startingSpatial: " + startingSpatial)
+    println("endingSpatial: " + endingSpatial)
+    endingSpatial.p.magnitude > startingSpatial.p.magnitude
   }
 
   it should "decelerate a spatial in the direction of travel." in {
