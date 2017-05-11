@@ -4,9 +4,8 @@ import client.Client
 import squants.mass.Kilograms
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
-import squants.{DoubleVector, Length, Mass, QuantityVector, SVector, Time, Velocity}
+import squants.{Length, Mass, QuantityVector, SVector, Time, Velocity}
 import squants.space.LengthConversions._
-import squants.time.Seconds
 import squants.time.TimeConversions._
 
 sealed trait Vehicle {
@@ -19,18 +18,16 @@ sealed trait Vehicle {
 case class Car(
                 p: QuantityVector[Distance],
                 v: QuantityVector[Velocity],
-                  accelerationAbility: Acceleration = (0.3.meters.per((1 seconds).squared)),
+                accelerationAbility: Acceleration = (0.3.meters.per((1 seconds).squared)),
                 brakingAbility: Acceleration = (3.0.meters.per((1 seconds).squared)),
-                  weight: Mass = Kilograms(800)
-//                d: QuantityVector[Length] // TODO: Beware making this public...
+                weight: Mass = Kilograms(800)
               ) extends Vehicle {
   val commuterDimensions: (Double, Double, Double, LengthUnit) = (4, 2, 0, Meters)
   val (dX, dY, dZ, dUnit: DistanceUnit) = commuterDimensions
   val d: QuantityVector[Length] = SVector(dX, dY, dZ).map{x=>dUnit(x)}
   val spatial = Spatial.withVecs(p, v, d)
-
 }
-//new SpatialImpl (p, v, d)
+
 object Car {
   def withVecs(
                 pIn: (Double, Double, Double, DistanceUnit),
