@@ -6,6 +6,7 @@ import org.scalajs.dom
 
 import scala.concurrent.Future
 import rx._
+import squants.Length
 
 import scala.scalajs.js.annotation.JSExport
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
@@ -45,12 +46,14 @@ object Client {
   val source = VehicleSourceImpl(Seconds(1), originSpatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
   val t = Seconds(0)
+  val canvasDimensions: ((Length, Length),(Length, Length)) = ((-Kilometers(1), -Kilometers(1)), (Kilometers(1), Kilometers(1)))
   implicit val dt = Milliseconds(20)
   val scene: Scene = SceneImpl(
     List(lane),
     t,
     dt,
-    speedLimit
+    speedLimit,
+    canvasDimensions
   )
 
   @JSExport

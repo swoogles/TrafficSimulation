@@ -1,7 +1,7 @@
 package com.billding
 
 import cats.data.{NonEmptyList, Validated}
-import squants.{Time, Velocity}
+import squants.{Length, Time, Velocity}
 import squants.motion._
 
 trait Scene {
@@ -10,11 +10,12 @@ trait Scene {
   implicit val dt: Time
   val speedLimit: Velocity
   private val updateLane = (lane: Lane) => Lane.update(lane,speedLimit, t, dt)
+  val canvasDimensions: ((Length, Length),(Length, Length))
 
   def update(speedLimit: Velocity)(implicit dt: Time): Scene = {
     val nextT =  this.t + this.dt
     val res: List[Lane] = lanes map updateLane
-    SceneImpl(res, nextT, this.dt, speedLimit)
+    SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
   }
 }
 
@@ -22,7 +23,8 @@ case class SceneImpl(
   lanes: List[Lane],
   t: Time,
   dt: Time,
-  speedLimit: Velocity
+  speedLimit: Velocity,
+  canvasDimensions: ((Length, Length),(Length, Length))
 ) extends Scene
 
 

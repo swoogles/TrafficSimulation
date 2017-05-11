@@ -1,10 +1,12 @@
 package com.billding
 
+import client.Client
 import squants.mass.Kilograms
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.{DoubleVector, Length, Mass, QuantityVector, SVector, Time, Velocity}
 import squants.space.LengthConversions._
+import squants.time.Seconds
 import squants.time.TimeConversions._
 
 sealed trait Vehicle {
@@ -15,11 +17,36 @@ sealed trait Vehicle {
 }
 
 case class Car(
-                spatial: Spatial,
-                weight: Mass = Kilograms(800),
-                accelerationAbility: Acceleration = (0.3.meters.per((1 seconds).squared)),
-                brakingAbility: Acceleration = (3.0.meters.per((1 seconds).squared))
-              ) extends Vehicle
+                p: QuantityVector[Distance],
+                v: QuantityVector[Velocity],
+                  accelerationAbility: Acceleration = (0.3.meters.per((1 seconds).squared)),
+                brakingAbility: Acceleration = (3.0.meters.per((1 seconds).squared)),
+                  weight: Mass = Kilograms(800)
+//                d: QuantityVector[Length] // TODO: Beware making this public...
+              ) extends Vehicle {
+  val commuterDimensions: (Double, Double, Double, LengthUnit) = (4, 2, 0, Meters)
+  val (dX, dY, dZ, dUnit: DistanceUnit) = commuterDimensions
+  val d: QuantityVector[Length] = SVector(dX, dY, dZ).map{x=>dUnit(x)}
+  val spatial = Spatial.withVecs(p, v, d)
+
+}
+//new SpatialImpl (p, v, d)
+object Car {
+  def withVecs(
+                pIn: (Double, Double, Double, DistanceUnit),
+                vIn: (Double, Double, Double, VelocityUnit)
+              ): Car = {
+    val commuterDimensions: (Double, Double, Double, LengthUnit) = (4, 2, 0, Meters)
+    val (pX, pY, pZ, pUnit) = pIn
+    val (vX, vY, vZ, vUnit) = vIn
+    val (dX, dY, dZ, dUnit: DistanceUnit) = commuterDimensions
+    val p: QuantityVector[Distance] = SVector(pX, pY, pZ) .map(pUnit(_))
+    val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
+    val d: QuantityVector[Length] = SVector(dX, dY, dZ).map{x=>dUnit(x)}
+    Car(p, v)
+  }
+
+}
 
 case class Truck(
                   spatial: Spatial,
@@ -70,25 +97,33 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
 
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle = {
     import com.billding.SpatialForDefaults.spatialForPilotedVehicle
-    val updatedSpatial = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP)
+    val updatedSpatial: Spatial = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP)
     this.copy(
       driver = driver.copy(spatial=updatedSpatial),
-      vehicle = vehicle.copy(spatial=updatedSpatial)
+      vehicle = Car(updatedSpatial.r, updatedSpatial.v )
     )
   }
 
   def createInfiniteVehicle: PilotedVehicle = {
-    val newPosition = this.spatial.r + this.spatial.v.normalize.map{ x: Velocity =>x * 1.hours}
-    val newVelocity = this.spatial.v.map{x: Velocity =>x *2}
-    this.copy(vehicle=
-      vehicle.copy(spatial=
-        /* This is a clue that it's in the wrong spot!
-          The infinite vehicle shouldn't be based on particular vehicles dimensions.
+    /* This is a clue that it's in the wrong spot!
+      The infinite vehicle shouldn't be based on particular vehicles dimensions.
 
-         */
-        Spatial.withVecs(newPosition, newVelocity, this.spatial.dimensions)
-      )
+     */
+    val newPosition: QuantityVector[Distance] = this.spatial.r + this.spatial.v.normalize.map{ x: Velocity =>x * 1.hours}
+    val newVelocity: QuantityVector[Velocity] = this.spatial.v.map{ x: Velocity =>x *2}
+//    val newAcelerration: QuantityVector[Acceleration] = this.spatial.v.map{ x: Velocity =>x *2}.map { x: Velocity = x / Seconds(1)}
+    /** TODO Get these passed in the right way. It will make much more sense
+      when this exists in the [[com.billding.Lane]] class, and dt/dP are not need at all.
+      */
+    val dt = Client.dt
+    val t = Client.t
+    val dP = MetersPerSecondSquared(100000)
+    val updatedSpatial: Spatial = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP)
+    this.copy(
+      driver = driver.copy(spatial=updatedSpatial),
+      vehicle = Car(updatedSpatial.r, updatedSpatial.v )
     )
+//    Car( newPosition, newVelocity)
   }
 
 }
@@ -111,7 +146,7 @@ object PilotedVehicle {
     val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
     val d: QuantityVector[Length] = SVector(dX, dY, dZ).map{x=>dUnit(x)}
     val spatial = Spatial.withVecs(p, v, d)
-      new PilotedVehicleImpl( Commuter(spatial, idm), Car(spatial))
+      new PilotedVehicleImpl( Commuter(spatial, idm), Car(p, v))
   }
   /* TODO: Beware of arbitrary spacial.
     It should be locked down on Commuter.
@@ -121,7 +156,7 @@ object PilotedVehicle {
               spatial: Spatial,
                 idm: IntelligentDriverModel
               ): PilotedVehicle = {
-    new PilotedVehicleImpl( Commuter(spatial, idm), Car(spatial))
+    new PilotedVehicleImpl( Commuter(spatial, idm), Car(spatial.r, spatial.v))
   }
 
 }

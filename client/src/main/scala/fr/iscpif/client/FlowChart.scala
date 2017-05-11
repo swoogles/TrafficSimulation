@@ -59,6 +59,7 @@ class Window(scene: Scene, nodes: Seq[Task] = Seq(), edges: Seq[Edge] = Seq()) {
   if ( previousSvg != null ) {
       dom.document.body.removeChild(previousSvg)
   }
+//  val dimensions
   val svgNode = {
     val child = svgTags.svg(
       width := 2500,
@@ -223,40 +224,6 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
     gCircle
   }
 
-  // RETURN A SVG CARD, WHICH CAN BE SELECTED (ON CLICK), MOVED OR DELETED (DEL KEY)
-  def car(task: Task) = {
-    val element: SVGElement = Rx {
-      svgTags.g(
-        ms(CIRCLE + {
-          if (task.selected()) s" $SELECTED" else ""
-        })
-      )(
-        svgAttrs.transform := s"translate(${
-          val location = task.location()
-          s"${location._1}, ${location._2}"
-//        })")(svgTags.circle(svgAttrs.r := NODE_RADIUS).render)
-          })")(svgTags.image(href := "images/sedan.svg", width := 100.px, height := 100.px).render)
-    }
-    val gCircle = svgTags.g(element).render
-
-    gCircle.onmousedown = (me: MouseEvent) => {
-      mouseDownTask() = Some(task)
-      me.stopPropagation
-      unselectTasks
-      unselectEdges
-      task.selected() = !task.selected.now
-    }
-
-    gCircle.onmouseup = (me: MouseEvent) => {
-      Seq(mouseDownTask.now).flatten.map { mdt ⇒
-        if (task != mdt) {
-          addEdge(edge(mdt, task))
-        }
-      }
-    }
-    gCircle
-  }
-
   def carReal(vehicle: PilotedVehicle) = {
     import com.billding.SpatialForDefaults.spatialForPilotedVehicle
     import com.billding.SpatialForDefaults
@@ -328,7 +295,6 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
   }
 
   addToScene(edges, link)
-  addToScene(tasks, car)
   addToScene(vehicles, carReal)
 //  addToScene(tasks, circle)
 
