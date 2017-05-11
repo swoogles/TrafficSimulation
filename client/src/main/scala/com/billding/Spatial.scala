@@ -6,24 +6,19 @@ import squants.motion._
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
 
-class PositiveVector(values: DenseVector[Float]) {
-  require(values forall (_ >= 0), "List contains negative numbers")
-}
-
 trait Spatial {
-  // Consider Breeze version
-  //  val p: DenseVector[Distance] // Must enforce length 3....
-  val p: QuantityVector[Distance] //= SVector(Kilometers(-1.2), Kilometers(4.3), Kilometers(2.3))
+  val numberOfDimensions = 3
+  val r: QuantityVector[Distance] //= SVector(Kilometers(-1.2), Kilometers(4.3), Kilometers(2.3))
   val v: QuantityVector[Velocity]
   val dimensions: QuantityVector[Distance]
   def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] = {
-    (this.v - obstacle.v) //.magnitude
+    (this.v - obstacle.v)
   }
   def relativeVelocityMag(obstacle: Spatial): Velocity = {
     val z= (relativeVelocity _) andThen (_.magnitude)
     z.apply(obstacle)
   }
-  def vectorTo(obstacle: Spatial): QuantityVector[Distance] = (obstacle.p - this.p)
+  def vectorTo(obstacle: Spatial): QuantityVector[Distance] = (obstacle.r - this.r)
   def vectorToMag(vectorTo: QuantityVector[Distance]): Distance = vectorTo.magnitude
   def distanceTo(obstacle: Spatial): Distance = {
     val z= (vectorTo _) andThen (_.magnitude)
@@ -31,12 +26,16 @@ trait Spatial {
   }
 }
 case class SpatialImpl (
-  p: QuantityVector[Distance],
-  v: QuantityVector[Velocity] = SVector(0.meters.per(1 seconds), 0.meters.per(1 seconds), 0.meters.per(1 seconds)),
-  dimensions: QuantityVector[Distance] = SVector(0.meters, 0.meters, 0.meters)
+                         r: QuantityVector[Distance],
+                         v: QuantityVector[Velocity] = SVector(0.meters.per(1 seconds), 0.meters.per(1 seconds), 0.meters.per(1 seconds)),
+                         dimensions: QuantityVector[Distance] = SVector(0.meters, 0.meters, 0.meters)
 ) extends Spatial {
+  val allAspects: List[QuantityVector[_]] = List(r, v, dimensions)
+  for ( aspect <- allAspects ) {
+    assert(aspect.coordinates.length == numberOfDimensions)
+  }
 }
-  
+
 object Spatial {
   def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
@@ -59,15 +58,16 @@ object Spatial {
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
   */
   def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
-    // TODO Look for problems here that result in pure-x acceleration affecting all dimensions.
+    // TODO I think I've lost the unit safety with this current approach
     val vUnit = spatial.v.valueUnit
     val vUnitVec: QuantityVector[Velocity] = spatial.v.normalize
-    val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] = (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
+    val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] =
+      (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
     val accelerationWithTime = accelerationOppositeOfTravelDirection.map{accelerationComponent: Acceleration =>accelerationComponent*dt}
     val newV = spatial.v.plus(accelerationWithTime)
     val dPwithNewV = newV.map{ v: Velocity => v * dt }
     val betterMomentumFactor: QuantityVector[Distance] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
-    val newP = spatial.p + dPwithNewV + betterMomentumFactor
+    val newP = spatial.r + dPwithNewV + betterMomentumFactor
     SpatialImpl(newP, newV, spatial.dimensions)
   }
 

@@ -34,6 +34,7 @@ sealed trait PilotedVehicle {
   def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle
   def createInfiniteVehicle: PilotedVehicle
+  val spatial: Spatial
 }
 
 case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVehicle {
@@ -77,7 +78,7 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
   }
 
   def createInfiniteVehicle: PilotedVehicle = {
-    val newPosition = this.spatial.p + this.spatial.v.map{x: Velocity =>x * 1.hours}
+    val newPosition = this.spatial.r + this.spatial.v.normalize.map{ x: Velocity =>x * 1.hours}
     val newVelocity = this.spatial.v.map{x: Velocity =>x *2}
     this.copy(vehicle=
       vehicle.copy(spatial=

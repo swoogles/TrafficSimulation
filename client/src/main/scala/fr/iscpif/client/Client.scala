@@ -31,16 +31,20 @@ object Client {
   val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
   val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
 
+  /**
+    * TODO: Values should be improved through other means discussed here:
+    * [[com.billding.rendering.CanvasRendering]]
+    */
   val vehicles = List(
-    createVehicle((500, 0, 0, Meters), (10, 0, 0, KilometersPerHour)),
+    createVehicle((200, 0, 0, Meters), (20, 0, 0, KilometersPerHour)),
 //    createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
-    createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
+    createVehicle((60, 0, 0, Meters), (100, 0, 0, KilometersPerHour))
   )
 
   val source = VehicleSourceImpl(Seconds(1), originSpatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
-  val t = Seconds(500)
-  implicit val dt = Milliseconds(500)
+  val t = Seconds(0)
+  implicit val dt = Milliseconds(20)
   val scene: Scene = SceneImpl(
     List(lane),
     t,
@@ -52,15 +56,22 @@ object Client {
   def run() {
     val nodes = Seq( )
     val edges = Seq( )
-    val millisecondsPerRefresh = 100
+    val millisecondsPerRefresh = 500
     var sceneVolatile = scene
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
       sceneVolatile = sceneVolatile.update(speedLimit)
       window = new Window(sceneVolatile, nodes, edges)
       window.svgNode.forceRedraw()
-//      println("1st vehicle: " + sceneVolatile.lanes.head.vehicles.head)
-    }, millisecondsPerRefresh)
+      /** TODO lane.leader.follower
+        * How cool would that be?
+        * Look for it in [[com.billding.Lane]], cause this is ugly.
+       */
+      val leadingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.head
+      val followingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.tail.head
+      println("Distance between: " + leadingVehicle.spatial.distanceTo(followingVehicle.spatial))
+//      println("following vehicle.v.x: " + sceneVolatile.lanes.head.vehicles.tail.head.spatial.v.coordinates(0))
+    }, dt.toMilliseconds / 10)
   }
 }
 

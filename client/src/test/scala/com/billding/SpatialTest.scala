@@ -23,7 +23,7 @@ class SpatialTest extends FlatSpec {
     val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpatial, dt, acceleration)
     println("startingSpatial: " + startingSpatial)
     println("endingSpatial: " + endingSpatial)
-    endingSpatial.p.magnitude > startingSpatial.p.magnitude
+    endingSpatial.r.magnitude > startingSpatial.r.magnitude
   }
 
   it should "decelerate a spatial in the direction of travel." in {
@@ -33,7 +33,7 @@ class SpatialTest extends FlatSpec {
     )
     val acceleration = -MetersPerSecondSquared(1)
     val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpacial, dt, acceleration)
-    endingSpatial.p.magnitude < startingSpacial.p.magnitude
+    endingSpatial.r.magnitude < startingSpacial.r.magnitude
   }
 
   it should "calculate the distance between spatials" in {

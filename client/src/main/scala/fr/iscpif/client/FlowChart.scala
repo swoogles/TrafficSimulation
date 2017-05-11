@@ -261,10 +261,9 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
     import com.billding.SpatialForDefaults.spatialForPilotedVehicle
     import com.billding.SpatialForDefaults
     val spatial = SpatialForDefaults.disect(vehicle)
-    val x = spatial.p.coordinates.head.toMeters
-    val y = spatial.p.coordinates.tail.head.toMeters
+    val x = spatial.r.coordinates.head.toMeters
+    val y = spatial.r.coordinates.tail.head.toMeters
     val xV = spatial.v.coordinates.head
-    println("x velocity : " + xV)
     val element: SVGElement = Rx {
       svgTags.g(
         ms(CIRCLE + {

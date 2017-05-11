@@ -18,8 +18,15 @@ case class Commuter(
                      spatial: Spatial,
                      idm: IntelligentDriverModel,
                      reactionTime: Time = (0.5 seconds),
-                     preferredDynamicSpacing: Time = (1 seconds),
-                     minimumDistance: Distance = (1 meters),
+                     preferredDynamicSpacing: Time = (2 seconds),
+
+                     /** TODO This is what I'm using to ensure a stop right now.
+                       *
+                       * Should be improved through other means discussed here:
+                       * [[com.billding.rendering.CanvasRendering]]
+                       */
+
+                     minimumDistance: Distance = (400 meters),
                      desiredSpeed: Velocity = (120.kilometers.per(hour))
                    ) extends Driver
 

@@ -6,6 +6,12 @@ import squants.space.{Kilometers, LengthUnit, Meters}
 import org.scalatest.Matchers._
 import squants.time.{Milliseconds, Seconds}
 
+/**
+  * Full test should do accumulate:
+  *   -Minimum distances between all vehicles
+  *   -Max/Min speeds
+  *   -Collision?
+  */
 class SceneSpec extends  FlatSpec{
 
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
