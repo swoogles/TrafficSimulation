@@ -1,9 +1,9 @@
 package com.billding
 
 import squants.mass.Kilograms
-import squants.motion.{Acceleration, Distance, KilogramForce, KilometersPerHour}
-import squants.space.Kilometers
-import squants.{Mass, Time, Velocity}
+import squants.motion._
+import squants.space.{Kilometers, LengthUnit, Meters}
+import squants.{DoubleVector, Length, Mass, QuantityVector, SVector, Time, Velocity}
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
 
@@ -82,7 +82,11 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
     val newVelocity = this.spatial.v.map{x: Velocity =>x *2}
     this.copy(vehicle=
       vehicle.copy(spatial=
-        Spatial.withVecs(newPosition, newVelocity)
+        /* This is a clue that it's in the wrong spot!
+          The infinite vehicle shouldn't be based on particular vehicles dimensions.
+
+         */
+        Spatial.withVecs(newPosition, newVelocity, this.spatial.dimensions)
       )
     )
   }
@@ -90,9 +94,34 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
 }
 
 object PilotedVehicle {
-  def commuter(spatial: Spatial, idm: IntelligentDriverModel): PilotedVehicle = {
-      new PilotedVehicleImpl(
-        Commuter(spatial, idm), Car(spatial))
+
+  val commuterDimensions: (Double, Double, Double, LengthUnit) = (4, 2, 0, Meters)
+
+  def commuter(
+                pIn: (Double, Double, Double, DistanceUnit),
+                vIn: (Double, Double, Double, VelocityUnit),
+                idm: IntelligentDriverModel
+              ): PilotedVehicle = {
+    val (pX, pY, pZ, pUnit) = pIn
+    val (vX, vY, vZ, vUnit) = vIn
+    val (dX, dY, dZ, dUnit: DistanceUnit) = commuterDimensions
+
+
+    val p: QuantityVector[Distance] = SVector(pX, pY, pZ) .map(pUnit(_))
+    val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
+    val d: QuantityVector[Length] = SVector(dX, dY, dZ).map{x=>dUnit(x)}
+    val spatial = Spatial.withVecs(p, v, d)
+      new PilotedVehicleImpl( Commuter(spatial, idm), Car(spatial))
+  }
+  /* TODO: Beware of arbitrary spacial.
+    It should be locked down on Commuter.
+   */
+
+  def commuter(
+              spatial: Spatial,
+                idm: IntelligentDriverModel
+              ): PilotedVehicle = {
+    new PilotedVehicleImpl( Commuter(spatial, idm), Car(spatial))
   }
 
 }
@@ -100,8 +129,8 @@ object PilotedVehicle {
 object TypeClassUsage {
   import com.billding.SpatialForDefaults.spatialForPilotedVehicle
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
-  val drivenVehicle1: PilotedVehicle = PilotedVehicle.commuter(Spatial( (0, 0, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
-  val drivenVehicle2: PilotedVehicle = PilotedVehicle.commuter(Spatial( (0, 2, 0, Kilometers), (120, 0, 0, KilometersPerHour) ), idm)
+  val drivenVehicle1: PilotedVehicle = PilotedVehicle.commuter( (0, 0, 0, Kilometers), (120, 0, 0, KilometersPerHour), idm)
+  val drivenVehicle2: PilotedVehicle = PilotedVehicle.commuter( (0, 2, 0, Kilometers), (120, 0, 0, KilometersPerHour), idm)
 
   val res: Spatial = SpatialForDefaults.disect(drivenVehicle1)
 

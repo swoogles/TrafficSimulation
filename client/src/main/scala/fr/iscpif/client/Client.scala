@@ -25,11 +25,12 @@ object Client {
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
                      vIn1: (Double, Double, Double, VelocityUnit)): PilotedVehicle = {
-    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm)
+    PilotedVehicle.commuter(pIn1, vIn1, idm)
   }
 
-  val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
-  val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
+  val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
+  val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
+  val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
 
   /**
     * TODO: Values should be improved through other means discussed here:

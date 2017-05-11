@@ -1,9 +1,10 @@
 package com.billding
 
 import breeze.linalg.DenseVector
-import squants.{QuantityVector, SVector, Time, Velocity}
+import squants.{Length, QuantityVector, SVector, Time, Velocity}
 import squants.motion._
 import squants.space.LengthConversions._
+import squants.space.{LengthUnit, Meters}
 import squants.time.TimeConversions._
 
 trait Spatial {
@@ -27,8 +28,8 @@ trait Spatial {
 }
 case class SpatialImpl (
                          r: QuantityVector[Distance],
-                         v: QuantityVector[Velocity] = SVector(0.meters.per(1 seconds), 0.meters.per(1 seconds), 0.meters.per(1 seconds)),
-                         dimensions: QuantityVector[Distance] = SVector(0.meters, 0.meters, 0.meters)
+                         v: QuantityVector[Velocity],
+                         dimensions: QuantityVector[Distance]
 ) extends Spatial {
   val allAspects: List[QuantityVector[_]] = List(r, v, dimensions)
   for ( aspect <- allAspects ) {
@@ -37,6 +38,7 @@ case class SpatialImpl (
 }
 
 object Spatial {
+  val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
   def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
   def relativeVelocity(observer: Spatial, target: Spatial) = ???
@@ -73,22 +75,33 @@ object Spatial {
 
   def apply(
              pIn: (Double, Double, Double, DistanceUnit),
-             vIn: (Double, Double, Double, VelocityUnit) = (0, 0, 0, MetersPerSecond)
+             vIn: (Double, Double, Double, VelocityUnit),
+             dIn:((Double, Double, Double, LengthUnit))
            ): Spatial = {
     val (pX, pY, pZ, pUnit) = pIn
     val (vX, vY, vZ, vUnit) = vIn
+    val (dX, dY, dZ, dUnit) = dIn
+
 
     val p: QuantityVector[Distance] = SVector(pX, pY, pZ) .map(pUnit(_))
     val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
-    new SpatialImpl(p, v)
+    val d: QuantityVector[Length] = SVector(dX, dY, dZ).map(dUnit(_))
+    new SpatialImpl(p, v, d)
+  }
+  def apply(
+             pIn: (Double, Double, Double, DistanceUnit),
+             vIn: (Double, Double, Double, VelocityUnit)
+           ): Spatial = {
+    apply(pIn, vIn, ZERO_DIMENSIONS)
   }
 
   def withVecs(
            p: QuantityVector[Distance],
-            v: QuantityVector[Velocity]
+            v: QuantityVector[Velocity],
+            d: QuantityVector[Length]
            ): Spatial = {
 
-    new SpatialImpl(p, v)
+    new SpatialImpl(p, v, d)
   }
 
 }

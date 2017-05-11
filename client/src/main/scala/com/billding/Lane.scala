@@ -16,8 +16,9 @@ trait Lane {
   def beginning: Spatial
   def end: Spatial
 
-
   private val leadingVehicle: Option[PilotedVehicle] = vehicles.headOption
+  private val followingVehicle: Option[PilotedVehicle] = vehicles.tail.headOption
+
   /** vehicles.headOption.flatMap( vehicle.follower )
       Or should it be based on the car that you're following?
       I really need to hammer out the infinity vehicles here.
