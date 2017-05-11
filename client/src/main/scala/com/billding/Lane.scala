@@ -1,8 +1,9 @@
 package com.billding
 
-import cats.data.{NonEmptyList}
-import squants.{Time, Velocity}
+import cats.data.NonEmptyList
+import squants.{QuantityVector, Time, Velocity}
 import squants.motion._
+import squants.space.Kilometers
 
 trait Segment {
   /*
@@ -16,6 +17,15 @@ trait Lane {
   def beginning: Spatial
   def end: Spatial
 
+
+  /**
+    * TODO Lane should be responsible for creating the vehicles at infinity, not the driver/vehicle.
+    */
+  private val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
+//  Spatial.ZERO_VELOCITY
+  val vehicleAtInfinity = Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY, Spatial.ZERO_DIMENSIONS_VECTOR )
+
+  // TODO put these in appropriate pattern matching? Not sure they mean much hanging on their own.
   private val leadingVehicle: Option[PilotedVehicle] = vehicles.headOption
   private val followingVehicle: Option[PilotedVehicle] = vehicles.tail.headOption
 
