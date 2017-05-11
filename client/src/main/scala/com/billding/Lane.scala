@@ -22,8 +22,10 @@ trait Lane {
     * TODO Lane should be responsible for creating the vehicles at infinity, not the driver/vehicle.
     */
   private val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
-//  Spatial.ZERO_VELOCITY
-  val vehicleAtInfinity = Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY, Spatial.ZERO_DIMENSIONS_VECTOR )
+  val vehicleAtInfinity: PilotedVehicle = {
+    val spatial =  Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY, Spatial.ZERO_DIMENSIONS_VECTOR )
+    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl)
+  }
 
   // TODO put these in appropriate pattern matching? Not sure they mean much hanging on their own.
   private val leadingVehicle: Option[PilotedVehicle] = vehicles.headOption
@@ -52,7 +54,7 @@ object Lane {
       if ( newVehicleOption.isDefined ) lane.vehicles :+ newVehicleOption.get
       else lane.vehicles
 
-    val dMomentumList = responsesInOneLanePrep(newVehicleList, speedLimit)
+    val dMomentumList = responsesInOneLanePrep(newVehicleList, lane, speedLimit)
     val vehiclesAndUpdates = newVehicleList.zip(dMomentumList)
     val newVehicles = vehiclesAndUpdates map {
       case (vehicle, dMomentum) => vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
@@ -60,10 +62,10 @@ object Lane {
     new LaneImpl(newVehicles, lane.vehicleSource, lane.beginning, lane.end)
   }
 
-  def responsesInOneLanePrep(vehicles: List[PilotedVehicle], speedLimit: Velocity): List[Acceleration] = {
+  def responsesInOneLanePrep(vehicles: List[PilotedVehicle], lane: Lane, speedLimit: Velocity): List[Acceleration] = {
     vehicles match {
       case Nil => Nil
-      case head :: _ => responsesInOneLane(NonEmptyList(head.createInfiniteVehicle, vehicles), speedLimit).toList
+      case head :: _ => responsesInOneLane(NonEmptyList(lane.vehicleAtInfinity, vehicles), speedLimit).toList
     }
   }
 
