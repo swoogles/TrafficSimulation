@@ -38,7 +38,15 @@ case class SpatialImpl (
 }
 
 object Spatial {
+  val ZERO_VELOCITY: QuantityVector[Velocity] = {
+    val (vX, vY, vZ, vUnit)= (0, 0, 0, MetersPerSecond)
+    SVector(vX, vY, vZ).map(vUnit(_))
+  }
   val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
+  val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = {
+    val (dX, dY, dZ, dUnit)=ZERO_DIMENSIONS
+    SVector(dX, dY, dZ).map(dUnit(_))
+  }
   def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
   def relativeVelocity(observer: Spatial, target: Spatial) = ???
