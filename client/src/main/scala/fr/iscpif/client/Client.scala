@@ -23,7 +23,7 @@ object Client {
   val caseClassValue = Var("empty")
 
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
-  val speedLimit = KilometersPerHour(150)
+  val speedLimit = KilometersPerHour(40)
 
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
@@ -39,46 +39,49 @@ object Client {
     * TODO: Values should be improved through other means discussed here:
     * [[com.billding.rendering.CanvasRendering]]
     */
-  val vehicles = List(
-    createVehicle((100, 0, 0, Meters), (40, 0, 0, KilometersPerHour)),
-//    createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
-    createVehicle((60, 0, 0, Meters), (60, 0, 0, KilometersPerHour)),
-    createVehicle((50, 0, 0, Meters), (60, 0, 0, KilometersPerHour)),
-    createVehicle((40, 0, 0, Meters), (60, 0, 0, KilometersPerHour))
+  val vehiclesApproachingASlowCar = List(
+    createVehicle((60, 0, 0, Meters), (10, 0, 0, KilometersPerHour)),
+    createVehicle((20, 0, 0, Meters), (40, 0, 0, KilometersPerHour)),
+    createVehicle((10, 0, 0, Meters), (40, 0, 0, KilometersPerHour)),
+    createVehicle((0, 0, 0, Meters), (40, 0, 0, KilometersPerHour))
   )
 
-  val source = VehicleSourceImpl(Seconds(1), originSpatial)
-  val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
-  val t = Seconds(0)
-  val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(.5))
+  val standStillTrafficResuming = List(
+    createVehicle((40, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+    createVehicle((30, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+    createVehicle((20, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+    createVehicle((10, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
+  )
+
+  val noStartingVehicles = List(
+  )
+
+  val source = VehicleSourceImpl(Seconds(5), originSpatial, endingSpatial, speedLimit)
+  val lane = new LaneImpl(
+    vehiclesApproachingASlowCar,
+//    standStillTrafficResuming,
+//    noStartingVehicles,
+    source,
+    originSpatial,
+    endingSpatial
+  )
+  val t = Seconds(2)
+  val canvasDimensions = Dimensions(Kilometers(.7), Kilometers(.3))
   implicit val dt = Milliseconds(20)
-  val scene: Scene = SceneImpl(
-    List(lane),
-    t,
-    dt,
-    speedLimit,
-    canvasDimensions
-  )
+  val scene: Scene = SceneImpl(List(lane), t, dt, speedLimit, canvasDimensions)
 
+  var sceneVolatile = scene
   @JSExport
   def run() {
     val nodes = Seq( )
     val edges = Seq( )
     val millisecondsPerRefresh = 500
-    var sceneVolatile = scene
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
       sceneVolatile = sceneVolatile.update(speedLimit)
+      val numVehicles = sceneVolatile.lanes.head.vehicles.length
       window = new Window(sceneVolatile, nodes, edges)
       window.svgNode.forceRedraw()
-      /** TODO lane.leader.follower
-        * How cool would that be?
-        * Look for it in [[Lane]], cause this is ugly.
-       */
-      val leadingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.head
-      val followingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.tail.head
-      println("Distance between: " + leadingVehicle.spatial.distanceTo(followingVehicle.spatial))
-//      println("following vehicle.v.x: " + sceneVolatile.lanes.head.vehicles.tail.head.spatial.v.coordinates(0))
     }, dt.toMilliseconds / 5)
   }
 }

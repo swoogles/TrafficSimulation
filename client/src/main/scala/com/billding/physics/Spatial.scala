@@ -5,6 +5,8 @@ import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import squants.motion._
 import squants.space.{LengthUnit, Meters}
 import squants.{Length, QuantityVector, SVector, Time, Velocity}
+import squants.space.LengthConversions._
+import squants.time.TimeConversions._
 
 trait Spatial {
   val numberOfDimensions = 3
@@ -40,13 +42,16 @@ object Spatial {
   val ZERO_VELOCITY: (Double, Double, Double, VelocityUnit) = (0, 0, 0, MetersPerSecond)
 
   val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = {
-    val (vX, vY, vZ, vUnit)= (0, 0, 0, MetersPerSecond)
+    val (vX, vY, vZ, vUnit)= ZERO_VELOCITY
     SVector(vX, vY, vZ).map(vUnit(_))
   }
-  val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
+  val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 0, 0, Meters)
   val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = {
-    val (dX, dY, dZ, dUnit)=ZERO_DIMENSIONS
-    SVector(dX, dY, dZ).map(dUnit(_))
+    val (dX, dY, dZ, dUnit)= ZERO_DIMENSIONS
+    val res: QuantityVector[Length] = SVector(dX, dY, dZ).map(dUnit(_))
+    println("zero dimensions: " + res)
+    res
+    SVector(0.meters, 0.meters, 0.meters)
   }
   def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???

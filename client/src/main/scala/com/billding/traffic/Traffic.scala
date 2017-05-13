@@ -9,23 +9,25 @@ trait Scene {
   val t: Time
   implicit val dt: Time
   val speedLimit: Velocity
-  private val updateLane = (lane: Lane) => Lane.update(lane,speedLimit, t, dt)
-  val canvasDimensions: (Length, Length)
+  private def updateLane(lane: Lane): Lane  = {
+    Lane.update(lane,speedLimit, t+dt, dt)
+  }
+  val dimensions: Dimensions
 
-  def update(speedLimit: Velocity)(implicit dt: Time): Scene = {
-    val nextT =  this.t + this.dt
-    val res: List[Lane] = lanes map updateLane
-    SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
+  def update(speedLimit: Velocity): Scene = {
+//    println("updating scene")
+    val newLanes = lanes map updateLane
+    if (newLanes.flatten(_.vehicles).length > 0){
+//      println("vehicle in scene")
+    }
+//    println(SceneImpl(lanes map updateLane, this.t + this.dt, this.dt, speedLimit, this.dimensions))
+    SceneImpl(lanes map updateLane, this.t + this.dt, this.dt, speedLimit, this.dimensions)
   }
 }
 
-case class SceneImpl(
-  lanes: List[Lane],
-  t: Time,
-  dt: Time,
-  speedLimit: Velocity,
-  canvasDimensions: (Length, Length)
-) extends Scene
+case class Dimensions( height: Length, width: Length )
+
+case class SceneImpl(lanes: List[Lane], t: Time, dt: Time, speedLimit: Velocity, dimensions: Dimensions) extends Scene
 
 
 trait ErrorMsg {

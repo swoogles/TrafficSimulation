@@ -61,7 +61,7 @@ class Window(scene: Scene, nodes: Seq[Task] = Seq(), edges: Seq[Edge] = Seq()) {
 
   val canvasHeight = 800
   val canvasWidth = 1500
-  val spatialCanvas = SpatialCanvasImpl(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
+  val spatialCanvas = SpatialCanvasImpl(scene.dimensions.height, scene.dimensions.width, canvasHeight, canvasWidth)
 
   val previousSvg: Node = dom.document.getElementsByTagName("svg").item(0)
   if ( previousSvg != null ) {
@@ -236,7 +236,11 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
   def carReal(vehicle: PilotedVehicle) = {
     import com.billding.physics.SpatialForDefaults
     import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
-    val spatial = SpatialForDefaults.disect(vehicle)
+    val spatial = vehicle.spatial
+    // TODO Move these conversions to appropriate place
+
+//    println("spatial.r: " + spatial.r)
+//    println("spatial.v: " + spatial.r)
     val x = spatial.r.coordinates.head / _spatialCanvas.widthDistancePerPixel
     val y = spatial.r.coordinates.tail.head / _spatialCanvas.heightDistancePerPixel
     val xV = spatial.v.coordinates.head

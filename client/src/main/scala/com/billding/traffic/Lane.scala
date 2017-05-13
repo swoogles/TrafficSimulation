@@ -42,7 +42,6 @@ object Lane extends LaneFunctions {
 
     // TODO: Test new vehicles from source
     def update(lane: Lane, speedLimit: Velocity, t: Time, dt: Time): Lane = {
-      println("lane.t: "  + t)
       val newVehicleList: List[PilotedVehicle] =
         lane.vehicleSource.produceVehicle(t).toList ++ lane.vehicles
 

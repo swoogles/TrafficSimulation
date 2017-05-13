@@ -43,13 +43,7 @@ class SceneSpec extends  FlatSpec{
     val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
     val t = Seconds(500)
     implicit val dt = Milliseconds(500)
-    val scene: Scene = SceneImpl(
-      List(lane),
-      t,
-      dt,
-      speedLimit,
-      canvasDimensions
-    )
+    val scene: Scene = SceneImpl(List(lane), t, dt, speedLimit, canvasDimensions)
     // TODO figure out weird drift happening here
     val updateScene: Scene = scene.update(speedLimit)
     val updateScene2: Scene = updateScene.update(speedLimit)
