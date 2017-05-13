@@ -12,6 +12,5 @@ trait SpatialCanvas {
   val widthDistancePerPixel: Distance = width / pixelWidth
 }
 
-case class SpatialCanvasImpl(height: Distance, width: Distance, pixelHeight: Int, pixelWidth: Int) extends SpatialCanvas {
-
-}
+case class SpatialCanvasImpl(height: Distance, width: Distance, pixelHeight: Int, pixelWidth: Int)
+  extends SpatialCanvas

@@ -18,21 +18,6 @@ trait Lane {
   val beginning: Spatial
   val end: Spatial
   val vehicleAtInfinity: PilotedVehicle
-
-  // TODO put these in appropriate pattern matching? Not sure they mean much hanging on their own.
-  private val leadingVehicle: Option[PilotedVehicle] = vehicles.headOption
-  private val followingVehicle: Option[PilotedVehicle] = vehicles.tail.headOption
-
-  /** vehicles.headOption.flatMap( vehicle.follower )
-      Or should it be based on the car that you're following?
-      I really need to hammer out the infinity vehicles here.
-      They should exist extended a certain distance beyond the
-      Lane! Not based on the vehicles velocity!
-      I think I'm going to need a [[Segment]] class beneath Lane.
-
-    val followingVehicle: PilotedVehicle = vehicles.headOption.flatMap(_.follower)
-    println("Distance between: " + leadingVehicle.map(_.spatial.distanceTo(followingVehicle.spatial)))
-  */
 }
 
 case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource, beginning: Spatial, end: Spatial) extends Lane {
@@ -57,10 +42,9 @@ object Lane extends LaneFunctions {
 
     // TODO: Test new vehicles from source
     def update(lane: Lane, speedLimit: Velocity, t: Time, dt: Time): Lane = {
-      val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t)
+      println("lane.t: "  + t)
       val newVehicleList: List[PilotedVehicle] =
-        if (newVehicleOption.isDefined) lane.vehicles :+ newVehicleOption.get
-        else lane.vehicles
+        lane.vehicleSource.produceVehicle(t).toList ++ lane.vehicles
 
       val dMomentumList = responsesInOneLanePrep(lane, speedLimit)
       val vehiclesAndUpdates = newVehicleList.zip(dMomentumList)
