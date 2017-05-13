@@ -1,6 +1,8 @@
 package client
 
 import com.billding._
+import com.billding.physics.Spatial
+import com.billding.traffic._
 import fr.iscpif.client.{GraphOriginal, WindowOriginal}
 import org.scalajs.dom
 
@@ -69,7 +71,7 @@ object Client {
       window.svgNode.forceRedraw()
       /** TODO lane.leader.follower
         * How cool would that be?
-        * Look for it in [[com.billding.Lane]], cause this is ugly.
+        * Look for it in [[Lane]], cause this is ugly.
        */
       val leadingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.head
       val followingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.tail.head

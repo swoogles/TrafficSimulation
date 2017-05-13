@@ -1,9 +1,10 @@
-package com.billding
+package com.billding.traffic
 
-import squants.{Time, Velocity}
+import com.billding.physics.Spatial
 import squants.motion.Distance
-import squants.time.TimeConversions._
 import squants.space.LengthConversions._
+import squants.time.TimeConversions._
+import squants.{Time, Velocity}
 
 trait Driver {
   val spatial: Spatial
@@ -18,7 +19,7 @@ case class Commuter(
                      spatial: Spatial,
                      idm: IntelligentDriverModel,
                      reactionTime: Time = (0.5 seconds),
-                     preferredDynamicSpacing: Time = (2 seconds),
+                     preferredDynamicSpacing: Time = (1 seconds),
 
                      /** TODO This is what I'm using to ensure a stop right now.
                        *
@@ -26,7 +27,7 @@ case class Commuter(
                        * [[com.billding.rendering.CanvasRendering]]
                        */
 
-                     minimumDistance: Distance = (400 meters),
+                     minimumDistance: Distance = (2 meters),
                      desiredSpeed: Velocity = (120.kilometers.per(hour))
                    ) extends Driver
 

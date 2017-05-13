@@ -1,4 +1,4 @@
-package com.billding
+package com.billding.traffic
 
 import squants.Time
 import squants.motion.{Acceleration, Distance, Velocity}

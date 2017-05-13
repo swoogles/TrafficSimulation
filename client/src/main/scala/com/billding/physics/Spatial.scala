@@ -1,11 +1,10 @@
-package com.billding
+package com.billding.physics
 
 import breeze.linalg.DenseVector
-import squants.{Length, QuantityVector, SVector, Time, Velocity}
+import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import squants.motion._
-import squants.space.LengthConversions._
 import squants.space.{LengthUnit, Meters}
-import squants.time.TimeConversions._
+import squants.{Length, QuantityVector, SVector, Time, Velocity}
 
 trait Spatial {
   val numberOfDimensions = 3
@@ -38,7 +37,9 @@ case class SpatialImpl (
 }
 
 object Spatial {
-  val ZERO_VELOCITY: QuantityVector[Velocity] = {
+  val ZERO_VELOCITY: (Double, Double, Double, VelocityUnit) = (0, 0, 0, MetersPerSecond)
+
+  val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = {
     val (vX, vY, vZ, vUnit)= (0, 0, 0, MetersPerSecond)
     SVector(vX, vY, vZ).map(vUnit(_))
   }
@@ -66,6 +67,7 @@ object Spatial {
   new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
   new position:   	x(t+Δt) = x(t) + v(t)Δt + 1/2 (dv/dt) (Δt)2,
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
+  TODO: Restrict this so nobody tries to reverse.
   */
   def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
     // TODO I think I've lost the unit safety with this current approach
@@ -95,12 +97,19 @@ object Spatial {
     val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
     val d: QuantityVector[Length] = SVector(dX, dY, dZ).map(dUnit(_))
     new SpatialImpl(p, v, d)
+
   }
   def apply(
              pIn: (Double, Double, Double, DistanceUnit),
              vIn: (Double, Double, Double, VelocityUnit)
            ): Spatial = {
     apply(pIn, vIn, ZERO_DIMENSIONS)
+  }
+
+  def apply(
+             pIn: (Double, Double, Double, DistanceUnit)
+           ): Spatial = {
+    apply(pIn, ZERO_VELOCITY, ZERO_DIMENSIONS)
   }
 
   def withVecs(

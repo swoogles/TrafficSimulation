@@ -19,7 +19,7 @@ package client
 
 import java.util.UUID
 
-import com.billding.{PilotedVehicle, Scene, Vehicle}
+import com.billding.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
 
 import scala.scalajs.js
@@ -225,12 +225,14 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
   }
 
   def carReal(vehicle: PilotedVehicle) = {
-    import com.billding.SpatialForDefaults.spatialForPilotedVehicle
-    import com.billding.SpatialForDefaults
+    import com.billding.physics.SpatialForDefaults
+    import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
     val spatial = SpatialForDefaults.disect(vehicle)
     val x = spatial.r.coordinates.head.toMeters
     val y = spatial.r.coordinates.tail.head.toMeters
     val xV = spatial.v.coordinates.head
+    vehicle.spatial.dimensions.coordinates(0)
+    vehicle.spatial.dimensions.coordinates(0)
     val element: SVGElement = Rx {
       svgTags.g(
         ms(CIRCLE + {

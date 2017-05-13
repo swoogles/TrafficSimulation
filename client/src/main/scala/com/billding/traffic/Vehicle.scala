@@ -1,12 +1,14 @@
-package com.billding
+package com.billding.traffic
 
 import client.Client
+import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
+import com.billding.physics.{Spatial, SpatialForDefaults}
 import squants.mass.Kilograms
 import squants.motion._
-import squants.space.{Kilometers, LengthUnit, Meters}
-import squants.{Length, Mass, QuantityVector, SVector, Time, Velocity}
 import squants.space.LengthConversions._
+import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.TimeConversions._
+import squants.{Length, Mass, QuantityVector, SVector, Time, Velocity}
 
 sealed trait Vehicle {
   val spatial: Spatial
@@ -88,12 +90,10 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
   }
 
   def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration = {
-    import com.billding.SpatialForDefaults.spatialForPilotedVehicle
     this.reactTo(SpatialForDefaults.disect(obstacle), speedLimit)
   }
 
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle = {
-    import com.billding.SpatialForDefaults.spatialForPilotedVehicle
     val updatedSpatial: Spatial = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP)
     this.copy(
       driver = driver.copy(spatial=updatedSpatial),
@@ -110,7 +110,7 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
     val newVelocity: QuantityVector[Velocity] = this.spatial.v.map{ x: Velocity =>x *2}
 //    val newAcelerration: QuantityVector[Acceleration] = this.spatial.v.map{ x: Velocity =>x *2}.map { x: Velocity = x / Seconds(1)}
     /** TODO Get these passed in the right way. It will make much more sense
-      when this exists in the [[com.billding.Lane]] class, and dt/dP are not need at all.
+      when this exists in the [[Lane]] class, and dt/dP are not need at all.
       */
     val dt = Client.dt
     val t = Client.t
@@ -159,7 +159,6 @@ object PilotedVehicle {
 }
 
 object TypeClassUsage {
-  import com.billding.SpatialForDefaults.spatialForPilotedVehicle
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val drivenVehicle1: PilotedVehicle = PilotedVehicle.commuter( (0, 0, 0, Kilometers), (120, 0, 0, KilometersPerHour), idm)
   val drivenVehicle2: PilotedVehicle = PilotedVehicle.commuter( (0, 2, 0, Kilometers), (120, 0, 0, KilometersPerHour), idm)

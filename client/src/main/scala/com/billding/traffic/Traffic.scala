@@ -1,8 +1,8 @@
-package com.billding
+package com.billding.traffic
 
 import cats.data.{NonEmptyList, Validated}
-import squants.{Length, Time, Velocity}
 import squants.motion._
+import squants.{Length, Time, Velocity}
 
 trait Scene {
   val lanes: List[Lane]

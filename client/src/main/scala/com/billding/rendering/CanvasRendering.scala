@@ -1,10 +1,8 @@
 package com.billding.rendering
 
-trait Canvas
-
 // This isn't giving the correct class...
 //import org.scalajs.dom.html.Canvas
-import com.billding.Spatial
+import com.billding.physics.Spatial
 import org.scalajs.dom.raw.HTMLCanvasElement
 import org.scalajs.dom.{CanvasRenderingContext2D, ImageData}
 

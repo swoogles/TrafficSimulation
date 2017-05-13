@@ -1,5 +1,6 @@
-package com.billding
+package com.billding.traffic
 
+import com.billding.physics.Spatial
 import squants.Time
 
 trait VehicleSource {

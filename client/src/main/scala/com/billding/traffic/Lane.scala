@@ -1,9 +1,10 @@
-package com.billding
+package com.billding.traffic
 
 import cats.data.NonEmptyList
-import squants.{QuantityVector, Time, Velocity}
+import com.billding.physics.Spatial
+import com.billding.{traffic, _}
 import squants.motion._
-import squants.space.Kilometers
+import squants.{QuantityVector, Time, Velocity}
 
 trait Segment {
   /*
@@ -14,18 +15,9 @@ trait Segment {
 trait Lane {
   val vehicles: List[PilotedVehicle]
   val vehicleSource: VehicleSource
-  def beginning: Spatial
-  def end: Spatial
-
-
-  /**
-    * TODO Lane should be responsible for creating the vehicles at infinity, not the driver/vehicle.
-    */
-  private val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
-  val vehicleAtInfinity: PilotedVehicle = {
-    val spatial =  Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY, Spatial.ZERO_DIMENSIONS_VECTOR )
-    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl)
-  }
+  val beginning: Spatial
+  val end: Spatial
+  val vehicleAtInfinity: PilotedVehicle
 
   // TODO put these in appropriate pattern matching? Not sure they mean much hanging on their own.
   private val leadingVehicle: Option[PilotedVehicle] = vehicles.headOption
@@ -43,38 +35,45 @@ trait Lane {
   */
 }
 
-case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource, beginning: Spatial, end: Spatial) extends Lane
+case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource, beginning: Spatial, end: Spatial) extends Lane {
 
-object Lane {
-
-  // TODO: Test new vehicles from source
-  def update(lane: Lane, speedLimit: Velocity, t: Time, dt: Time): Lane = {
-    val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t)
-    val newVehicleList: List[PilotedVehicle] =
-      if ( newVehicleOption.isDefined ) lane.vehicles :+ newVehicleOption.get
-      else lane.vehicles
-
-    val dMomentumList = responsesInOneLanePrep(newVehicleList, lane, speedLimit)
-    val vehiclesAndUpdates = newVehicleList.zip(dMomentumList)
-    val newVehicles = vehiclesAndUpdates map {
-      case (vehicle, dMomentum) => vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
-    }
-    new LaneImpl(newVehicles, lane.vehicleSource, lane.beginning, lane.end)
+  private val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
+  val vehicleAtInfinity: PilotedVehicle = {
+    val spatial =  Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY_VECTOR, Spatial.ZERO_DIMENSIONS_VECTOR )
+    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl)
   }
+}
 
-  def responsesInOneLanePrep(vehicles: List[PilotedVehicle], lane: Lane, speedLimit: Velocity): List[Acceleration] = {
-    vehicles match {
-      case Nil => Nil
-      case head :: _ => responsesInOneLane(NonEmptyList(lane.vehicleAtInfinity, vehicles), speedLimit).toList
-    }
-  }
+object Lane extends LaneFunctions {
 
   private def responsesInOneLane(vehicles: NonEmptyList[PilotedVehicle], speedLimit: Velocity): NonEmptyList[Acceleration] = {
     val target = vehicles.head
     vehicles.tail match {
       case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil) // :: responsesInOneLane(follower :: rest)
       case follower :: rest =>
-        follower.reactTo(target, speedLimit)  :: responsesInOneLane(NonEmptyList(follower,rest), speedLimit)
+        follower.reactTo(target, speedLimit) :: responsesInOneLane(NonEmptyList(follower, rest), speedLimit)
+    }
+  }
+
+    // TODO: Test new vehicles from source
+    def update(lane: Lane, speedLimit: Velocity, t: Time, dt: Time): Lane = {
+      val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t)
+      val newVehicleList: List[PilotedVehicle] =
+        if (newVehicleOption.isDefined) lane.vehicles :+ newVehicleOption.get
+        else lane.vehicles
+
+      val dMomentumList = responsesInOneLanePrep(lane, speedLimit)
+      val vehiclesAndUpdates = newVehicleList.zip(dMomentumList)
+      val newVehicles = vehiclesAndUpdates map {
+        case (vehicle, dMomentum) => vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
+      }
+      LaneImpl(newVehicles, lane.vehicleSource, lane.beginning, lane.end)
+    }
+
+  def responsesInOneLanePrep(lane: Lane, speedLimit: Velocity): List[Acceleration] = {
+    lane.vehicles match {
+      case Nil => Nil
+      case head :: _ => responsesInOneLane(NonEmptyList(lane.vehicleAtInfinity, lane.vehicles), speedLimit).toList
     }
   }
 
@@ -93,7 +92,7 @@ object Lane {
 
           I'm really starting to think this is too internal-fiddly to be exposed
           outside of the class. I want this behavior, but hidden inside...
-          [[com.billding.Lane]]? I think that's it.
+          [[traffic.Lane]]? I think that's it.
     */
 
 }

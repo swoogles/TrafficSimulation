@@ -4,6 +4,8 @@ import org.scalatest._
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import SquantsMatchers._
+import com.billding.physics.Spatial
+import com.billding.traffic.{IntelligentDriverModel, IntelligentDriverModelImpl, PilotedVehicle}
 import org.scalatest.Matchers._
 
 /*

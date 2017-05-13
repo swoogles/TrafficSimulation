@@ -5,11 +5,20 @@ import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import org.scalatest.Matchers._
 import SquantsMatchers._
+import com.billding.physics.Spatial
+import com.billding.traffic._
 import squants.time.{Milliseconds, Seconds}
+import squants.time.TimeConversions._
+import squants.space.LengthConversions._
 
 class LaneSpec extends  FlatSpec {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)
+
+  val laneStartingPoint = Spatial.apply((0, 0, 0, Meters))
+  val laneEndingPoint = Spatial.apply((1, 0, 0, Kilometers))
+  val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint)
+
 
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
@@ -41,7 +50,8 @@ class LaneSpec extends  FlatSpec {
     val vehicles = List(
       drivenVehicle1, drivenVehicle2, drivenVehicle3, drivenVehicle4
     )
-    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
   }
 
   it should "make all vehicles accelerate from a stop together" in {
@@ -50,7 +60,8 @@ class LaneSpec extends  FlatSpec {
       createVehicle((95, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
       createVehicle((90, 0, 0, Meters), (0, 0, 0, KilometersPerHour))
     )
-    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
     every(accelerations) shouldBe speedingUp
   }
 
@@ -60,7 +71,8 @@ class LaneSpec extends  FlatSpec {
       createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
-    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
     accelerations.head shouldBe speedingUp
     every(accelerations.tail) shouldBe slowingDown
   }
@@ -69,14 +81,13 @@ class LaneSpec extends  FlatSpec {
 
   it should "have 1 car decelerate as it approaches a stopped car, and another accelerate away in front of it" in {
     val vehicles = List(
-      createVehicle((1000, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
-      createVehicle((81, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
+      createVehicle((82, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
       createVehicle((80, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
-    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
-    val (acc1 :: acc2 :: acc3 :: acc4 :: Nil) = accelerations
-    acc1 shouldBe speedingUp
+    val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
+    val (acc2 :: acc3 :: acc4 :: Nil) = accelerations
     acc2 shouldBe speedingUp
     acc3 shouldBe maintainingVelocity
     acc4 shouldBe slowingDown
@@ -85,12 +96,13 @@ class LaneSpec extends  FlatSpec {
   it should "should only accelerate lead car in bumper-to-bumper traffic" in {
     val vehicles = List(
       createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
-      createVehicle((99, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
       createVehicle((98, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
-      createVehicle((97, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
-      createVehicle((96, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
+      createVehicle((96, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
+      createVehicle((94, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
+      createVehicle((92, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
     )
-    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
     accelerations.head shouldBe speedingUp
     for (acceleration <- accelerations.tail) {
       assert(acceleration =~ MetersPerSecondSquared(0))
@@ -115,10 +127,9 @@ class LaneSpec extends  FlatSpec {
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
 
-    val source = VehicleSourceImpl(Seconds(1), originSpatial)
-    val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
+    val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
     val updatedLane: Lane = Lane.update(lane, speedLimit, Seconds(1), Milliseconds(100))
-    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(vehicles, speedLimit)
+    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
     accelerations.head shouldBe speedingUp
     every(accelerations.tail) shouldBe slowingDown
   }
