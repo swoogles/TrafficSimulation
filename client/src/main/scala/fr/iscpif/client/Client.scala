@@ -40,15 +40,17 @@ object Client {
     * [[com.billding.rendering.CanvasRendering]]
     */
   val vehicles = List(
-    createVehicle((200, 0, 0, Meters), (20, 0, 0, KilometersPerHour)),
+    createVehicle((100, 0, 0, Meters), (40, 0, 0, KilometersPerHour)),
 //    createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
-    createVehicle((60, 0, 0, Meters), (100, 0, 0, KilometersPerHour))
+    createVehicle((60, 0, 0, Meters), (60, 0, 0, KilometersPerHour)),
+    createVehicle((50, 0, 0, Meters), (60, 0, 0, KilometersPerHour)),
+    createVehicle((40, 0, 0, Meters), (60, 0, 0, KilometersPerHour))
   )
 
   val source = VehicleSourceImpl(Seconds(1), originSpatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
   val t = Seconds(0)
-  val canvasDimensions: ((Length, Length),(Length, Length)) = ((-Kilometers(1), -Kilometers(1)), (Kilometers(1), Kilometers(1)))
+  val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(.5))
   implicit val dt = Milliseconds(20)
   val scene: Scene = SceneImpl(
     List(lane),
@@ -77,7 +79,7 @@ object Client {
       val followingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.tail.head
       println("Distance between: " + leadingVehicle.spatial.distanceTo(followingVehicle.spatial))
 //      println("following vehicle.v.x: " + sceneVolatile.lanes.head.vehicles.tail.head.spatial.v.coordinates(0))
-    }, dt.toMilliseconds / 10)
+    }, dt.toMilliseconds / 5)
   }
 }
 

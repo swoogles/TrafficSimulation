@@ -136,7 +136,7 @@ object PilotedVehicle {
               ): PilotedVehicle = {
     val (pX, pY, pZ, pUnit) = pIn
     val (vX, vY, vZ, vUnit) = vIn
-    val (dX, dY, dZ, dUnit: DistanceUnit) = commuterDimensions
+    val (dX, dY, dZ, dUnit: LengthUnit) = commuterDimensions
 
 
     val p: QuantityVector[Distance] = SVector(pX, pY, pZ) .map(pUnit(_))

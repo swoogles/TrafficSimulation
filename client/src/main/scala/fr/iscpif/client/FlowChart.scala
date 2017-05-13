@@ -19,6 +19,7 @@ package client
 
 import java.util.UUID
 
+import com.billding.rendering.SpatialCanvas
 import com.billding.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
 
@@ -55,6 +56,13 @@ import Graph._
 
 class Window(scene: Scene, nodes: Seq[Task] = Seq(), edges: Seq[Edge] = Seq()) {
 
+  import com.billding.rendering.SpatialCanvas
+  import com.billding.rendering.SpatialCanvasImpl
+
+  val canvasHeight = 800
+  val canvasWidth = 1500
+  val spatialCanvas = SpatialCanvasImpl(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
+
   val previousSvg: Node = dom.document.getElementsByTagName("svg").item(0)
   if ( previousSvg != null ) {
       dom.document.body.removeChild(previousSvg)
@@ -62,8 +70,8 @@ class Window(scene: Scene, nodes: Seq[Task] = Seq(), edges: Seq[Edge] = Seq()) {
 //  val dimensions
   val svgNode = {
     val child = svgTags.svg(
-      width := 2500,
-      height := 2500
+      width := canvasWidth,
+      height := canvasHeight
     ).render
     dom.document.body.appendChild(child.render)
     child
@@ -72,11 +80,12 @@ class Window(scene: Scene, nodes: Seq[Task] = Seq(), edges: Seq[Edge] = Seq()) {
   new GraphCreator(svgNode,
     scene,
     nodes,
-    edges
+    edges,
+    spatialCanvas
   )
 }
 
-class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Seq[Edge]) {
+class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Seq[Edge], _spatialCanvas: SpatialCanvas) {
 
   implicit val ctx: Ctx.Owner = Ctx.Owner.safe()
 
@@ -228,11 +237,12 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
     import com.billding.physics.SpatialForDefaults
     import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
     val spatial = SpatialForDefaults.disect(vehicle)
-    val x = spatial.r.coordinates.head.toMeters
-    val y = spatial.r.coordinates.tail.head.toMeters
+    val x = spatial.r.coordinates.head / _spatialCanvas.widthDistancePerPixel
+    val y = spatial.r.coordinates.tail.head / _spatialCanvas.heightDistancePerPixel
     val xV = spatial.v.coordinates.head
-    vehicle.spatial.dimensions.coordinates(0)
-    vehicle.spatial.dimensions.coordinates(0)
+    val renderedWidth = vehicle.spatial.dimensions.coordinates(0) / _spatialCanvas.widthDistancePerPixel
+    val renderedHeight = vehicle.spatial.dimensions.coordinates(1) / _spatialCanvas.heightDistancePerPixel
+
     val element: SVGElement = Rx {
       svgTags.g(
         ms(CIRCLE + {
@@ -240,7 +250,7 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
         })
       )(
         svgAttrs.transform := s"translate($x, $y)")(
-          svgTags.image(href := "images/sedan.svg", width := 100.px, height := 100.px).render
+          svgTags.image(href := "images/sedan.svg", width := renderedWidth.px, height := renderedHeight.px).render
       )
     }
     val gCircle = svgTags.g(element).render

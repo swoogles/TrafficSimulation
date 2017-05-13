@@ -19,7 +19,7 @@ class SceneSpec extends  FlatSpec{
 
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)
-  val canvasDimensions: ((Length, Length),(Length, Length)) = ((-Kilometers(1), -Kilometers(1)), (Kilometers(1), Kilometers(1)))
+  val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(1))
 
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
