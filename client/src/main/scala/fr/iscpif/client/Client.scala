@@ -40,11 +40,11 @@ object Client {
     * [[com.billding.rendering.CanvasRendering]]
     */
   val vehicles = List(
-    createVehicle((100, 0, 0, Meters), (40, 0, 0, KilometersPerHour)),
+    createVehicle((60, 0, 0, Meters), (40, 0, 0, KilometersPerHour)),
 //    createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
-    createVehicle((60, 0, 0, Meters), (60, 0, 0, KilometersPerHour)),
-    createVehicle((50, 0, 0, Meters), (60, 0, 0, KilometersPerHour)),
-    createVehicle((40, 0, 0, Meters), (60, 0, 0, KilometersPerHour))
+    createVehicle((20, 0, 0, Meters), (65, 0, 0, KilometersPerHour)),
+    createVehicle((10, 0, 0, Meters), (65, 0, 0, KilometersPerHour)),
+    createVehicle((0, 0, 0, Meters), (65, 0, 0, KilometersPerHour))
   )
 
   val source = VehicleSourceImpl(Seconds(1), originSpatial)
