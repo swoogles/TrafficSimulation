@@ -17,10 +17,18 @@ sealed trait Vehicle {
   val brakingAbility: Acceleration
 }
 
+/*
+Parameter	Value Car	Value Truck	Remarks
+Desired speed v0	120 km/h	80 km/h	For city traffic, one would adapt the desired speed while the other parameters essentially can be left unchanged.
+Time headway T	1.5 s	1.7 s	Recommendation in German driving schools: 1.8 s; realistic values vary between 2 s and 0.8 s and even below.
+Minimum gap s0	2.0 m	2.0 m	Kept at complete standstill, also in queues that are caused by red traffic lights.
+Acceleration a	0.3 m/s2	0.3 m/s2	Very low values to enhance the formation of stop-and go traffic. Realistic values are 1-2 m/s2
+Deceleration b	3.0 m/s2	2.0 m/s2	Very high values to enhance the formation of stop-and go traffic. Realistic values are 1-2 m/s2
+ */
 case class Car(
                 p: QuantityVector[Distance],
                 v: QuantityVector[Velocity],
-                accelerationAbility: Acceleration = (0.3.meters.per((1 seconds).squared)),
+                accelerationAbility: Acceleration = (1.meters.per((1 seconds).squared)),
                 brakingAbility: Acceleration = (3.0.meters.per((1 seconds).squared)),
                 weight: Mass = Kilograms(800)
               ) extends Vehicle {
