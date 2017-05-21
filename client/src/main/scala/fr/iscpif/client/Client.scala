@@ -23,7 +23,7 @@ object Client {
   val caseClassValue = Var("empty")
 
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
-  val speedLimit = KilometersPerHour(150)
+  val speedLimit = KilometersPerHour(65)
 
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
@@ -35,16 +35,20 @@ object Client {
   val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
   val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
 
+  val herdSpeed = 65
   /**
     * TODO: Values should be improved through other means discussed here:
     * [[com.billding.rendering.CanvasRendering]]
     */
   val vehicles = List(
-    createVehicle((60, 0, 0, Meters), (40, 0, 0, KilometersPerHour)),
+    createVehicle((60, 0, 0, Meters), (25, 0, 0, KilometersPerHour)),
 //    createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
-    createVehicle((20, 0, 0, Meters), (65, 0, 0, KilometersPerHour)),
-    createVehicle((10, 0, 0, Meters), (65, 0, 0, KilometersPerHour)),
-    createVehicle((0, 0, 0, Meters), (65, 0, 0, KilometersPerHour))
+    createVehicle((30, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
+    createVehicle((20, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
+    createVehicle((10, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
+    createVehicle((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
+    createVehicle((-10, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
+    createVehicle((-30, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour))
   )
 
   val source = VehicleSourceImpl(Seconds(1), originSpatial)
