@@ -43,12 +43,13 @@ object Client {
 
   val leadVehicleXPos = -10
 
+  val vehicleSpacing = 15
   val herd = for (curIdx <- Range(0, 10)) yield {
-    createVehicle(((leadVehicleXPos - 20) - curIdx * 25, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour))
+    createVehicle(((leadVehicleXPos - 20) - curIdx * vehicleSpacing, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour))
   }
 
   val vehicles = List(
-    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-20, 0, 0, KilometersPerHour))
+    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-30, 0, 0, KilometersPerHour))
   ) ++ herd
 
   val source = VehicleSourceImpl(Seconds(1), originSpatial)
@@ -81,7 +82,7 @@ object Client {
        */
       val leadingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.head
       val followingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.tail.head
-      println("Distance between: " + leadingVehicle.spatial.distanceTo(followingVehicle.spatial))
+//      println("Distance between: " + leadingVehicle.spatial.distanceTo(followingVehicle.spatial))
 //      println("following vehicle.v.x: " + sceneVolatile.lanes.head.vehicles.tail.head.spatial.v.coordinates(0))
     }, dt.toMilliseconds / 5)
   }

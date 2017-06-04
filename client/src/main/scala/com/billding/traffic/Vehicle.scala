@@ -74,6 +74,7 @@ sealed trait PilotedVehicle {
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle
   def createInfiniteVehicle: PilotedVehicle
   val spatial: Spatial
+  def tooClose(pilotedVehicle: PilotedVehicle): Boolean
 }
 
 case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVehicle {
@@ -136,6 +137,9 @@ case class PilotedVehicleImpl(driver: Commuter, vehicle: Car) extends PilotedVeh
 //    Car( newPosition, newVelocity)
   }
 
+  override def tooClose(pilotedVehicle: PilotedVehicle): Boolean = {
+    this.spatial.distanceTo(pilotedVehicle.spatial) < this.driver.minimumDistance
+  }
 }
 
 object PilotedVehicle {
