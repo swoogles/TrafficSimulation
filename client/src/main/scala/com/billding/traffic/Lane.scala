@@ -44,11 +44,15 @@ object Lane extends LaneFunctions {
     // TODO: Test new vehicles from source
     def update(lane: Lane, speedLimit: Velocity, t: Time, dt: Time): Lane = {
       val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t, dt)
-      println("starting vehicle list size: " + lane.vehicles.size)
       val newVehicleList: List[PilotedVehicle] =
-        if (newVehicleOption.isDefined) lane.vehicles :+ newVehicleOption.get
+        if (newVehicleOption.isDefined) {
+          if (lane.vehicles.size > 30) {
+            lane.vehicles.tail :+ newVehicleOption.get
+          } else {
+            lane.vehicles :+ newVehicleOption.get
+          }
+        }
         else lane.vehicles
-      println("updated vehicle list size: " + newVehicleList.size)
 
       val laneWithNewVehicle = LaneImpl(newVehicleList, lane.vehicleSource, lane.beginning, lane.end)
       val dMomentumList = responsesInOneLanePrep(laneWithNewVehicle, speedLimit)
@@ -56,6 +60,7 @@ object Lane extends LaneFunctions {
       val newVehicles: List[PilotedVehicle] = vehiclesAndUpdates map {
         case (vehicle, dMomentum) => vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
       }
+      // TODO Decide if this can be removed/moved
       newVehicles.sliding(2).map{case (leader :: follower :: Nil) => {
         val tooClose = leader.tooClose(follower)
         if (tooClose) {
@@ -63,11 +68,8 @@ object Lane extends LaneFunctions {
         }
         tooClose
       }}
-      println("newVehicles list size: " + newVehicles.size)
 
-      val result = LaneImpl(newVehicles, lane.vehicleSource, lane.beginning, lane.end)
-      println("result vehicles size: " + result.vehicles.size)
-      result
+      LaneImpl(newVehicles, lane.vehicleSource, lane.beginning, lane.end)
     }
 
   def responsesInOneLanePrep(lane: Lane, speedLimit: Velocity): List[Acceleration] = {
