@@ -7,7 +7,7 @@ import org.scalatest.Matchers._
 import SquantsMatchers._
 import com.billding.physics.Spatial
 import com.billding.traffic._
-import squants.time.{Milliseconds, Seconds}
+import squants.time.{Milliseconds, Seconds, Time}
 import squants.time.TimeConversions._
 import squants.space.LengthConversions._
 
@@ -128,10 +128,32 @@ class LaneSpec extends  FlatSpec {
     )
 
     val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
-    val updatedLane: Lane = Lane.update(lane, speedLimit, Seconds(1), Milliseconds(100))
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
     accelerations.head shouldBe speedingUp
     every(accelerations.tail) shouldBe slowingDown
+  }
+
+//  it should "add a new vehicle after an appropriate amount of time" in {
+//    val vehicles = List(
+//      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
+//    )
+//    val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
+//    val updatedLane = Lane.update(lane, speedLimit, 0.seconds, 0.0001.seconds)
+//    updatedLane.vehicles.size shouldBe  lane.vehicles.size + 1
+//  }
+
+  it should "only add 1 vehicle after an appropriate amount of time" in {
+    val dt = 0.1.seconds
+    val moments = Stream.continually(dt).take(10)
+    val vehicles = List(
+      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
+    )
+    val lane: Lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
+    val startT: Time = 0.seconds
+    moments.foldLeft(lane, startT){ case ((curLane, t: Time), nextDt) => (Lane.update(lane, speedLimit, t, nextDt), t+dt)}
+
+    val updatedLane = Lane.update(lane, speedLimit, 0.5.seconds, dt)
+    updatedLane.vehicles.size shouldBe  lane.vehicles.size + 1
   }
 
 }
