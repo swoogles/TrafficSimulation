@@ -74,21 +74,25 @@ object Spatial {
     val vUnit = spatial.v.valueUnit
     val vUnitVec: QuantityVector[Velocity] = spatial.v.normalize
     val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] =
-      (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
+      (vUnitVec.to(vUnit)).map{ a: Double => dP * a}
     val accelerationWithTime = accelerationOppositeOfTravelDirection.map{accelerationComponent: Acceleration =>accelerationComponent*dt}
     val newV = spatial.v.plus(accelerationWithTime)
+    var inflected = false
     val zerodOutVComponents: Seq[Velocity] = for ((oldVComponent, newVComponent) <- spatial.v.coordinates.zip(newV.coordinates)) yield {
-      if ( (oldVComponent.value < 0 && newVComponent.value > 0)
-        || (oldVComponent.value > 0 && newVComponent.value < 0)) {
+      if ( (oldVComponent.value <= 0 && newVComponent.value > 0)
+        || (oldVComponent.value >= 0 && newVComponent.value < 0)) {
+        println("inflection point!!!!!")
+        inflected = true
         MetersPerSecond(0)
       } else {
         newVComponent
       }
     }
     val zerodOutV =  QuantityVector(zerodOutVComponents:_*)
-    val dPwithNewV = newV.map{ v: Velocity => v * dt }
+    val dPwithNewV = zerodOutV.map{ v: Velocity => v * dt }
     val betterMomentumFactor: QuantityVector[Distance] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
     val newP = spatial.r + dPwithNewV + betterMomentumFactor
+    if (inflected) println("zerodOutV: " + zerodOutV)
     SpatialImpl(newP, zerodOutV, spatial.dimensions)
   }
 
