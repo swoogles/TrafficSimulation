@@ -40,21 +40,21 @@ object Client {
     * TODO: Values should be improved through other means discussed here:
     * [[com.billding.rendering.CanvasRendering]]
     */
+
+  val leadVehicleXPos = -10
+
+  val herd = for (curIdx <- Range(0, 10)) yield {
+    createVehicle(((leadVehicleXPos - 20) - curIdx * 25, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour))
+  }
+
   val vehicles = List(
-    createVehicle((60, 0, 0, Meters), (25, 0, 0, KilometersPerHour)),
-//    createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
-    createVehicle((30, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
-    createVehicle((20, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
-    createVehicle((10, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
-    createVehicle((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
-    createVehicle((-10, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour)),
-    createVehicle((-30, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour))
-  )
+    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-20, 0, 0, KilometersPerHour))
+  ) ++ herd
 
   val source = VehicleSourceImpl(Seconds(1), originSpatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
   val t = Seconds(0)
-  val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(.5))
+  val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
   implicit val dt = Milliseconds(20)
   val scene: Scene = SceneImpl(
     List(lane),
