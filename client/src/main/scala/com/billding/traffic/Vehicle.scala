@@ -10,6 +10,11 @@ import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.TimeConversions._
 import squants.{Length, Mass, QuantityVector, SVector, Time, Velocity}
 
+/** Instead of a sealed vehicle trait, I think I should just have a
+  * VehicleParams instance that the Vehicle (Automobile?) case class
+  * accepts.
+  *
+  */
 sealed trait Vehicle {
   val spatial: Spatial
   val weight: Mass

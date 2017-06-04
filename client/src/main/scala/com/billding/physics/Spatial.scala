@@ -77,10 +77,19 @@ object Spatial {
       (spatial.v.normalize.to(vUnit)).map{ a: Double => dP * a}
     val accelerationWithTime = accelerationOppositeOfTravelDirection.map{accelerationComponent: Acceleration =>accelerationComponent*dt}
     val newV = spatial.v.plus(accelerationWithTime)
+    val zerodOutVComponents: Seq[Velocity] = for ((oldVComponent, newVComponent) <- spatial.v.coordinates.zip(newV.coordinates)) yield {
+      if ( (oldVComponent.value < 0 && newVComponent.value > 0)
+        || (oldVComponent.value > 0 && newVComponent.value < 0)) {
+        MetersPerSecond(0)
+      } else {
+        newVComponent
+      }
+    }
+    val zerodOutV =  QuantityVector(zerodOutVComponents:_*)
     val dPwithNewV = newV.map{ v: Velocity => v * dt }
     val betterMomentumFactor: QuantityVector[Distance] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
     val newP = spatial.r + dPwithNewV + betterMomentumFactor
-    SpatialImpl(newP, newV, spatial.dimensions)
+    SpatialImpl(newP, zerodOutV, spatial.dimensions)
   }
 
   def apply(
