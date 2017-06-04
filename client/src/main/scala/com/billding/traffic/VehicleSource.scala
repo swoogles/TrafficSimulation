@@ -7,9 +7,10 @@ trait VehicleSource {
   def produceVehicle(t: Time, dt: Time): Option[PilotedVehicle]
   val spacingInTime: Time
   val spatial: Spatial // TODO This will include starting velocity. Might not belong here.
+  val startingVelocitySpacial: Spatial
 }
 
-case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial) extends  VehicleSource {
+case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial, startingVelocitySpacial: Spatial) extends  VehicleSource {
   override def produceVehicle(t: Time, dt: Time): Option[PilotedVehicle] = {
     val res = t % spacingInTime
 //    println("t: " + t)
@@ -17,7 +18,8 @@ case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial) extends  Veh
 //    println("res: " + res)
     if (res.abs < dt.toSeconds) {
 //      println("making a vehicle!")
-      Some(PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl))
+      val vehicleSpatial = Spatial.withVecs(spatial.r, startingVelocitySpacial.v, spatial.dimensions)
+      Some(PilotedVehicle.commuter(vehicleSpatial, new IntelligentDriverModelImpl))
     }
     else Option.empty
   }
