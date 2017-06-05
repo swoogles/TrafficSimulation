@@ -15,9 +15,12 @@ class LaneSpec extends  FlatSpec {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)
 
+  val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
   val laneStartingPoint = Spatial.apply((0, 0, 0, Meters))
   val laneEndingPoint = Spatial.apply((1, 0, 0, Kilometers))
-  val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint)
+  val herdSpeed = 65
+  val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
+  val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint, velocitySpatial)
 
 
   def createVehicle(
@@ -131,29 +134,6 @@ class LaneSpec extends  FlatSpec {
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
     accelerations.head shouldBe speedingUp
     every(accelerations.tail) shouldBe slowingDown
-  }
-
-//  it should "add a new vehicle after an appropriate amount of time" in {
-//    val vehicles = List(
-//      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
-//    )
-//    val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
-//    val updatedLane = Lane.update(lane, speedLimit, 0.seconds, 0.0001.seconds)
-//    updatedLane.vehicles.size shouldBe  lane.vehicles.size + 1
-//  }
-
-  it should "only add 1 vehicle after an appropriate amount of time" in {
-    val dt = 0.1.seconds
-    val moments = Stream.continually(dt).take(10)
-    val vehicles = List(
-      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
-    )
-    val lane: Lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
-    val startT: Time = 0.seconds
-    moments.foldLeft(lane, startT){ case ((curLane, t: Time), nextDt) => (Lane.update(lane, speedLimit, t, nextDt), t+dt)}
-
-    val updatedLane = Lane.update(lane, speedLimit, 0.5.seconds, dt)
-    updatedLane.vehicles.size shouldBe  lane.vehicles.size + 1
   }
 
 }
