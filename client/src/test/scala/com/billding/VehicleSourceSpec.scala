@@ -18,10 +18,13 @@ class VehicleSourceSpec extends FlatSpec {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)
 
+  val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
   val laneStartingPoint = Spatial.apply((0, 0, 0, Meters))
   val laneEndingPoint = Spatial.apply((1, 0, 0, Kilometers))
   val spacingInTime = 1.seconds
-  val vehicleSource = VehicleSourceImpl(spacingInTime, laneStartingPoint)
+  val herdSpeed = 65
+  val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
+  val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint, velocitySpatial)
 
   it should "only add 1 vehicle after an appropriate amount of time" in {
     val dt = 0.1.seconds

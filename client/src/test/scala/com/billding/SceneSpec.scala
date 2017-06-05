@@ -39,8 +39,11 @@ class SceneSpec extends  FlatSpec{
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
 
-    val source = VehicleSourceImpl(Seconds(1), originSpatial)
-    val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
+    val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
+    val herdSpeed = 65
+    val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
+    val vehicleSource = VehicleSourceImpl(Seconds(1), originSpatial, endingSpatial)
+    val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
     val t = Seconds(500)
     implicit val dt = Milliseconds(500)
     val scene: Scene = SceneImpl(
