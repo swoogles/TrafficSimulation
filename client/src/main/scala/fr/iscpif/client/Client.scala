@@ -16,6 +16,10 @@ import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.{Milliseconds, Seconds}
 
+/**
+  * I think my primary problem with the "collision == death" issue is that I can't start
+  * re-accelerating in the desired direction after everything is zeroed out.
+  */
 @JSExport("Client")
 object Client {
 
@@ -32,33 +36,37 @@ object Client {
   }
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
+  val leadVehicleXPos = -10
+  val originSpatial = Spatial((-100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
   val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
+  val originSpatial2 = Spatial((-100, 20, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
+  val endingSpatial2 = Spatial((100, 20, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
 
   val herdSpeed = 65
+  val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
   /**
     * TODO: Values should be improved through other means discussed here:
     * [[com.billding.rendering.CanvasRendering]]
     */
 
-  val leadVehicleXPos = -10
-
-  val vehicleSpacing = 15
-  val herd = for (curIdx <- Range(0, 10)) yield {
-    createVehicle(((leadVehicleXPos - 20) - curIdx * vehicleSpacing, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour))
-  }
 
   val vehicles = List(
-    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-30, 0, 0, KilometersPerHour))
-  ) ++ herd
+    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-40, 0, 0, KilometersPerHour))
+  )
 
-  val source = VehicleSourceImpl(Seconds(1), originSpatial)
+  /** TODO: Source location should be determined inside Lane constructor
+    * Velocity spacial can *also* be determined by stop/start and a given speed.
+    */
+
+  val source = VehicleSourceImpl(Seconds(1), originSpatial, velocitySpatial)
+  val source2 = VehicleSourceImpl(Seconds(2), originSpatial2, velocitySpatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
+  val lane2 = new LaneImpl(Nil, source2, originSpatial2, endingSpatial2)
   val t = Seconds(0)
   val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
   implicit val dt = Milliseconds(20)
   val scene: Scene = SceneImpl(
-    List(lane),
+    List(lane, lane2),
     t,
     dt,
     speedLimit,
