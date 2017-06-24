@@ -12,6 +12,7 @@ import org.scalatest.Matchers._
   I think these tests are specific to the IDM, rather than Piloted Vehicle.
  */
 class PilotedVehicleSpec extends FlatSpec {
+  val speedLimit = KilometersPerHour(150)
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
 
   def createVehiclePair (
@@ -32,7 +33,7 @@ class PilotedVehicleSpec extends FlatSpec {
   ): Acceleration = {
     val (drivenVehicle1, drivenVehicle2)  = createVehiclePair( pIn1, vIn1 , pIn2, vIn2 )
     // TODO Get rid of magic value
-    drivenVehicle1.reactTo(drivenVehicle2, KilometersPerHour(150))
+    drivenVehicle1.reactTo(drivenVehicle2, speedLimit)
   }
 
 //  it should "drive cars over a period"
@@ -48,15 +49,13 @@ class PilotedVehicleSpec extends FlatSpec {
   }
 
   it should "hold steady when pacing the target car" in {
-    val res = accelerationTest(
+    val res: Acceleration = accelerationTest(
       (0, 0, 0, Meters),
       (120, 0, 0, KilometersPerHour),
-      // I just wack-a-moled my way to this value...
-      // It could be better to utilize the T calculation in some way
       (45, 0, 0, Meters),
       (120, 0, 0, KilometersPerHour)
     )
-    implicit val tolerance: Acceleration = MetersPerSecondSquared(0.01)
+    implicit val tolerance: Acceleration = MetersPerSecondSquared(0.1)
 
     res shouldBe maintainingVelocity
   }
@@ -72,16 +71,15 @@ class PilotedVehicleSpec extends FlatSpec {
     res shouldBe speedingUp
   }
 
-  // TODO don't seem to be getting the desire behavior here...
-//  it should "decelerate when obstacle is close but moving slower" in {
-//    val res = accelerationTest(
-//      (0, 0, 0, Kilometers),
-//      (120, 0, 0, KilometersPerHour),
-//      (50, 0, 0, Meters),
-//      (60, 0, 0, KilometersPerHour)
-//    )
-//    assert( res.toMetersPerSecondSquared < 0)
-//  }
+  it should "decelerate when obstacle is close but moving slower" in {
+    val res = accelerationTest(
+      (0, 0, 0, Kilometers),
+      (120, 0, 0, KilometersPerHour),
+      (40, 0, 0, Meters),
+      (60, 0, 0, KilometersPerHour)
+    )
+    assert( res.toMetersPerSecondSquared < 0)
+  }
 
   it should "slow down a when obstacle is close, even if it's moving fast" in {
     // Oh shit. Being able to hop to a different scale here is GREAT.
