@@ -11,9 +11,6 @@ import squants.time.{Milliseconds, Seconds, Time}
 import squants.time.TimeConversions._
 import squants.space.LengthConversions._
 
-/**
-  * Created by bfrasure on 6/4/17.
-  */
 class VehicleSourceSpec extends FlatSpec {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)
@@ -35,7 +32,6 @@ class VehicleSourceSpec extends FlatSpec {
 //    val moments = Stream.range(0.5.seconds, 1.5.seconds, dt)
     val startT: Time = 0.seconds
     val vehicleProductions: Seq[Option[PilotedVehicle]] = ts.map{ case (curT) => vehicleSource.produceVehicle(curT, dt)}
-    vehicleProductions.foreach(println)
     vehicleProductions.flatten.size shouldBe 1
   }
 
