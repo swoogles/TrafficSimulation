@@ -15,19 +15,34 @@ trait Driver {
   val idm: IntelligentDriverModel
 }
 
-case class Commuter(
+object Driver {
+  def commuter(
+                spatial: Spatial,
+                idm: IntelligentDriverModel) = {
+    val reactionTime: Time = (0.5 seconds)
+    val preferredDynamicSpacing: Time = (1 seconds)
+    val minimumDistance: Distance = (2 meters)
+    val desiredSpeed: Velocity = (120.kilometers.per(hour))
+    DriverImpl(spatial, idm, reactionTime, preferredDynamicSpacing, minimumDistance, desiredSpeed)
+  }
+
+  def aggressive(
+                spatial: Spatial,
+                idm: IntelligentDriverModel) = {
+    val reactionTime: Time = (0.5 seconds)
+    val preferredDynamicSpacing: Time = (0.5 seconds)
+    val minimumDistance: Distance = (1 meters)
+    val desiredSpeed: Velocity = (150.kilometers.per(hour))
+    DriverImpl(spatial, idm, reactionTime, preferredDynamicSpacing, minimumDistance, desiredSpeed)
+  }
+
+}
+
+case class DriverImpl(
                      spatial: Spatial,
                      idm: IntelligentDriverModel,
-                     reactionTime: Time = (0.5 seconds),
-                     preferredDynamicSpacing: Time = (1 seconds),
-
-                     /** TODO This is what I'm using to ensure a stop right now.
-                       *
-                       * Should be improved through other means discussed here:
-                       * [[com.billding.rendering.CanvasRendering]]
-                       */
-
-                     minimumDistance: Distance = (2 meters),
-                     desiredSpeed: Velocity = (120.kilometers.per(hour))
+                     reactionTime: Time,
+                     preferredDynamicSpacing: Time,
+                     minimumDistance: Distance,
+                     desiredSpeed: Velocity
                    ) extends Driver
-
