@@ -2,6 +2,7 @@ package com.billding.traffic
 
 import squants.motion.Acceleration
 import com.billding.physics.{Spatial, SpatialForDefaults}
+import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
 import squants.motion.{DistanceUnit, VelocityUnit}
 import squants.{Time, Velocity}
 

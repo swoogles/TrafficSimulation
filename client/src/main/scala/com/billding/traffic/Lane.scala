@@ -42,19 +42,16 @@ object Lane extends LaneFunctions {
   }
 
     // TODO: Test new vehicles from source
-    def update(lane: Lane, speedLimit: Velocity, t: Time, dt: Time): Lane = {
+    def update(lane: LaneImpl, speedLimit: Velocity, t: Time, dt: Time): LaneImpl = {
       val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t, dt)
       val newVehicleList: List[PilotedVehicle] =
-        if (newVehicleOption.isDefined) {
-          if (lane.vehicles.size > 30) {
-            lane.vehicles.tail :+ newVehicleOption.get
-          } else {
-            lane.vehicles :+ newVehicleOption.get
-          }
-        }
-        else lane.vehicles
+      newVehicleOption match {
+        case Some(newVehicle) if (lane.vehicles.size > 30) => lane.vehicles.tail :+ newVehicle
+        case Some(newVehicle) => lane.vehicles :+ newVehicle
+        case None => lane.vehicles
+      }
 
-      val laneWithNewVehicle = LaneImpl(newVehicleList, lane.vehicleSource, lane.beginning, lane.end)
+      val laneWithNewVehicle = lane.copy(vehicles = newVehicleList)
       val dMomentumList = responsesInOneLanePrep(laneWithNewVehicle, speedLimit)
       val vehiclesAndUpdates = newVehicleList.zip(dMomentumList)
       val newVehicles: List[PilotedVehicle] = vehiclesAndUpdates map {
@@ -69,7 +66,7 @@ object Lane extends LaneFunctions {
         tooClose
       }}
 
-      LaneImpl(newVehicles, lane.vehicleSource, lane.beginning, lane.end)
+      laneWithNewVehicle.copy(vehicles = newVehicles)
     }
 
   def responsesInOneLanePrep(lane: Lane, speedLimit: Velocity): List[Acceleration] = {
@@ -78,24 +75,6 @@ object Lane extends LaneFunctions {
       case head :: _ => responsesInOneLane(NonEmptyList(lane.vehicleAtInfinity, lane.vehicles), speedLimit).toList
     }
   }
-
-  /** TODO lane.leader.follower
-          How cool would that be?
-          The syntax is friendly at first glance. It would need to accompany the optional behavior of:
-            -lane.leader
-            -vehicle.follower
-
-          It would look more like:
-            val leader: Option[PilotedVehicle] =
-              lane.leader
-            val follower: Option[PilotedVehicle] =
-              leader
-              .flatMap(leader=>leader.follower)
-
-          I'm really starting to think this is too internal-fiddly to be exposed
-          outside of the class. I want this behavior, but hidden inside...
-          [[traffic.Lane]]? I think that's it.
-    */
 
 }
 
