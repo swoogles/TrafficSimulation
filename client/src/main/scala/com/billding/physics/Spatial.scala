@@ -4,7 +4,7 @@ import breeze.linalg.DenseVector
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import squants.motion._
 import squants.space.{LengthUnit, Meters}
-import squants.{Length, QuantityVector, SVector, Time, Velocity}
+import squants.{Length, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
 
 trait Spatial {
   val numberOfDimensions = 3
@@ -38,16 +38,16 @@ case class SpatialImpl (
 
 object Spatial {
   val ZERO_VELOCITY: (Double, Double, Double, VelocityUnit) = (0, 0, 0, MetersPerSecond)
+  val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = convertToSVector(ZERO_VELOCITY)
 
-  val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = {
-    val (vX, vY, vZ, vUnit)= (0, 0, 0, MetersPerSecond)
-    SVector(vX, vY, vZ).map(vUnit(_))
-  }
   val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = {
-    val (dX, dY, dZ, dUnit)=ZERO_DIMENSIONS
-    SVector(dX, dY, dZ).map(dUnit(_))
+  val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = convertToSVector(ZERO_DIMENSIONS)
+
+  def convertToSVector[T <: squants.Quantity[T]](input: (Double, Double, Double, UnitOfMeasure[T]) ): QuantityVector[T] = {
+    val (x, y, z, measurementUnit) = input
+    QuantityVector[T](measurementUnit(x), measurementUnit(y), measurementUnit(z))
   }
+
   def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
   def relativeVelocity(observer: Spatial, target: Spatial) = ???
@@ -101,14 +101,10 @@ object Spatial {
              vIn: (Double, Double, Double, VelocityUnit),
              dIn:((Double, Double, Double, LengthUnit))
            ): Spatial = {
-    val (pX, pY, pZ, pUnit) = pIn
-    val (vX, vY, vZ, vUnit) = vIn
-    val (dX, dY, dZ, dUnit) = dIn
 
-
-    val p: QuantityVector[Distance] = SVector(pX, pY, pZ) .map(pUnit(_))
-    val v: QuantityVector[Velocity] = SVector(vX, vY, vZ).map(vUnit(_))
-    val d: QuantityVector[Length] = SVector(dX, dY, dZ).map(dUnit(_))
+    val p: QuantityVector[Distance] = convertToSVector(pIn)
+    val v: QuantityVector[Velocity] = convertToSVector(vIn)
+    val d: QuantityVector[Length] = convertToSVector(dIn)
     new SpatialImpl(p, v, d)
 
   }
