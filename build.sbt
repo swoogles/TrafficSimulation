@@ -55,7 +55,8 @@ lazy val client = project.in(file("client")) settings(
     "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     "org.typelevel"  %%% "squants"  % "1.2.0",
     "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
-    "com.lihaoyi" %%% "pprint" % "0.4.3"
+    "com.lihaoyi" %%% "pprint" % "0.4.3",
+    "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
   )
 ) dependsOn (shared) enablePlugins (ScalaJSPlugin)
 
