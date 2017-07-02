@@ -56,10 +56,13 @@ case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl) extends 
 
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle = {
     val updatedSpatial: Spatial = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP)
-    this.copy(
+    pprint.pprintln(spatial)
+    val newCopy = this.copy(
       driver = driver.copy(spatial=updatedSpatial),
       vehicle = vehicle.copy(spatial = updatedSpatial)
     )
+    pprint.pprintln(newCopy)
+    newCopy
   }
 
   override def tooClose(pilotedVehicle: PilotedVehicle): Boolean = {
