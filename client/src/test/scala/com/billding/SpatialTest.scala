@@ -16,13 +16,15 @@ import squants.time.TimeConversions._
 class SpatialTest extends FlatSpec {
   private val dt = 1 seconds
 
+  val destination = Spatial.apply((1, 0, 0, Kilometers))
+
   it should "accelerate a spatial in the direction of travel." in {
     val startingSpatial = Spatial(
       (0, 0, 0, Kilometers),
       (120, 0, 0, KilometersPerHour)
     )
     val acceleration = MetersPerSecondSquared(1)
-    val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpatial, dt, acceleration)
+    val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpatial, dt, acceleration, destination)
     println("startingSpatial: " + startingSpatial)
     println("endingSpatial: " + endingSpatial)
     endingSpatial.r.magnitude > startingSpatial.r.magnitude
@@ -34,7 +36,7 @@ class SpatialTest extends FlatSpec {
       (120, 0, 0, KilometersPerHour)
     )
     val acceleration = -MetersPerSecondSquared(1)
-    val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpacial, dt, acceleration)
+    val endingSpatial = Spatial.accelerateAlongCurrentDirection(startingSpacial, dt, acceleration, destination)
     endingSpatial.r.magnitude < startingSpacial.r.magnitude
   }
 

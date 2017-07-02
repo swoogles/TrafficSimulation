@@ -1,9 +1,11 @@
 package com.billding.physics
 
 import breeze.linalg.DenseVector
+import client.Client
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import squants.motion._
 import squants.space.{LengthUnit, Meters}
+import squants.time.Seconds
 import squants.{Length, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
 
 trait Spatial {
@@ -68,31 +70,38 @@ object Spatial {
   new position:   	x(t+Δt) = x(t) + v(t)Δt + 1/2 (dv/dt) (Δt)2,
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
   TODO: Restrict this so nobody tries to reverse.
+  TODO: HERE! This is where that stupid spatial is shitting the bed.
   */
-  def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dP: Acceleration): Spatial = {
+  def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dP: Acceleration, destination: Spatial): SpatialImpl = {
     // TODO I think I've lost the unit safety with this current approach
-    val vUnit = spatial.v.valueUnit
-    val vUnitVec: QuantityVector[Velocity] = spatial.v.normalize
+    val trueUnitVec: QuantityVector[Distance] = spatial.vectorTo(destination).normalize
+    val withRightUnits = trueUnitVec.map{ r: Distance => r.toMeters}
     val accelerationOppositeOfTravelDirection: QuantityVector[Acceleration] =
-      (vUnitVec.to(vUnit)).map{ a: Double => dP * a}
-    val accelerationWithTime = accelerationOppositeOfTravelDirection.map{accelerationComponent: Acceleration =>accelerationComponent*dt}
-    val newV = spatial.v.plus(accelerationWithTime)
+      (withRightUnits).map{ a: Double => dP * a}
+    val accelerationWithTime =
+      accelerationOppositeOfTravelDirection.map{
+        accelerationComponent: Acceleration =>accelerationComponent*dt
+      }
+    val newV: QuantityVector[Velocity] = spatial.v.plus(accelerationWithTime)
     var inflected = false
     val zerodOutVComponents: Seq[Velocity] = for ((oldVComponent, newVComponent) <- spatial.v.coordinates.zip(newV.coordinates)) yield {
       if ( (oldVComponent.value <= 0 && newVComponent.value > 0)
         || (oldVComponent.value >= 0 && newVComponent.value < 0)) {
-        println("inflection point!!!!!")
+//        println("inflection point.")
+//        Client.INFLECTED = true
         inflected = true
         MetersPerSecond(0)
       } else {
         newVComponent
       }
     }
-    val zerodOutV =  QuantityVector(zerodOutVComponents:_*)
+    val zerodOutV =
+//      QuantityVector(zerodOutVComponents:_*)
+      newV
     val dPwithNewV = zerodOutV.map{ v: Velocity => v * dt }
     val betterMomentumFactor: QuantityVector[Distance] = accelerationOppositeOfTravelDirection.map{ p: Acceleration => .5 * p * dt.squared}
     val newP = spatial.r + dPwithNewV + betterMomentumFactor
-    if (inflected) println("zerodOutV: " + zerodOutV)
+//    if (inflected) println("zerodOutV: " + zerodOutV)
     SpatialImpl(newP, zerodOutV, spatial.dimensions)
   }
 
@@ -100,7 +109,7 @@ object Spatial {
              pIn: (Double, Double, Double, DistanceUnit),
              vIn: (Double, Double, Double, VelocityUnit),
              dIn:((Double, Double, Double, LengthUnit))
-           ): Spatial = {
+           ): SpatialImpl = {
 
     val p: QuantityVector[Distance] = convertToSVector(pIn)
     val v: QuantityVector[Velocity] = convertToSVector(vIn)
@@ -111,13 +120,13 @@ object Spatial {
   def apply(
              pIn: (Double, Double, Double, DistanceUnit),
              vIn: (Double, Double, Double, VelocityUnit)
-           ): Spatial = {
+           ): SpatialImpl = {
     apply(pIn, vIn, ZERO_DIMENSIONS)
   }
 
   def apply(
              pIn: (Double, Double, Double, DistanceUnit)
-           ): Spatial = {
+           ): SpatialImpl = {
     apply(pIn, ZERO_VELOCITY, ZERO_DIMENSIONS)
   }
 
@@ -125,7 +134,7 @@ object Spatial {
            p: QuantityVector[Distance],
             v: QuantityVector[Velocity],
             d: QuantityVector[Length]
-           ): Spatial = {
+           ): SpatialImpl = {
 
     new SpatialImpl(p, v, d)
   }

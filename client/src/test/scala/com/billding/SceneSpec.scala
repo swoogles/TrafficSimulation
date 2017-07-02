@@ -21,17 +21,18 @@ class SceneSpec extends  FlatSpec{
   val speedLimit = KilometersPerHour(150)
   val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(1))
 
+  val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
+  val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
+
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
                      vIn1: (Double, Double, Double, VelocityUnit)): PilotedVehicle = {
-    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm)
+    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, endingSpatial)
   }
   type basicSpatial = ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit))
   it should "do something " in {
     // TODO enact real tests here to ensure correct behavior
     // This might involve reusing code/test code from Spatial tests?
-    val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
-    val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
 
     val vehicles = List(
       createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),

@@ -15,14 +15,16 @@ class PilotedVehicleSpec extends FlatSpec {
   val speedLimit = KilometersPerHour(150)
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
 
+  val destination = Spatial.apply((100.0, 0.0, 0.0, Meters))
+
   def createVehiclePair (
                          pIn1: (Double, Double, Double, LengthUnit),
                          vIn1: (Double, Double, Double, VelocityUnit),
                          pIn2: (Double, Double, Double, LengthUnit),
                          vIn2: (Double, Double, Double, VelocityUnit)
                        ): (PilotedVehicle, PilotedVehicle) = {
-    (PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm),
-      PilotedVehicle.commuter(Spatial(pIn2, vIn2), idm))
+    (PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, destination),
+      PilotedVehicle.commuter(Spatial(pIn2, vIn2), idm, destination))
   }
 
   def accelerationTest (

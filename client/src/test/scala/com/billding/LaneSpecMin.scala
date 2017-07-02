@@ -24,7 +24,7 @@ class LaneSpecMin extends  FlatSpec {
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
                      vIn1: (Double, Double, Double, VelocityUnit)): PilotedVehicle = {
-    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm)
+    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, laneEndingPoint)
   }
 
   def createVehiclePair(
@@ -40,24 +40,12 @@ class LaneSpecMin extends  FlatSpec {
 
 
   // FINALLY got a test that contains this damn NaN issue
-  it should "accelerate a car originally at rest" in {
-    val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
-    val endingSpatial =Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
-
-    val vehicles = List(
-      createVehicle((100, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
-    )
-
-    val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
-    val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
-
-//    pprint.pprintln(lane)
-    val newLane = Lane.update(lane, speedLimit, 0.2.seconds, 0.1.seconds)
-//    pprint.pprintln(newLane)
-    accelerations.head shouldBe speedingUp
-    every(accelerations.tail) shouldBe slowingDown
-
-
+  it should "copy a vehicle with an at-rest spacial" in {
+    val atRestSpatial =Spatial((100, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
+    val pilotedVehicle = PilotedVehicle.commuter(atRestSpatial, new IntelligentDriverModelImpl, laneEndingPoint)
+    pprint.pprintln(pilotedVehicle.spatial)
+    val acceleratedVehicle = pilotedVehicle.accelerateAlongCurrentDirection(0.1.seconds, MetersPerSecondSquared(1))
+    pprint.pprintln(acceleratedVehicle.spatial)
   }
 
 }

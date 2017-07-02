@@ -31,7 +31,7 @@ class VehicleSourceSpec extends FlatSpec {
 
 //    val moments = Stream.range(0.5.seconds, 1.5.seconds, dt)
     val startT: Time = 0.seconds
-    val vehicleProductions: Seq[Option[PilotedVehicle]] = ts.map{ case (curT) => vehicleSource.produceVehicle(curT, dt)}
+    val vehicleProductions: Seq[Option[PilotedVehicle]] = ts.map{ case (curT) => vehicleSource.produceVehicle(curT, dt, laneEndingPoint)}
     vehicleProductions.flatten.size shouldBe 1
   }
 

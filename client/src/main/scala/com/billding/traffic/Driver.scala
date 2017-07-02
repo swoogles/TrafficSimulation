@@ -1,13 +1,13 @@
 package com.billding.traffic
 
-import com.billding.physics.Spatial
+import com.billding.physics.{Spatial, SpatialImpl}
 import squants.motion.Distance
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
 import squants.{Time, Velocity}
 
 trait Driver {
-  val spatial: Spatial
+  val spatial: SpatialImpl
   val reactionTime: Time
   val preferredDynamicSpacing: Time
   val minimumDistance: Distance
@@ -17,7 +17,7 @@ trait Driver {
 
 object Driver {
   def commuter(
-                spatial: Spatial,
+                spatial: SpatialImpl,
                 idm: IntelligentDriverModel) = {
     val reactionTime: Time = (0.5 seconds)
     val preferredDynamicSpacing: Time = (1 seconds)
@@ -27,7 +27,7 @@ object Driver {
   }
 
   def aggressive(
-                spatial: Spatial,
+                spatial: SpatialImpl,
                 idm: IntelligentDriverModel) = {
     val reactionTime: Time = (0.5 seconds)
     val preferredDynamicSpacing: Time = (0.5 seconds)
@@ -39,7 +39,7 @@ object Driver {
 }
 
 case class DriverImpl(
-                     spatial: Spatial,
+                     spatial: SpatialImpl,
                      idm: IntelligentDriverModel,
                      reactionTime: Time,
                      preferredDynamicSpacing: Time,

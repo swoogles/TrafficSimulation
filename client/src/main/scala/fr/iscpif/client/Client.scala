@@ -8,7 +8,7 @@ import org.scalajs.dom
 
 import scala.concurrent.Future
 import rx._
-import squants.Length
+import squants.{Length, Time}
 
 import scala.scalajs.js.annotation.JSExport
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
@@ -22,6 +22,9 @@ import squants.time.{Milliseconds, Seconds}
   */
 @JSExport("Client")
 object Client {
+  // TODO Heh. How awful is this?
+  var INFLECTED = false
+  var GLOBAL_T: Time = null
 
   val helloValue = Var(0)
   val caseClassValue = Var("empty")
@@ -31,12 +34,14 @@ object Client {
 
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
-                     vIn1: (Double, Double, Double, VelocityUnit)): PilotedVehicle = {
-    PilotedVehicle.commuter(pIn1, vIn1, idm)
+                     vIn1: (Double, Double, Double, VelocityUnit),
+                      destination: Spatial
+                   ): PilotedVehicle = {
+    PilotedVehicle.commuter(pIn1, vIn1, idm, destination)
   }
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val leadVehicleXPos = -10
+  val leadVehicleXPos = -50
   val originSpatial = Spatial((-100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
   val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
   val originSpatial2 = Spatial((-100, 20, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
@@ -50,16 +55,19 @@ object Client {
     */
 
 
+  val tmpLane = new LaneImpl(Nil, source, originSpatial, endingSpatial)
   val vehicles = List(
-    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-40, 0, 0, KilometersPerHour))
+    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-60, 0, 0, KilometersPerHour), tmpLane.vehicleAtInfinity.spatial)
   )
 
   /** TODO: Source location should be determined inside Lane constructor
     * Velocity spacial can *also* be determined by stop/start and a given speed.
     */
 
+  tmpLane.vehicleAtInfinity.spatial
   val source = VehicleSourceImpl(Seconds(1), originSpatial, velocitySpatial)
   val source2 = VehicleSourceImpl(Seconds(2), originSpatial2, velocitySpatial)
+  pprint.pprintln("starting vehicle: " + vehicles.head.spatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
   val lane2 = new LaneImpl(Nil, source2, originSpatial2, endingSpatial2)
   val t = Seconds(0)
@@ -80,18 +88,21 @@ object Client {
     val millisecondsPerRefresh = 500
     var sceneVolatile = scene
     var window = new Window(sceneVolatile, nodes, edges)
+    var printed = false
     dom.window.setInterval(() => {
-      sceneVolatile = sceneVolatile.update(speedLimit)
-      window = new Window(sceneVolatile, nodes, edges)
-      window.svgNode.forceRedraw()
-      /** TODO lane.leader.follower
-        * How cool would that be?
-        * Look for it in [[Lane]], cause this is ugly.
-       */
-      val leadingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.head
-      val followingVehicle: PilotedVehicle = sceneVolatile.lanes.head.vehicles.tail.head
-//      println("Distance between: " + leadingVehicle.spatial.distanceTo(followingVehicle.spatial))
-//      println("following vehicle.v.x: " + sceneVolatile.lanes.head.vehicles.tail.head.spatial.v.coordinates(0))
+      GLOBAL_T = sceneVolatile.t
+      val vehicles = sceneVolatile.lanes.head.vehicles
+        if (printed == false && vehicles.length == 2) {
+          println("t: " + sceneVolatile.t)
+          println("first car: ")
+          pprint.pprintln(vehicles.head.spatial)
+          println("first follower: ")
+          pprint.pprintln(vehicles.tail.head.spatial)
+          printed = true
+        }
+        sceneVolatile = sceneVolatile.update(speedLimit)
+        window = new Window(sceneVolatile, nodes, edges)
+        window.svgNode.forceRedraw()
     }, dt.toMilliseconds / 5)
   }
 }

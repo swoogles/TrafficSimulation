@@ -25,7 +25,7 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
   private val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
   val vehicleAtInfinity: PilotedVehicle = {
     val spatial =  Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY_VECTOR, Spatial.ZERO_DIMENSIONS_VECTOR )
-    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl)
+    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
   }
 }
 
@@ -43,7 +43,7 @@ object Lane extends LaneFunctions {
 
     // TODO: Test new vehicles from source
     def update(lane: LaneImpl, speedLimit: Velocity, t: Time, dt: Time): LaneImpl = {
-      val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t, dt)
+      val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t, dt, lane.vehicleAtInfinity.spatial)
       val newVehicleList: List[PilotedVehicle] =
       newVehicleOption match {
         case Some(newVehicle) if (lane.vehicles.size > 30) => lane.vehicles.tail :+ newVehicle
