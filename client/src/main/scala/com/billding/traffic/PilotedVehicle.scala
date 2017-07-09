@@ -61,7 +61,7 @@ case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destinat
 
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicleImpl = {
     val updatedSpatial: SpatialImpl = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP, destination)
-    pprint.pprintln(updatedSpatial)
+//    pprint.pprintln(updatedSpatial)
     this.copy(
       driver = driver.copy(spatial=updatedSpatial),
       vehicle = vehicle.copy(spatial = updatedSpatial)
