@@ -42,7 +42,7 @@ object Client {
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
   val leadVehicleXPos = -50
-  val originSpatial = Spatial((-100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
+  val originSpatial = Spatial((-50, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
   val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
   val originSpatial2 = Spatial((-100, 20, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
   val endingSpatial2 = Spatial((100, 20, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
@@ -56,8 +56,8 @@ object Client {
 
 
   val tmpLane = new LaneImpl(Nil, source, originSpatial, endingSpatial)
-  val vehicles = List(
-    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-60, 0, 0, KilometersPerHour), tmpLane.vehicleAtInfinity.spatial)
+  val vehicles: List[PilotedVehicle] = List(
+//    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-10, 0, 0, KilometersPerHour), tmpLane.vehicleAtInfinity.spatial)
   )
 
   /** TODO: Source location should be determined inside Lane constructor
@@ -67,7 +67,7 @@ object Client {
   tmpLane.vehicleAtInfinity.spatial
   val source = VehicleSourceImpl(Seconds(1), originSpatial, velocitySpatial)
   val source2 = VehicleSourceImpl(Seconds(2), originSpatial2, velocitySpatial)
-  pprint.pprintln("starting vehicle: " + vehicles.head.spatial)
+//  pprint.pprintln("starting vehicle: " + vehicles.head.spatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
   val lane2 = new LaneImpl(Nil, source2, originSpatial2, endingSpatial2)
   val t = Seconds(0)

@@ -44,12 +44,12 @@ class LaneSpecMin extends  FlatSpec {
     val atRestSpatial = Spatial((100, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
     val updatedSpatial = Spatial.accelerateAlongCurrentDirection(atRestSpatial, 1.seconds, MetersPerSecondSquared(1), laneEndingPoint)
     pprint.pprintln(updatedSpatial)
-//    val pilotedVehicle = PilotedVehicle.commuter(atRestSpatial, new IntelligentDriverModelImpl, laneEndingPoint)
-//    pprint.pprintln(pilotedVehicle.spatial)
-//    val acceleratedVehicle = pilotedVehicle.accelerateAlongCurrentDirection(0.1.seconds, MetersPerSecondSquared(1))
-//    pprint.pprintln(acceleratedVehicle.spatial)
-//    val acceleratedVehicle2 = acceleratedVehicle.accelerateAlongCurrentDirection(0.1.seconds, MetersPerSecondSquared(1))
-//    pprint.pprintln(acceleratedVehicle2.spatial)
+  }
+
+  it should "sit still if accelerating backwards" in {
+    val atRestSpatial = Spatial((100, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
+    val updatedSpatial = Spatial.accelerateAlongCurrentDirection(atRestSpatial, 1.seconds, - MetersPerSecondSquared(1), laneEndingPoint)
+    pprint.pprintln(updatedSpatial)
   }
 
 }

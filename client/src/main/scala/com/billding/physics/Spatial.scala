@@ -1,16 +1,14 @@
 package com.billding.physics
 
 import breeze.linalg.DenseVector
-import client.Client
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import squants.motion._
 import squants.space.{LengthUnit, Meters}
-import squants.time.Seconds
 import squants.{DoubleVector, Length, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
 
 trait Spatial {
   val numberOfDimensions = 3
-  val r: QuantityVector[Distance] //= SVector(Kilometers(-1.2), Kilometers(4.3), Kilometers(2.3))
+  val r: QuantityVector[Distance]
   val v: QuantityVector[Velocity]
   val dimensions: QuantityVector[Distance]
   def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] = {
@@ -86,12 +84,24 @@ object Spatial {
       }
 
     val newV: QuantityVector[Velocity] = spatial.v.plus(changeInVelocity)
+    val newVNoReverse: QuantityVector[Velocity] =
+      if (newV.normalize.dotProduct(unitVec).value == -1)
+        ZERO_VELOCITY_VECTOR
+      else
+        newV
+    pprint.pprintln(newV.normalize.dotProduct(unitVec).value )
 
-    val changeInPositionViaVelocity: QuantityVector[Length] = spatial.v.map{ v: Velocity => v * dt }
+
+//    val changeInPositionViaVelocity: QuantityVector[Length] = spatial.v.map{ v: Velocity => v * dt }
+    val changeInPositionViaVelocity: QuantityVector[Length] = if (spatial.v.normalize.dotProduct(unitVec).value == -1 )
+      ZERO_DIMENSIONS_VECTOR
+    else
+      spatial.v.map{ v: Velocity => v * dt }
+
     val changeInPositionViaAcceleration: QuantityVector[Distance] =
       accelerationAlongDirectionOfTravel.map{ p: Acceleration => .5 * p * dt.squared}
-    val newP = spatial.r + changeInPositionViaVelocity + changeInPositionViaAcceleration
-    SpatialImpl(newP, newV, spatial.dimensions)
+    val newP = spatial.r + changeInPositionViaVelocity // + changeInPositionViaAcceleration
+    SpatialImpl(newP, newVNoReverse, spatial.dimensions)
   }
 
   def apply(

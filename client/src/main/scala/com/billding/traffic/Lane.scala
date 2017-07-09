@@ -41,12 +41,14 @@ object Lane extends LaneFunctions {
     }
   }
 
+  val MAX_VEHICLES_PER_LANE = 60
+
     // TODO: Test new vehicles from source
     def update(lane: LaneImpl, speedLimit: Velocity, t: Time, dt: Time): LaneImpl = {
       val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t, dt, lane.vehicleAtInfinity.spatial)
       val newVehicleList: List[PilotedVehicle] =
       newVehicleOption match {
-        case Some(newVehicle) if (lane.vehicles.size > 30) => lane.vehicles.tail :+ newVehicle
+        case Some(newVehicle) if (lane.vehicles.size > MAX_VEHICLES_PER_LANE) => lane.vehicles.tail :+ newVehicle
         case Some(newVehicle) => lane.vehicles :+ newVehicle
         case None => lane.vehicles
       }

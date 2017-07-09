@@ -16,7 +16,7 @@ Deceleration b	  3.0 m/s2	  2.0 m/s2	  Very high values to enhance the formation
 object VehicleStats {
   object Commuter {
     val minimumGap = 2.meters
-    val acceleration = 1.meters.per((1 seconds).squared)
+    val acceleration = 2.meters.per((1 seconds).squared)
     val deceleration = 3.0.meters.per((1 seconds).squared)
     val dimensions: (Double, Double, Double, LengthUnit) = (4, 2, 0, Meters)
     val weight = Kilograms(800)
