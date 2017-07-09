@@ -22,12 +22,7 @@ import squants.time.{Milliseconds, Seconds}
   */
 @JSExport("Client")
 object Client {
-  // TODO Heh. How awful is this?
-  var INFLECTED = false
   var GLOBAL_T: Time = null
-
-  val helloValue = Var(0)
-  val caseClassValue = Var("empty")
 
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(65)
@@ -42,10 +37,10 @@ object Client {
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
   val leadVehicleXPos = -50
-  val originSpatial = Spatial((-50, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
-  val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
-  val originSpatial2 = Spatial((-100, 20, 0, Meters), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
-  val endingSpatial2 = Spatial((100, 20, 0, Kilometers), (0.1, 0, 0, KilometersPerHour), zeroDimensions)
+  val originSpatial = Spatial((-50, 0, 0, Meters))
+  val endingSpatial = Spatial((100, 0, 0, Kilometers))
+  val originSpatial2 = Spatial((-100, 20, 0, Meters))
+  val endingSpatial2 = Spatial((100, .002, 0, Kilometers))
 
   val herdSpeed = 65
   val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
@@ -64,10 +59,8 @@ object Client {
     * Velocity spacial can *also* be determined by stop/start and a given speed.
     */
 
-  tmpLane.vehicleAtInfinity.spatial
   val source = VehicleSourceImpl(Seconds(1), originSpatial, velocitySpatial)
   val source2 = VehicleSourceImpl(Seconds(2), originSpatial2, velocitySpatial)
-//  pprint.pprintln("starting vehicle: " + vehicles.head.spatial)
   val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
   val lane2 = new LaneImpl(Nil, source2, originSpatial2, endingSpatial2)
   val t = Seconds(0)
