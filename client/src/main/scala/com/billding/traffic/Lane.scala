@@ -4,6 +4,7 @@ import cats.data.NonEmptyList
 import com.billding.physics.Spatial
 import com.billding.{traffic, _}
 import squants.motion._
+import squants.time.Seconds
 import squants.{QuantityVector, Time, Velocity}
 
 trait Segment {
@@ -32,6 +33,11 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
 }
 
 object Lane extends LaneFunctions {
+
+  def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, vehicles: List[PilotedVehicle] = Nil): LaneImpl = {
+    val source = VehicleSourceImpl(sourceTiming, beginning, end)
+    LaneImpl(vehicles, source, beginning, end)
+  }
 
   private def responsesInOneLane(vehicles: NonEmptyList[PilotedVehicle], speedLimit: Velocity): NonEmptyList[Acceleration] = {
     val target = vehicles.head

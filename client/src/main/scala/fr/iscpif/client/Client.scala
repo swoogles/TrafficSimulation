@@ -50,19 +50,13 @@ object Client {
     */
 
 
-  val tmpLane = new LaneImpl(Nil, source, originSpatial, endingSpatial)
+  val tmpLane = Lane(Seconds(1), originSpatial, endingSpatial, Nil)
   val vehicles: List[PilotedVehicle] = List(
 //    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-10, 0, 0, KilometersPerHour), tmpLane.vehicleAtInfinity.spatial)
   )
 
-  /** TODO: Source location should be determined inside Lane constructor
-    * Velocity spacial can *also* be determined by stop/start and a given speed.
-    */
-
-  val source = VehicleSourceImpl(Seconds(1), originSpatial, velocitySpatial)
-  val source2 = VehicleSourceImpl(Seconds(2), originSpatial2, velocitySpatial)
-  val lane = new LaneImpl(vehicles, source, originSpatial, endingSpatial)
-  val lane2 = new LaneImpl(Nil, source2, originSpatial2, endingSpatial2)
+  val lane = Lane(Seconds(1), originSpatial, endingSpatial, vehicles)
+  val lane2 = Lane(Seconds(2), originSpatial2, endingSpatial2)
   val t = Seconds(0)
   val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
   implicit val dt = Milliseconds(20)
@@ -81,18 +75,9 @@ object Client {
     val millisecondsPerRefresh = 500
     var sceneVolatile = scene
     var window = new Window(sceneVolatile, nodes, edges)
-    var printed = false
     dom.window.setInterval(() => {
       GLOBAL_T = sceneVolatile.t
       val vehicles = sceneVolatile.lanes.head.vehicles
-        if (printed == false && vehicles.length == 2) {
-          println("t: " + sceneVolatile.t)
-          println("first car: ")
-          pprint.pprintln(vehicles.head.spatial)
-          println("first follower: ")
-          pprint.pprintln(vehicles.tail.head.spatial)
-          printed = true
-        }
         sceneVolatile = sceneVolatile.update(speedLimit)
         window = new Window(sceneVolatile, nodes, edges)
         window.svgNode.forceRedraw()
