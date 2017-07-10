@@ -89,7 +89,6 @@ object Spatial {
         ZERO_VELOCITY_VECTOR
       else
         newV
-    pprint.pprintln(newV.normalize.dotProduct(unitVec).value )
 
 
 //    val changeInPositionViaVelocity: QuantityVector[Length] = spatial.v.map{ v: Velocity => v * dt }
