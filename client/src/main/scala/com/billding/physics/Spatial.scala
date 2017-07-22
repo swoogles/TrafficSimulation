@@ -24,6 +24,7 @@ trait Spatial {
     val z= (vectorTo _) andThen (_.magnitude)
     z.apply(obstacle)
   }
+  def move(orientation: Orientation, distance: Distance): Spatial
 }
 case class SpatialImpl (
                          r: QuantityVector[Distance],
@@ -33,6 +34,12 @@ case class SpatialImpl (
   val allAspects: List[QuantityVector[_]] = List(r, v, dimensions)
   for ( aspect <- allAspects ) {
     assert(aspect.coordinates.length == numberOfDimensions)
+  }
+
+  def move(orientation: Orientation, distance: Distance) = {
+//    val displacement = orientation.vec.times(x:Double=>x*distance)
+    val displacement = orientation.vec.map{x:Double=> distance*x}
+    this.copy(r = r + displacement)
   }
 }
 
@@ -165,3 +172,21 @@ object SpatialForDefaults {
   }
 
 }
+
+sealed trait Orientation {
+  val vec: DoubleVector
+}
+case object North extends Orientation {
+  val vec = DoubleVector(0.0, 1.0, 0.0)
+}
+case object South extends Orientation {
+  val vec = DoubleVector(0.0, -1.0, 0.0)
+}
+case object East extends Orientation {
+  val vec = DoubleVector(1.0, 0.0, 0.0)
+}
+case object West extends Orientation {
+  val vec = DoubleVector(-1.0, 0.0, 0.0)
+}
+
+
