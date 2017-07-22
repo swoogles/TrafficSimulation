@@ -34,11 +34,8 @@ class PilotedVehicleSpec extends FlatSpec {
     vIn2: (Double, Double, Double, VelocityUnit)
   ): Acceleration = {
     val (drivenVehicle1, drivenVehicle2)  = createVehiclePair( pIn1, vIn1 , pIn2, vIn2 )
-    // TODO Get rid of magic value
     drivenVehicle1.reactTo(drivenVehicle2, speedLimit)
   }
-
-//  it should "drive cars over a period"
 
   it should "accelerate a slow car when obstacle is far away" in {
     val res = accelerationTest(

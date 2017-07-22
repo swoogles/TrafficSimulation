@@ -1,7 +1,7 @@
 package com.billding.traffic
 
 import cats.data.NonEmptyList
-import com.billding.physics.Spatial
+import com.billding.physics.{Spatial, SpatialImpl}
 import com.billding.{traffic, _}
 import squants.motion._
 import squants.time.Seconds
@@ -35,13 +35,22 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
 object Lane extends LaneFunctions {
 
   def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, vehicles: List[PilotedVehicle] = Nil): LaneImpl = {
-    val source = VehicleSourceImpl(sourceTiming, beginning, end)
+    val speed: Velocity = KilometersPerHour(50)
+    // TODO end is *not* what I want to pass on!!
+    val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
+    val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.toMeters * speed}
+    pprint.pprintln("startingV")
+    pprint.pprintln(startingV)
+
+    val velocitySpatial = SpatialImpl(beginning.r, startingV, beginning.dimensions)
+    val source = VehicleSourceImpl(sourceTiming, beginning, velocitySpatial)
     LaneImpl(vehicles, source, beginning, end)
   }
 
   private def responsesInOneLane(vehicles: NonEmptyList[PilotedVehicle], speedLimit: Velocity): NonEmptyList[Acceleration] = {
     val target = vehicles.head
     vehicles.tail match {
+      case Nil => throw new RuntimeException("shit!!")
       case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil) // :: responsesInOneLane(follower :: rest)
       case follower :: rest => {
         follower.reactTo(target, speedLimit) :: responsesInOneLane(NonEmptyList(follower, rest), speedLimit)

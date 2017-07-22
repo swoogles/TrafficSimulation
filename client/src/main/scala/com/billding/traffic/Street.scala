@@ -29,7 +29,7 @@ object Street {
            ): Street = {
 
     val lanes = for (i <- Range(0, numLanes).toList) yield {
-      val offset = Meters(3) * i
+      val offset = Meters(6) * i
       val newBeginning = beginning.move(orientation, offset)
       val newEnd = end.move(orientation, offset)
       val source = VehicleSourceImpl(sourceTiming, newBeginning, newEnd)

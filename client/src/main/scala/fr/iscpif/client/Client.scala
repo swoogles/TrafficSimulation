@@ -1,7 +1,7 @@
 package client
 
 import com.billding._
-import com.billding.physics.Spatial
+import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
 import fr.iscpif.client.{GraphOriginal, WindowOriginal}
 import org.scalajs.dom
@@ -36,32 +36,30 @@ object Client {
   }
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val leadVehicleXPos = -50
   val originSpatial = Spatial((-50, 0, 0, Meters))
   val endingSpatial = Spatial((100, 0, 0, Kilometers))
   val originSpatial2 = Spatial((-100, 20, 0, Meters))
   val endingSpatial2 = Spatial((100, .002, 0, Kilometers))
 
   val herdSpeed = 65
-  val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
   /**
     * TODO: Values should be improved through other means discussed here:
     * [[com.billding.rendering.CanvasRendering]]
     */
 
 
-  val tmpLane = Lane(Seconds(1), originSpatial, endingSpatial, Nil)
-  val vehicles: List[PilotedVehicle] = List(
-//    createVehicle((leadVehicleXPos, 0, 0, Meters), (herdSpeed-10, 0, 0, KilometersPerHour), tmpLane.vehicleAtInfinity.spatial)
-  )
+  val vehicles: List[PilotedVehicle] = List( )
 
-  val lane = Lane(Seconds(1), originSpatial, endingSpatial, vehicles)
-  val lane2 = Lane(Seconds(2), originSpatial2, endingSpatial2)
+  val street = Street(Seconds(1), originSpatial, endingSpatial, South, 1)
+
+//  val lane = Lane(Seconds(1), originSpatial, endingSpatial, vehicles)
+//  val lane2 = Lane(Seconds(2), originSpatial2, endingSpatial2)
   val t = Seconds(0)
   val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
   implicit val dt = Milliseconds(20)
   val scene: Scene = SceneImpl(
-    List(lane, lane2),
+    street.lanes,
+//    List(lane, lane2),
     t,
     dt,
     speedLimit,

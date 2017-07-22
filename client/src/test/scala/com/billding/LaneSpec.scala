@@ -111,4 +111,15 @@ class LaneSpec extends  FlatSpec {
     every(accelerations.tail) shouldBe slowingDown
   }
 
+  it should "make sure all cars have the right starting velocity" in {
+    val originSpatial = Spatial((0, 0, 0, Meters))
+    val endingSpatial = Spatial((100, 0, 0, Kilometers))
+
+    val lane = Lane(Seconds(1), originSpatial, endingSpatial)
+    val t = Seconds(1)
+    val dt = Seconds(.1)
+    val updatedLane = Lane.update(lane, speedLimit, t, dt)
+    pprint.pprintln(updatedLane)
+
+  }
 }
