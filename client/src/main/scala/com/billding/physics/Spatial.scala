@@ -135,6 +135,8 @@ object Spatial {
     apply(pIn, ZERO_VELOCITY, ZERO_DIMENSIONS)
   }
 
+  val BLANK = Spatial.apply((0, 0, 0, Meters))
+
   def withVecs(
            p: QuantityVector[Distance],
             v: QuantityVector[Velocity],
