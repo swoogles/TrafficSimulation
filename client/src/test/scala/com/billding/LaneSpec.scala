@@ -16,7 +16,7 @@ class LaneSpec extends  FlatSpec {
   val speedLimit = KilometersPerHour(150)
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val laneStartingPoint = Spatial.apply((0, 0, 0, Meters))
+  val laneStartingPoint = Spatial.BLANK
   val laneEndingPoint = Spatial.apply((1, 0, 0, Kilometers))
   val herdSpeed = 65
   val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
@@ -26,7 +26,7 @@ class LaneSpec extends  FlatSpec {
 
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
-                     vIn1: (Double, Double, Double, VelocityUnit),
+                     vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour),
                      destination: Spatial = emptyLane.vehicleAtInfinity.spatial
                    ): PilotedVehicle = {
     PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, destination)
@@ -35,8 +35,8 @@ class LaneSpec extends  FlatSpec {
   it should "make all vehicles accelerate from a stop together" in {
     val vehicles = List(
       createVehicle((100, 0, 0, Meters), (1, 0, 0, KilometersPerHour)),
-      createVehicle((95, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
-      createVehicle((90, 0, 0, Meters), (0, 0, 0, KilometersPerHour))
+      createVehicle((95, 0, 0, Meters)),
+      createVehicle((90, 0, 0, Meters))
     )
     val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
@@ -45,7 +45,7 @@ class LaneSpec extends  FlatSpec {
 
   it should "make all following vehicles slow down if the lead car is stopped" in {
     val vehicles = List(
-      createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+      createVehicle((100, 0, 0, Meters)),
       createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
@@ -59,8 +59,8 @@ class LaneSpec extends  FlatSpec {
 
   it should "have 1 car decelerate as it approaches a stopped car, and another accelerate away in front of it" in {
     val vehicles = List(
-      createVehicle((82, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
-      createVehicle((80, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
+      createVehicle((82, 0, 0, Meters)),
+      createVehicle((80, 0, 0, Meters)),
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
     val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
@@ -73,11 +73,11 @@ class LaneSpec extends  FlatSpec {
 
   it should "should only accelerate lead car in bumper-to-bumper traffic" in {
     val vehicles = List(
-      createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
-      createVehicle((98, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
-      createVehicle((96, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
-      createVehicle((94, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour)),
-      createVehicle((92, 0, 0, Meters), (0.0, 0, 0, KilometersPerHour))
+      createVehicle((100, 0, 0, Meters)),
+      createVehicle((98, 0, 0, Meters)),
+      createVehicle((96, 0, 0, Meters)),
+      createVehicle((94, 0, 0, Meters)),
+      createVehicle((92, 0, 0, Meters))
     )
     val lane = LaneImpl(vehicles, vehicleSource, laneStartingPoint, laneEndingPoint)
     val accelerations: List[Acceleration] = Lane.responsesInOneLanePrep(lane, speedLimit)
@@ -96,11 +96,11 @@ class LaneSpec extends  FlatSpec {
   Is it possible to do all lane updating while ignoring that?
    */
   it should "correctly update all cars in a lane" in {
-    val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
-    val endingSpatial =Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
+    val originSpatial = Spatial((0, 0, 0, Meters))
+    val endingSpatial =Spatial((100, 0, 0, Kilometers))
 
     val vehicles = List(
-      createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
+      createVehicle((100, 0, 0, Meters)),
       createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
