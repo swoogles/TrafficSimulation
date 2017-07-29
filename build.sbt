@@ -5,16 +5,16 @@ import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 val Organization = "fr.iscpif"
 val Name = "Traffice Simulator"
 val Version = "0.1.0-SNAPSHOT"
-val ScalaVersion = "2.11.8"
+val ScalaVersion = "2.12.3"
 val scalatraVersion = "2.5.0"
 val jettyVersion = "9.2.19.v20160908"
-val json4sVersion = "3.3.0"
-val scalatagsVersion = "0.6.3"
+val json4sVersion = "3.5.2"
+val scalatagsVersion = "0.6.5"
 val autowireVersion = "0.2.6"
-val upickleVersion = "0.4.1"
-val rxVersion = "0.3.1"
-val scaladgetVersion = "0.9.3-SNAPSHOT"
-val scalajsDomVersion = "0.9.1"
+val upickleVersion = "0.4.4"
+val rxVersion = "0.3.2"
+val scaladgetVersion = "0.9.4"
+val scalajsDomVersion = "0.9.3"
 val jqueryVersion = "2.2.1"
 val Resolvers = Seq(Resolver.sonatypeRepo("snapshots"),
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
@@ -55,7 +55,7 @@ lazy val client = project.in(file("client")) settings(
     "org.scala-js" %%% "scalajs-dom" % "0.9.0",
     "org.typelevel"  %%% "squants"  % "1.2.0",
     "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
-    "com.lihaoyi" %%% "pprint" % "0.4.3",
+    "com.lihaoyi" %%% "pprint" % "0.5.2",
     "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
   )
 ) dependsOn (shared) enablePlugins (ScalaJSPlugin)
