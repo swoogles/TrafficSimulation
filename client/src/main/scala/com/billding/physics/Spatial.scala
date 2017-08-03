@@ -179,10 +179,10 @@ sealed trait Orientation {
   val vec: DoubleVector
 }
 case object North extends Orientation {
-  val vec = DoubleVector(0.0, 1.0, 0.0)
+  val vec = DoubleVector(0.0, -1.0, 0.0)
 }
 case object South extends Orientation {
-  val vec = DoubleVector(0.0, -1.0, 0.0)
+  val vec = DoubleVector(0.0, 1.0, 0.0)
 }
 case object East extends Orientation {
   val vec = DoubleVector(1.0, 0.0, 0.0)

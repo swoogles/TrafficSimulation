@@ -12,15 +12,6 @@ case class Street(
 
 object Street {
   def apply(
-             beginning: Spatial,
-              length: Length
-
-           ): Street = {
-
-    ???
-  }
-
-  def apply(
              sourceTiming: Time,
              beginning: Spatial,
              end: Spatial,
@@ -32,8 +23,10 @@ object Street {
       val offset = Meters(6) * i
       val newBeginning = beginning.move(orientation, offset)
       val newEnd = end.move(orientation, offset)
+      pprint.pprintln("newBeginning")
+      pprint.pprintln(newBeginning)
       val source = VehicleSourceImpl(sourceTiming, newBeginning, newEnd)
-      LaneImpl(Nil, source, newBeginning, newEnd)
+      Lane(sourceTiming, newBeginning, newEnd)
     }
     Street(lanes, beginning, end)
   }
