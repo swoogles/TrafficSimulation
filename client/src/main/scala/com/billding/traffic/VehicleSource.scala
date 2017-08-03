@@ -14,8 +14,6 @@ case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial, startingVelo
   override def produceVehicle(t: Time, dt: Time, destination: Spatial): Option[PilotedVehicle] = {
     val res = t % spacingInTime
     if (res.abs < dt.toSeconds) {
-      pprint.pprintln("startingVelocitySpacial.v")
-      pprint.pprintln(startingVelocitySpacial.v)
       val vehicleSpatial = Spatial.withVecs(spatial.r, startingVelocitySpacial.v, spatial.dimensions)
       Some(PilotedVehicle.commuter(vehicleSpatial, new IntelligentDriverModelImpl, destination))
     }

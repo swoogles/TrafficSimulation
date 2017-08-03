@@ -50,7 +50,7 @@ object Client {
 
   val vehicles: List[PilotedVehicle] = List( )
 
-  val street = Street(Seconds(1), originSpatial, endingSpatial, South, 1)
+  val street = Street(Seconds(2), originSpatial, endingSpatial, South, 5)
 
 //  val lane = Lane(Seconds(1), originSpatial, endingSpatial, vehicles)
 //  val lane2 = Lane(Seconds(2), originSpatial2, endingSpatial2)

@@ -36,11 +36,8 @@ object Lane extends LaneFunctions {
 
   def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, vehicles: List[PilotedVehicle] = Nil): LaneImpl = {
     val speed: Velocity = KilometersPerHour(50)
-    // TODO end is *not* what I want to pass on!!
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
-    val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.toMeters * speed}
-    pprint.pprintln("startingV")
-    pprint.pprintln(startingV)
+    val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.value * speed}
 
     val velocitySpatial = SpatialImpl(beginning.r, startingV, beginning.dimensions)
     val source = VehicleSourceImpl(sourceTiming, beginning, velocitySpatial)
