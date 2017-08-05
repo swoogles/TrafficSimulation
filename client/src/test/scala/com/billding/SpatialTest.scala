@@ -76,12 +76,12 @@ class SpatialTest extends FlatSpec {
   val movableSpatial = Spatial((0, 0, 0, distanceUnit))
   it should "make a new spatial North of the original" in {
     val newSpatial = movableSpatial.move(North, distanceUnit(offset))
-    newSpatial shouldBe Spatial((0, offset, 0, distanceUnit))
+    newSpatial shouldBe Spatial((0, -offset, 0, distanceUnit))
   }
 
   it should "make a new spatial South of the original" in {
     val newSpatial = movableSpatial.move(South, distanceUnit(offset))
-    newSpatial shouldBe Spatial((0, -offset, 0, distanceUnit))
+    newSpatial shouldBe Spatial((0, offset, 0, distanceUnit))
   }
 
   it should "make a new spatial East of the original" in {
