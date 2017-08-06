@@ -115,7 +115,8 @@ class LaneSpec extends  FlatSpec {
     val originSpatial = Spatial((0, 0, 0, Meters))
     val endingSpatial = Spatial((100, 0, 0, Kilometers))
 
-    val lane = Lane(Seconds(1), originSpatial, endingSpatial)
+    val speed = KilometersPerHour(50)
+    val lane = Lane(Seconds(1), originSpatial, endingSpatial, speed)
     val t = Seconds(1)
     val dt = Seconds(.1)
     val updatedLane = Lane.update(lane, speedLimit, t, dt)

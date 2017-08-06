@@ -45,10 +45,6 @@ object OutterStyles {
 
 }
 
-/**
-  * I think my primary problem with the "collision == death" issue is that I can't start
-  * re-accelerating in the desired direction after everything is zeroed out.
-  */
 @JSExport("Client")
 object Client {
   var GLOBAL_T: Time = Seconds(0)
@@ -64,7 +60,8 @@ object Client {
 
   val vehicles: List[PilotedVehicle] = List( )
 
-  val street = Street(Seconds(2), originSpatial, endingSpatial, South, 1)
+  val speed = Var(KilometersPerHour(50))
+  val street = Street(Seconds(2), originSpatial, endingSpatial, South, speed.now, 1 )
 
   val t = Seconds(0)
   val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
@@ -94,43 +91,24 @@ object Client {
     carTiming() = Seconds(newTiming)
   }
 
-  def updateTiming(): Unit = {
-    carTiming() =
-      if (carTiming.now.approx(Seconds(3)))
-        Seconds(1)
-      else
-        Seconds(3)
-    println("carTiming: " + carTiming.now)
-  }
-  def toggle(): Unit = {
-    TrafficStyles.currentColor() =
-      if (TrafficStyles.currentColor.now == TrafficStyles.blue) TrafficStyles.green else TrafficStyles.blue
-    mods() =
-      if (mods.now == startingColor) {
-        println("toggling from startingColor")
-        modifier(color := "green")
-      }
-      else {
-        println("toggling to startingColor")
-        startingColor
-      }
-
-    c() = if (c.now == "blue") "green" else "blue"
-  }
-
-  def makeNoise(): Unit = {
-    println("ah!")
+  def updateSpeedSlider(newTiming: Int): Unit = {
+    speed() = KilometersPerHour(newTiming)
   }
 
   val updateSlider = (e: dom.Event) => {
-//    output.textContent = box.value.toUpperCase
     val value = e.target match {
       case inputElement: Input  => inputElement.value.toInt
       case _ => 3
     }
     updateTimingSlider(value)
-    println("value: " + value)
-    println("ah!")
+  }
+
+  val speedSliderUpdate = (e: dom.Event) => {
+    val value = e.target match {
+      case inputElement: Input  => inputElement.value.toInt
+      case _ => 65
+    }
+    updateSpeedSlider(value)
   }
 
   @JSExport
@@ -142,7 +120,6 @@ object Client {
     import scalatags.JsDom.all._
       dom.document.body.appendChild(
         button(
-          onclick := updateTiming _
         )(carTimingText).render
       )
 
@@ -158,11 +135,15 @@ object Client {
     )
 
     dom.document.body.appendChild(
-      div(
-//        color := TrafficStyles.currentColor(),
-        color := TrafficStyles.blue.value,
-        onclick := toggle _,
-        text
+      input(
+        id := "speedSlider",
+        tpe := "range",
+        min := 20,
+        max := 80,
+        value := 65,
+        step := 5,
+        oninput := speedSliderUpdate
+        //      inputNumber --> sliderEvents,
       ).render
     )
 
@@ -170,7 +151,10 @@ object Client {
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
       GLOBAL_T = sceneVolatile.t
-      val newLanes = sceneVolatile.lanes.map(lane=>lane.copy(vehicleSource = lane.vehicleSource.copy(spacingInTime = carTiming.now)))
+      val newLanes = sceneVolatile.lanes.map(lane=>{
+        val newSource = lane.vehicleSource.copy(spacingInTime = carTiming.now)  .updateSpeed(speed.now)
+        lane.copy(vehicleSource = newSource)
+      })
       sceneVolatile = sceneVolatile.copy(lanes = newLanes)
       val vehicles = sceneVolatile.lanes.head.vehicles
         sceneVolatile = sceneVolatile.update(speedLimit)

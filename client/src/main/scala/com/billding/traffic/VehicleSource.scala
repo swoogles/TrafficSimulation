@@ -1,7 +1,8 @@
 package com.billding.traffic
 
-import com.billding.physics.Spatial
-import squants.Time
+import com.billding.physics.{Spatial, SpatialImpl}
+import squants.motion.KilometersPerHour
+import squants.{Time, Velocity}
 
 trait VehicleSource {
   def produceVehicle(t: Time, dt: Time, destination: Spatial): Option[PilotedVehicle]
@@ -10,7 +11,7 @@ trait VehicleSource {
   val startingVelocitySpacial: Spatial
 }
 
-case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial, startingVelocitySpacial: Spatial) extends  VehicleSource {
+case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial, startingVelocitySpacial: SpatialImpl) extends  VehicleSource {
   override def produceVehicle(t: Time, dt: Time, destination: Spatial): Option[PilotedVehicle] = {
     val res = t % spacingInTime
     if (res.abs < dt.toSeconds) {
@@ -18,6 +19,12 @@ case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial, startingVelo
       Some(PilotedVehicle.commuter(vehicleSpatial, new IntelligentDriverModelImpl, destination))
     }
     else Option.empty
+  }
+
+  def updateSpeed(speed: Velocity): VehicleSourceImpl = {
+    val startingV = startingVelocitySpacial.v.normalize.map { x: Velocity => x.value * speed }
+    //    val velocitySpatial = SpatialImpl(beginning.r, startingV, beginning.dimensions)
+    this.copy(startingVelocitySpacial = this.startingVelocitySpacial.copy(v = startingV))
   }
 }
 

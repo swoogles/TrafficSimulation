@@ -34,9 +34,8 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
 
 object Lane extends LaneFunctions {
 
-  def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, vehicles: List[PilotedVehicle] = Nil): LaneImpl = {
+  def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, speed: Velocity, vehicles: List[PilotedVehicle] = Nil): LaneImpl = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
-    val speed: Velocity = KilometersPerHour(50)
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
     val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.value * speed}
 
