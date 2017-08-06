@@ -83,6 +83,7 @@ object Client {
   val c = Var("blue")
   val text = Rx(s"It is a ${c()} text!")
   val carTimingText = Rx(s"Current car timing ${carTiming()} ")
+  val carSpeedText = Rx(s"Current car speed ${speed()} ")
 
   import OutterStyles.TrafficStyles
 //  implicit val tolerance = Seconds(.1)
@@ -134,6 +135,11 @@ object Client {
       ).render
     )
 
+    dom.document.body.appendChild(
+      button(
+      )(carSpeedText).render
+    )
+    
     dom.document.body.appendChild(
       input(
         id := "speedSlider",
