@@ -5,6 +5,8 @@ import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
 import fr.iscpif.client.{GraphOriginal, WindowOriginal}
 import org.scalajs.dom
+import org.scalajs.dom.html.Input
+import org.w3c.dom.html.HTMLInputElement
 
 import scala.concurrent.Future
 import rx._
@@ -67,14 +69,14 @@ object Client {
   val t = Seconds(0)
   val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
   implicit val DT = Milliseconds(20)
-  val scene: Scene = SceneImpl(
+  val scene: SceneImpl = SceneImpl(
     street.lanes,
     t,
     DT,
     speedLimit,
     canvasDimensions
   )
-  val carTiming: Var[Time] = Var(Seconds(1))
+  val carTiming: Var[Time] = Var(Seconds(3))
 
   val startingColor = modifier(
     color := "blue"
@@ -88,12 +90,16 @@ object Client {
   import OutterStyles.TrafficStyles
 //  implicit val tolerance = Seconds(.1)
 
+  def updateTimingSlider(newTiming: Int): Unit = {
+    carTiming() = Seconds(newTiming)
+  }
+
   def updateTiming(): Unit = {
     carTiming() =
-      if (carTiming.now.approx(Seconds(1)))
-        Seconds(2)
-      else
+      if (carTiming.now.approx(Seconds(3)))
         Seconds(1)
+      else
+        Seconds(3)
     println("carTiming: " + carTiming.now)
   }
   def toggle(): Unit = {
@@ -112,6 +118,21 @@ object Client {
     c() = if (c.now == "blue") "green" else "blue"
   }
 
+  def makeNoise(): Unit = {
+    println("ah!")
+  }
+
+  val updateSlider = (e: dom.Event) => {
+//    output.textContent = box.value.toUpperCase
+    val value = e.target match {
+      case inputElement: Input  => inputElement.value.toInt
+      case _ => 3
+    }
+    updateTimingSlider(value)
+    println("value: " + value)
+    println("ah!")
+  }
+
   @JSExport
   def run() {
     val nodes = Seq( )
@@ -126,6 +147,17 @@ object Client {
       )
 
     dom.document.body.appendChild(
+      input(
+        tpe := "range",
+        min := 1,
+        max := 10,
+        value := 3,
+        oninput := updateSlider
+        //      inputNumber --> sliderEvents,
+      ).render
+    )
+
+    dom.document.body.appendChild(
       div(
 //        color := TrafficStyles.currentColor(),
         color := TrafficStyles.blue.value,
@@ -134,10 +166,12 @@ object Client {
       ).render
     )
 
-    var sceneVolatile = scene
+    var sceneVolatile: SceneImpl = scene
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
       GLOBAL_T = sceneVolatile.t
+      val newLanes = sceneVolatile.lanes.map(lane=>lane.copy(vehicleSource = lane.vehicleSource.copy(spacingInTime = carTiming.now)))
+      sceneVolatile = sceneVolatile.copy(lanes = newLanes)
       val vehicles = sceneVolatile.lanes.head.vehicles
         sceneVolatile = sceneVolatile.update(speedLimit)
         window = new Window(sceneVolatile, nodes, edges)

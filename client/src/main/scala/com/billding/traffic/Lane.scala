@@ -22,7 +22,7 @@ trait Lane {
   val infinitySpatial: Spatial
 }
 
-case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource, beginning: Spatial, end: Spatial) extends Lane {
+case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSourceImpl, beginning: Spatial, end: Spatial) extends Lane {
 
   val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
   val vehicleAtInfinity: PilotedVehicle = {

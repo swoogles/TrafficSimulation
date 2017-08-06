@@ -4,11 +4,7 @@ import com.billding.physics.{Orientation, Spatial}
 import squants.Time
 import squants.space.{Length, Meters}
 
-case class Street(
-                   lanes: List[LaneImpl],
-                   beginning: Spatial,
-                   end: Spatial
-                 )
+case class Street(lanes: List[LaneImpl], beginning: Spatial, end: Spatial, sourceTiming: Time)
 
 object Street {
   def apply(
@@ -25,6 +21,6 @@ object Street {
       val newEnd = end.move(orientation, offset)
       Lane(sourceTiming, newBeginning, newEnd)
     }
-    Street(lanes, beginning, end)
+    Street(lanes, beginning, end, sourceTiming)
   }
 }
