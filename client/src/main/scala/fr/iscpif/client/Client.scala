@@ -46,6 +46,11 @@ object OutterStyles {
 }
 
 @JSExport("Client")
+/*
+TODO: Address my concern of traits vs CC's
+  I should keep *all* implemntations out of traits as much as possible
+  Then I avoid the need to explicitly invoke the copy constructor.
+*/
 object Client {
   var GLOBAL_T: Time = Seconds(0)
 
@@ -139,7 +144,7 @@ object Client {
       button(
       )(carSpeedText).render
     )
-    
+
     dom.document.body.appendChild(
       input(
         id := "speedSlider",
