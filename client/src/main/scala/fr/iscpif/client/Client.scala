@@ -72,7 +72,7 @@ object Client {
   val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
   implicit val DT = Milliseconds(20)
   val scene: SceneImpl = SceneImpl(
-    street.lanes,
+    List(street),
     t,
     DT,
     speedLimit,
@@ -162,12 +162,16 @@ object Client {
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
       GLOBAL_T = sceneVolatile.t
-      val newLanes = sceneVolatile.lanes.map(lane=>{
-        val newSource = lane.vehicleSource.copy(spacingInTime = carTiming.now)  .updateSpeed(speed.now)
-        lane.copy(vehicleSource = newSource)
-      })
-      sceneVolatile = sceneVolatile.copy(lanes = newLanes)
-      val vehicles = sceneVolatile.lanes.head.vehicles
+      val newStreets = sceneVolatile.streets.map { street: Street =>
+        val newLanes: List[LaneImpl] =
+          street.lanes.map(lane => {
+            val newSource = lane.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
+            lane.copy(vehicleSource = newSource)
+          })
+        street.copy(lanes = newLanes)
+      }
+      sceneVolatile = sceneVolatile.copy(streets = newStreets)
+
         sceneVolatile = sceneVolatile.update(speedLimit)
         window = new Window(sceneVolatile, nodes, edges)
         window.svgNode.forceRedraw()

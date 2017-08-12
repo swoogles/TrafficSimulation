@@ -260,10 +260,10 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
 
   // TODO Process Scene.lanes & Scene.lanes.vehicles
   lazy val vehicles: Var[Seq[Var[PilotedVehicle]]] = Var(Seq())
-  val vehiclesImmutable: Seq[PilotedVehicle] = _scene.lanes.flatMap(_.vehicles)
-  _scene.lanes.flatMap(_.vehicles).map { vehicle =>
+  val vehiclesImmutable: Seq[PilotedVehicle] = _scene.streets.flatMap(_.lanes.flatMap(_.vehicles))
+  _scene.streets.flatMap(_.lanes.flatMap(_.vehicles).map { vehicle =>
     addVehicle(vehicle)
-  }
+  })
   lazy val edges: Var[Seq[Var[Edge]]] = Var(Seq())
   _edges.map { e =>
     addEdge(edge(e.source.now, e.target.now))
