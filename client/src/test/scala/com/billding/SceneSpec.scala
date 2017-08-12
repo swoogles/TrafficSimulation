@@ -45,10 +45,12 @@ class SceneSpec extends  FlatSpec{
     val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
     val vehicleSource = VehicleSourceImpl(Seconds(1), originSpatial, endingSpatial)
     val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
+//    case class Street(lanes: List[LaneImpl], beginning: Spatial, end: Spatial, sourceTiming: Time)
+    val street = Street(List(lane), originSpatial, endingSpatial, Seconds(1))
     val t = Seconds(500)
     implicit val dt = Milliseconds(500)
     val scene: Scene = SceneImpl(
-      List(lane),
+      List(street),
       t,
       dt,
       speedLimit,
@@ -58,10 +60,7 @@ class SceneSpec extends  FlatSpec{
     val updateScene: Scene = scene.update(speedLimit)
     val updateScene2: Scene = updateScene.update(speedLimit)
     import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
-//    import com.billding.SpatialForDefaults
-    pprint.pprintln("original vehicle 0: " + SpatialForDefaults.disect(scene.lanes.head.vehicles.tail.head).v)
-    pprint.pprintln("updated vehicle  1: " + SpatialForDefaults.disect(updateScene.lanes.head.vehicles.tail.head).v)
-    pprint.pprintln("updated vehicle  2: " + SpatialForDefaults.disect(updateScene2.lanes.head.vehicles.tail.head).v)
+//    pprint.pprintln("updated vehicle  1: " + SpatialForDefaults.disect(updateScene.streets.head.lanes.head.vehicles.tail.head).v)
     val updatedLane: Lane = Lane.update(lane, speedLimit, Seconds(1), Milliseconds(100))
 
   }

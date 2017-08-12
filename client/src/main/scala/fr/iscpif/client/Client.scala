@@ -90,6 +90,8 @@ object Client {
   val carTimingText = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText = Rx(s"Current car speed ${speed()} ")
 
+  val disruptLane = Var(false)
+
   import OutterStyles.TrafficStyles
 //  implicit val tolerance = Seconds(.1)
 
@@ -99,6 +101,10 @@ object Client {
 
   def updateSpeedSlider(newTiming: Int): Unit = {
     speed() = KilometersPerHour(newTiming)
+  }
+
+  val ToggleDisrupt = (e: dom.Event) => {
+    disruptLane() = true
   }
 
   val updateSlider = (e: dom.Event) => {
@@ -128,6 +134,15 @@ object Client {
         button(
         )(carTimingText).render
       )
+
+    dom.document.body.appendChild(
+      input(
+        tpe := "button",
+        value := "Disrupt the flow",
+        oninput := updateSlider
+        //      inputNumber --> sliderEvents,
+      ).render
+    )
 
     dom.document.body.appendChild(
       input(

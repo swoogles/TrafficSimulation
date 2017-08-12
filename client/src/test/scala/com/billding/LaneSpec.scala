@@ -120,7 +120,22 @@ class LaneSpec extends  FlatSpec {
     val t = Seconds(1)
     val dt = Seconds(.1)
     val updatedLane = Lane.update(lane, speedLimit, t, dt)
-    pprint.pprintln(updatedLane)
+
+  }
+
+  it should "add a disruptive car" in {
+    val originSpatial = Spatial((0, 0, 0, Kilometers))
+    val endingSpatial = Spatial((100, 0, 0, Kilometers))
+
+    val speed = KilometersPerHour(50)
+    val vehicleSource = VehicleSourceImpl(1.seconds, originSpatial, endingSpatial)
+    val lane = LaneImpl(Nil, vehicleSource, originSpatial, endingSpatial)
+//    val lane = LaneImpl(Seconds(1), originSpatial, endingSpatial, speed)
+
+    lane.addDisruptiveVehicle(createVehicle((90, 0, 0, Meters)))
+    val t = Seconds(1)
+    val dt = Seconds(.1)
+    val updatedLane = Lane.update(lane, speedLimit, t, dt)
 
   }
 }

@@ -30,6 +30,29 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
     PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
   }
   override val infinitySpatial: Spatial = vehicleAtInfinity.spatial
+
+  /**
+    TODO Flesh out this process
+      -Want to place vehicle 75% of way down the lane
+      -Make sure it doesn't drop on top of an existing vehicle
+      -Resolve canvas size / lane length discrepency
+        -Putting things 75% of the way down the lane puts them *way* past the edge of the canvas currently
+      -New vehicle
+        - Will get an updated target
+        - *Could* get a slightly updated position
+        - Will keep current speed.
+        - Could push Lane capacity above the limit
+          - Does this need to be handled specially here, or will it just be resolved the next time the Source produces
+           a vehicle?
+
+   */
+  def addDisruptiveVehicle(vehicle: PilotedVehicle) = {
+    // Get 3/4 of this vector.
+    val vector: QuantityVector[Distance] = beginning.vectorTo(end)
+    pprint.pprintln(vector)
+    pprint.pprintln(vector.times(.75))
+
+  }
 }
 
 object Lane extends LaneFunctions {
@@ -61,7 +84,8 @@ object Lane extends LaneFunctions {
     val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
     val newVehicleList: List[PilotedVehicle] =
       newVehicleOption match {
-        case Some(newVehicle) if (lane.vehicles.size > MAX_VEHICLES_PER_LANE) => lane.vehicles.tail :+ newVehicle
+          // This could be tweaked so it's always reducing to MAX_VEHICLES_PER_LANE, rather than only dropping 1
+        case Some(newVehicle) if (lane.vehicles.size > MAX_VEHICLES_PER_LANE) => lane.vehicles.drop(lane.vehicles.size - MAX_VEHICLES_PER_LANE) :+ newVehicle
         case Some(newVehicle) => lane.vehicles :+ newVehicle
         case None => lane.vehicles
       }
