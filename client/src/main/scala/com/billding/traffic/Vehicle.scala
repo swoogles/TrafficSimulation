@@ -1,6 +1,6 @@
 package com.billding.traffic
 
-import com.billding.physics.Spatial
+import com.billding.physics.{Spatial, SpatialImpl}
 import squants.motion.{Acceleration, Distance, DistanceUnit, VelocityUnit}
 import squants.{Length, Mass, QuantityVector, Velocity}
 
@@ -12,7 +12,7 @@ sealed trait Vehicle {
 }
 
 case class VehicleImpl(
-                        spatial: Spatial,
+                        spatial: SpatialImpl,
                         accelerationAbility: Acceleration,
                         brakingAbility: Acceleration,
                         weight: Mass

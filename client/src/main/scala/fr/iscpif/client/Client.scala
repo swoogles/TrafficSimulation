@@ -59,7 +59,7 @@ object Client {
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
   val originSpatial = Spatial((0, 0, 0, Meters))
-  val endingSpatial = Spatial((100, 0, 0, Kilometers))
+  val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
 
   val herdSpeed = 65
 
@@ -84,6 +84,9 @@ object Client {
     color := "blue"
   )
 
+  val car =
+  PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
+
   val mods = Var(startingColor)
   val c = Var("blue")
   val text = Rx(s"It is a ${c()} text!")
@@ -103,7 +106,8 @@ object Client {
     speed() = KilometersPerHour(newTiming)
   }
 
-  val ToggleDisrupt = (e: dom.Event) => {
+  val toggleDisrupt = (e: dom.Event) => {
+    println("disrupting")
     disruptLane() = true
   }
 
@@ -139,7 +143,7 @@ object Client {
       input(
         tpe := "button",
         value := "Disrupt the flow",
-        oninput := updateSlider
+        onclick := toggleDisrupt
         //      inputNumber --> sliderEvents,
       ).render
     )
@@ -177,11 +181,19 @@ object Client {
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
       GLOBAL_T = sceneVolatile.t
+
       val newStreets = sceneVolatile.streets.map { street: Street =>
         val newLanes: List[LaneImpl] =
           street.lanes.map(lane => {
-            val newSource = lane.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
-            lane.copy(vehicleSource = newSource)
+            val laneAfterDisruption = if ( disruptLane.now == true ) {
+              disruptLane() = false
+              lane.addDisruptiveVehicle(car)
+            } else {
+              lane
+
+            }
+            val newSource = laneAfterDisruption.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
+            laneAfterDisruption.copy(vehicleSource = newSource)
           })
         street.copy(lanes = newLanes)
       }

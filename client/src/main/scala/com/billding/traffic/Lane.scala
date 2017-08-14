@@ -37,6 +37,7 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
       -Make sure it doesn't drop on top of an existing vehicle
       -Resolve canvas size / lane length discrepency
         -Putting things 75% of the way down the lane puts them *way* past the edge of the canvas currently
+          -Think this is done.
       -New vehicle
         - Will get an updated target
         - *Could* get a slightly updated position
@@ -46,13 +47,33 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
            a vehicle?
 
    */
-  def addDisruptiveVehicle(vehicle: PilotedVehicle) = {
-    // Get 3/4 of this vector.
-    val vector: QuantityVector[Distance] = beginning.vectorTo(end)
-    pprint.pprintln(vector)
-    pprint.pprintln(vector.times(.75))
+  def addDisruptiveVehicle(pilotedVehicle: PilotedVehicleImpl): LaneImpl = {
+    val disruptionPoint: QuantityVector[Distance] = end.vectorTo(beginning).times(.25)
+
+    val betterVec: QuantityVector[Distance] =
+      disruptionPoint.plus(end.r)
+
+    val isPastDisruption =
+      (v: PilotedVehicle) =>
+        v.spatial.vectorTo(end).magnitude < disruptionPoint.magnitude
+
+    val newDriver = pilotedVehicle.driver.copy(spatial =
+      pilotedVehicle.driver.spatial.copy(r = betterVec)
+    )
+    val newVehicle =
+      pilotedVehicle.vehicle.copy(spatial =
+        pilotedVehicle.vehicle.spatial.copy(r=betterVec)
+      )
+
+    val newPilotedVehicle = pilotedVehicle.copy(driver = newDriver, vehicle = newVehicle)
+    val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
+    val vehicleList: List[PilotedVehicle] = (pastVehicles :+ newPilotedVehicle.copy(destination = end) ) ::: approachingVehicles
+    this.copy(vehicles =
+      vehicleList
+    )
 
   }
+
 }
 
 object Lane extends LaneFunctions {
