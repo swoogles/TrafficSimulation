@@ -2,7 +2,7 @@ package client
 
 import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
-import fr.iscpif.client.{MyStyles, OutterStyles}
+import fr.iscpif.client.OutterStyles
 import org.scalajs.dom
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{HTMLElement, HTMLStyleElement}
@@ -128,6 +128,9 @@ object Client {
       ).render
     )
 
+  }
+
+  def createSliders(element: HTMLElement) = {
     element.appendChild(
       button(
       )(carTimingText).render
@@ -171,7 +174,20 @@ object Client {
 
 //    dom.document.head.style.
 //    dom.document.head.
-    createButtons(dom.document.body)
+    val buttonPanel = div(
+      id := "button-panel"
+    ).render
+    createButtons(buttonPanel)
+    dom.document.body.appendChild(buttonPanel)
+    val sliderPanel = div(
+      id := "slider-panel"
+    ).render
+    createSliders(sliderPanel)
+    dom.document.body.appendChild(sliderPanel)
+
+    div(
+      id := "button-panel"
+    )
 
     var sceneVolatile: SceneImpl = originalScene
     var window = new Window(sceneVolatile, nodes, edges)
