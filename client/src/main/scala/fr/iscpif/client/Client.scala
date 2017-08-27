@@ -70,6 +70,7 @@ object Client {
   val carTimingText = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText = Rx(s"Current car speed ${speed()} ")
 
+  val paused = Var(false)
   val disruptLane = Var(false)
   val resetScene = Var(false)
 
@@ -79,6 +80,10 @@ object Client {
 
   def updateSpeedSlider(newTiming: Int): Unit = {
     speed() = KilometersPerHour(newTiming)
+  }
+
+  val togglePause = (e: dom.Event) => {
+    paused() = !paused.now
   }
 
   val toggleDisrupt = (e: dom.Event) => {
@@ -109,6 +114,16 @@ object Client {
   // Also, I think that will make it simple to target other, more specific elements.
   def createButtons(element: HTMLElement) = {
     val buttonStyleClasses = "bttn-simple bttn-md bttn-primary"
+
+    element.appendChild(
+      input(
+        tpe := "button",
+        cls := buttonStyleClasses,
+        value := "Pause",
+        onclick := togglePause
+      ).render
+    )
+
     element.appendChild(
       input(
         tpe := "button",
@@ -119,8 +134,7 @@ object Client {
     )
 
     element.appendChild(
-
-    input(
+      input(
         cls := buttonStyleClasses,
         tpe := "button",
         value := "Disrupt the flow",
@@ -192,31 +206,34 @@ object Client {
     var sceneVolatile: SceneImpl = originalScene
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
-      GLOBAL_T = sceneVolatile.t
-
-      val newStreets = sceneVolatile.streets.map { street: Street =>
-        val newLanes: List[LaneImpl] =
-          street.lanes.map(lane => {
-            val laneAfterDisruption = if ( disruptLane.now == true ) {
-              disruptLane() = false
-              lane.addDisruptiveVehicle(car)
-            } else {
-              lane
-            }
-            val newSource = laneAfterDisruption.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
-            laneAfterDisruption.copy(vehicleSource = newSource)
-          })
-        street.copy(lanes = newLanes)
-      }
-      sceneVolatile = sceneVolatile.copy(streets = newStreets)
-
-        sceneVolatile = sceneVolatile.update(speedLimit)
       if (resetScene.now == true) {
         sceneVolatile = originalScene
         resetScene() = false
-      }
         window = new Window(sceneVolatile, nodes, edges)
         window.svgNode.forceRedraw()
+      } else if (paused.now == false) {
+        GLOBAL_T = sceneVolatile.t
+
+        val newStreets = sceneVolatile.streets.map { street: Street =>
+          val newLanes: List[LaneImpl] =
+            street.lanes.map(lane => {
+              val laneAfterDisruption = if (disruptLane.now == true) {
+                disruptLane() = false
+                lane.addDisruptiveVehicle(car)
+              } else {
+                lane
+              }
+              val newSource = laneAfterDisruption.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
+              laneAfterDisruption.copy(vehicleSource = newSource)
+            })
+          street.copy(lanes = newLanes)
+        }
+        sceneVolatile = sceneVolatile.copy(streets = newStreets)
+
+        sceneVolatile = sceneVolatile.update(speedLimit)
+        window = new Window(sceneVolatile, nodes, edges)
+        window.svgNode.forceRedraw()
+      }
     }, DT.toMilliseconds / 5) // TODO Make this understable and easily modified. Just some simple algebra.
   }
 }
