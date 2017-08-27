@@ -5,7 +5,7 @@ import com.billding.traffic._
 import fr.iscpif.client.OutterStyles
 import org.scalajs.dom
 import org.scalajs.dom.html.Input
-import org.scalajs.dom.raw.{HTMLElement, HTMLStyleElement}
+import org.scalajs.dom.raw.{HTMLElement, HTMLInputElement, HTMLStyleElement}
 
 import scala.concurrent.Future
 import squants.{Length, Time}
@@ -83,6 +83,10 @@ object Client {
   }
 
   val togglePause = (e: dom.Event) => {
+    val elementClicked = e.target.asInstanceOf[HTMLInputElement]
+    elementClicked.value = if (paused.now == true) "Pause" else "Unpause"
+    println(elementClicked)
+//    (HtmlTag) e.target
     paused() = !paused.now
   }
 
@@ -217,6 +221,7 @@ object Client {
         val newStreets = sceneVolatile.streets.map { street: Street =>
           val newLanes: List[LaneImpl] =
             street.lanes.map(lane => {
+              // TODO Move this to match other UI response conditionals above.
               val laneAfterDisruption = if (disruptLane.now == true) {
                 disruptLane() = false
                 lane.addDisruptiveVehicle(car)
