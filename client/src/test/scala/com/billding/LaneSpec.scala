@@ -32,6 +32,26 @@ class LaneSpec extends  FlatSpec {
     PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, destination)
   }
 
+  it should "add a disruptive car" in {
+    val originSpatial = Spatial((0, 0, 0, Meters))
+    val endingSpatial = Spatial((100, 0, 0, Meters))
+
+    val speed = KilometersPerHour(50)
+    val vehicleSource = VehicleSourceImpl(1.seconds, originSpatial, endingSpatial)
+
+    val vehicles = List(
+      createVehicle((100, 0, 0, Meters)),
+      createVehicle((60, 0, 0, Meters)),
+      createVehicle((50, 0, 0, Meters))
+    )
+    val lane = LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
+    val originalSize = lane.vehicles.size
+
+    val disruptedLane  = lane.addDisruptiveVehicle(createVehicle((0, 0, 0, Meters)))
+    val newSize = disruptedLane.vehicles.size
+    val t = Seconds(1)
+  }
+
   it should "make all vehicles accelerate from a stop together" in {
     val vehicles = List(
       createVehicle((100, 0, 0, Meters), (1, 0, 0, KilometersPerHour)),
@@ -123,25 +143,4 @@ class LaneSpec extends  FlatSpec {
 
   }
 
-  it should "add a disruptive car" in {
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial = Spatial((100, 0, 0, Meters))
-
-    val speed = KilometersPerHour(50)
-    val vehicleSource = VehicleSourceImpl(1.seconds, originSpatial, endingSpatial)
-
-    val vehicles = List(
-      createVehicle((100, 0, 0, Meters)),
-      createVehicle((60, 0, 0, Meters)),
-      createVehicle((50, 0, 0, Meters))
-    )
-    val lane = LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
-//    val lane = LaneImpl(Seconds(1), originSpatial, endingSpatial, speed)
-
-    lane.addDisruptiveVehicle(createVehicle((0, 0, 0, Meters)))
-//    val t = Seconds(1)
-//    val dt = Seconds(.1)
-//    val updatedLane = Lane.update(lane, speedLimit, t, dt)
-
-  }
 }
