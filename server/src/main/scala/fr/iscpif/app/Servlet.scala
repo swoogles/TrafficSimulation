@@ -27,9 +27,13 @@ class Servlet extends ScalatraServlet {
     contentType = "text/html"
 
     tags.html(
+
       tags.head(
         tags.meta(tags.httpEquiv := "Content-Type", tags.content := "text/html; charset=UTF-8"),
         tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/styleWUI.css"),
+//        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "https://cdnjs.com/libraries/bttn.css"),
+        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/bttn.min.css"),
+//        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css")(OutterStyles.TrafficStyles.render[String]),
         tags.script(tags.`type` := "text/javascript", tags.src := "js/client-opt.js"),
         tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.min.js")
       ),

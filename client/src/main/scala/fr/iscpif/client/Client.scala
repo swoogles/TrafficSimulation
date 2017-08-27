@@ -2,8 +2,10 @@ package client
 
 import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
+import fr.iscpif.client.{MyStyles, OutterStyles}
 import org.scalajs.dom
 import org.scalajs.dom.html.Input
+import org.scalajs.dom.raw.{HTMLElement, HTMLStyleElement}
 
 import scala.concurrent.Future
 import squants.{Length, Time}
@@ -13,10 +15,10 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.{Milliseconds, Seconds}
-
 import rx._
 
 import scaladget.tools.JsRxTags._
+import scalatags.JsDom.TypedTag
 import scalatags.JsDom.all._
 
 
@@ -103,30 +105,36 @@ object Client {
     updateSpeedSlider(value)
   }
 
-  def createButtons() = {
-    dom.document.body.appendChild(
+  // TODO Should this accept dom.document.body, to make it more obvious what's being mutated?
+  // Also, I think that will make it simple to target other, more specific elements.
+  def createButtons(element: HTMLElement) = {
+    val buttonStyleClasses = "bttn-simple bttn-md bttn-primary"
+    element.appendChild(
       input(
         tpe := "button",
+        cls := buttonStyleClasses,
         value := "Reset the scene",
         onclick := initiateSceneReset
       ).render
     )
 
-    dom.document.body.appendChild(
-      input(
+    element.appendChild(
+
+    input(
+        cls := buttonStyleClasses,
         tpe := "button",
         value := "Disrupt the flow",
         onclick := toggleDisrupt
       ).render
     )
 
-    dom.document.body.appendChild(
+    element.appendChild(
       button(
       )(carTimingText).render
     )
 
 
-    dom.document.body.appendChild(
+    element.appendChild(
       input(
         tpe := "range",
         min := 1,
@@ -136,12 +144,12 @@ object Client {
       ).render
     )
 
-    dom.document.body.appendChild(
+    element.appendChild(
       button(
       )(carSpeedText).render
     )
 
-    dom.document.body.appendChild(
+    element.appendChild(
       input(
         id := "speedSlider",
         tpe := "range",
@@ -161,7 +169,9 @@ object Client {
     val edges = Seq( )
     val millisecondsPerRefresh = 500
 
-    createButtons()
+//    dom.document.head.style.
+//    dom.document.head.
+    createButtons(dom.document.body)
 
     var sceneVolatile: SceneImpl = originalScene
     var window = new Window(sceneVolatile, nodes, edges)

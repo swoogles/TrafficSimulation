@@ -1,7 +1,5 @@
 package fr.iscpif.client
 
-import rx.Var
-
 import scalacss.internal.Macros.Color
 import scalacss.internal.mutable.StyleSheet
 
@@ -12,7 +10,10 @@ package object client {
   val CssSettings = scalacss.devOrProdDefaults
 }
 
-import client.CssSettings._
+import fr.iscpif.client._
+
+import scalacss.DevDefaults._
+
 
 object OutterStyles {
 
@@ -21,7 +22,11 @@ object OutterStyles {
 
     val blue: Color = c"#0000FF"
     val green = c"#00FF00"
-    val currentColor = Var(blue)
+
+    val standardButton = style(
+      addClassNames("bttn-simple", "bttn-md"), // Bootstrap classes
+      textAlign.center                     // Optional customisation
+    )
   }
 
 }
