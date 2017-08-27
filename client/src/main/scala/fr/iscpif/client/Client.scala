@@ -69,9 +69,9 @@ object Client {
   val street = Street(Seconds(2), originSpatial, endingSpatial, South, speed.now, 1 )
 
   val t = Seconds(0)
-  val canvasDimensions: (Length, Length) = (Kilometers(.5), Kilometers(.25))
+  val canvasDimensions: (Length, Length) = (Kilometers(.25), Kilometers(.5))
   implicit val DT = Milliseconds(20)
-  val scene: SceneImpl = SceneImpl(
+  val originalScene: SceneImpl = SceneImpl(
     List(street),
     t,
     DT,
@@ -94,6 +94,7 @@ object Client {
   val carSpeedText = Rx(s"Current car speed ${speed()} ")
 
   val disruptLane = Var(false)
+  val resetScene = Var(false)
 
   import OutterStyles.TrafficStyles
 //  implicit val tolerance = Seconds(.1)
@@ -107,8 +108,11 @@ object Client {
   }
 
   val toggleDisrupt = (e: dom.Event) => {
-    println("disrupting")
     disruptLane() = true
+  }
+
+  val initiateSceneReset = (e: dom.Event) => {
+    resetScene() = true
   }
 
   val updateSlider = (e: dom.Event) => {
@@ -134,19 +138,27 @@ object Client {
     val millisecondsPerRefresh = 500
 
     import scalatags.JsDom.all._
-      dom.document.body.appendChild(
-        button(
-        )(carTimingText).render
-      )
+    dom.document.body.appendChild(
+      input(
+        tpe := "button",
+        value := "Reset the scene",
+        onclick := initiateSceneReset
+      ).render
+    )
 
     dom.document.body.appendChild(
       input(
         tpe := "button",
         value := "Disrupt the flow",
         onclick := toggleDisrupt
-        //      inputNumber --> sliderEvents,
       ).render
     )
+
+    dom.document.body.appendChild(
+      button(
+      )(carTimingText).render
+    )
+
 
     dom.document.body.appendChild(
       input(
@@ -177,7 +189,7 @@ object Client {
       ).render
     )
 
-    var sceneVolatile: SceneImpl = scene
+    var sceneVolatile: SceneImpl = originalScene
     var window = new Window(sceneVolatile, nodes, edges)
     dom.window.setInterval(() => {
       GLOBAL_T = sceneVolatile.t
@@ -190,7 +202,6 @@ object Client {
               lane.addDisruptiveVehicle(car)
             } else {
               lane
-
             }
             val newSource = laneAfterDisruption.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
             laneAfterDisruption.copy(vehicleSource = newSource)
@@ -200,6 +211,10 @@ object Client {
       sceneVolatile = sceneVolatile.copy(streets = newStreets)
 
         sceneVolatile = sceneVolatile.update(speedLimit)
+      if (resetScene.now == true) {
+        sceneVolatile = originalScene
+        resetScene() = false
+      }
         window = new Window(sceneVolatile, nodes, edges)
         window.svgNode.forceRedraw()
     }, DT.toMilliseconds / 5)
