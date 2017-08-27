@@ -1,15 +1,11 @@
 package client
 
-import com.billding._
 import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
-import fr.iscpif.client.{GraphOriginal, WindowOriginal}
 import org.scalajs.dom
 import org.scalajs.dom.html.Input
-import org.w3c.dom.html.HTMLInputElement
 
 import scala.concurrent.Future
-import rx._
 import squants.{Length, Time}
 
 import scala.scalajs.js.annotation.JSExport
@@ -18,32 +14,11 @@ import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.{Milliseconds, Seconds}
 
-import scalacss.internal.Macros.Color
-import scalacss.internal.mutable.{GlobalRegistry, Register, StyleSheet}
-import scalatags.generic.Modifier
 import rx._
 
 import scaladget.tools.JsRxTags._
 import scalatags.JsDom.all._
-import scalacss.ScalatagsCss._
 
-package object client {
-  val CssSettings = scalacss.devOrProdDefaults
-}
-
-import client.CssSettings._
-
-object OutterStyles {
-
-  object TrafficStyles extends StyleSheet.Inline {
-    import dsl._
-
-    val blue: Color = c"#0000FF"
-    val green = c"#00FF00"
-    val currentColor = Var(blue)
-  }
-
-}
 
 @JSExport("Client")
 /*
@@ -80,14 +55,14 @@ object Client {
   )
   val carTiming: Var[Time] = Var(Seconds(3))
 
+  // Just a snippet to remind me how to pass html parameters around
   val startingColor = modifier(
     color := "blue"
   )
 
   val car =
-  PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
+    PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
 
-  val mods = Var(startingColor)
   val c = Var("blue")
   val text = Rx(s"It is a ${c()} text!")
   val carTimingText = Rx(s"Current car timing ${carTiming()} ")
@@ -95,9 +70,6 @@ object Client {
 
   val disruptLane = Var(false)
   val resetScene = Var(false)
-
-  import OutterStyles.TrafficStyles
-//  implicit val tolerance = Seconds(.1)
 
   def updateTimingSlider(newTiming: Int): Unit = {
     carTiming() = Seconds(newTiming)
@@ -118,7 +90,7 @@ object Client {
   val updateSlider = (e: dom.Event) => {
     val value = e.target match {
       case inputElement: Input  => inputElement.value.toInt
-      case _ => 3
+      case _ => 3 // TODO de-magick this
     }
     updateTimingSlider(value)
   }
@@ -126,18 +98,12 @@ object Client {
   val speedSliderUpdate = (e: dom.Event) => {
     val value = e.target match {
       case inputElement: Input  => inputElement.value.toInt
-      case _ => 65
+      case _ => 65 // TODO de-magick this
     }
     updateSpeedSlider(value)
   }
 
-  @JSExport
-  def run() {
-    val nodes = Seq( )
-    val edges = Seq( )
-    val millisecondsPerRefresh = 500
-
-    import scalatags.JsDom.all._
+  def createButtons() = {
     dom.document.body.appendChild(
       input(
         tpe := "button",
@@ -167,7 +133,6 @@ object Client {
         max := 10,
         value := 3,
         oninput := updateSlider
-        //      inputNumber --> sliderEvents,
       ).render
     )
 
@@ -185,9 +150,18 @@ object Client {
         value := 65,
         step := 5,
         oninput := speedSliderUpdate
-        //      inputNumber --> sliderEvents,
       ).render
     )
+  }
+
+
+  @JSExport
+  def run() {
+    val nodes = Seq( )
+    val edges = Seq( )
+    val millisecondsPerRefresh = 500
+
+    createButtons()
 
     var sceneVolatile: SceneImpl = originalScene
     var window = new Window(sceneVolatile, nodes, edges)
@@ -217,7 +191,7 @@ object Client {
       }
         window = new Window(sceneVolatile, nodes, edges)
         window.svgNode.forceRedraw()
-    }, DT.toMilliseconds / 5)
+    }, DT.toMilliseconds / 5) // TODO Make this understable and easily modified. Just some simple algebra.
   }
 }
 
