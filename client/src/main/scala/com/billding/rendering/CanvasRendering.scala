@@ -71,7 +71,8 @@ object CanvasRendering {
     amplitude * sgn(x) * sin( (2 * Pi * (x - offset)) / period)
 
     val pieces
-    = for (n <- Range(1, 121, 2)) yield {
+    = for (n <- Range(1, 51, 2)) yield {
+//      = for (n <- Range(1, 121, 2)) yield {
       (4 / Pi) * (amplitude / n) * sin( (n * Pi * x ) / period )
     }
     pieces.sum
