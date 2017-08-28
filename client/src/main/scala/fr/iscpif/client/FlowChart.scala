@@ -19,7 +19,7 @@ package client
 
 import java.util.UUID
 
-import com.billding.rendering.SpatialCanvas
+import com.billding.rendering.{CanvasRendering, SpatialCanvas}
 import com.billding.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
 
@@ -237,8 +237,14 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
     import com.billding.physics.SpatialForDefaults
     import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
     val spatial = SpatialForDefaults.disect(vehicle)
-    val x = spatial.r.coordinates.head / _spatialCanvas.widthDistancePerPixel
-    val y = spatial.r.coordinates.tail.head / _spatialCanvas.heightDistancePerPixel
+    val x =
+      spatial.r.coordinates.head / _spatialCanvas.widthDistancePerPixel
+    val yInit =
+      spatial.r.coordinates.tail.head / _spatialCanvas.heightDistancePerPixel
+    val y =
+      yInit
+//      CanvasRendering.warpLongStraightLineToSmoothSquareWave(x) + 200 // Hack to prevent vehicles jumping above canvas
+
     val xV = spatial.v.coordinates.head
     val renderedWidth = vehicle.spatial.dimensions.coordinates(0) / _spatialCanvas.widthDistancePerPixel
     val renderedHeight = vehicle.spatial.dimensions.coordinates(1) / _spatialCanvas.heightDistancePerPixel

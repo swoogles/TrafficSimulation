@@ -48,6 +48,44 @@ object CanvasRendering {
     )
   }
 
+  /**
+    * The goal here is to get a much longer portion of a straight road rendered in a rectangular space.
+    * I will be making a smoothed square wave, with the function given here:
+    *   https://mathematica.stackexchange.com/questions/38293/make-a-differentiable-smooth-sawtooth-waveform/38295#38295
+    *
+    * - Use derivative of curve at any point to get proper orientation of the car.
+    * @param x
+    */
+  def warpLongStraightLineToSmoothSquareWave(x: Double): Double = {
+    import scala.math._
+    val amplitude = 50.0
+    val period = 200.0 // aka L, T
+    val offset = 0.0
+//    val blah: Double = 3.0 ^ 3.0
+
+    def sgn(x1: Double) = {
+      if (x1 < 0) -1
+      else if (x1.abs <= 0.001) 0
+      else 1
+    }
+    amplitude * sgn(x) * sin( (2 * Pi * (x - offset)) / period)
+
+    val pieces
+    = for (n <- Range(1, 121, 2)) yield {
+      (4 / Pi) * (amplitude / n) * sin( (n * Pi * x ) / period )
+    }
+    pieces.sum
+
+//    pow((amplitude * -1.0), floor(2.0 * (x - offset)/ period))
+
+//    val epsilon = 0.01;
+//    2 * atan(sin(2 * Pi * x) / epsilon) / Pi
+//    δ = 0.01;
+//    sqr[x_] := 2 ArcTan[Sin[2 π x]/δ]/π;
+//    Plot[{SquareWave[x], sqr[x]}, {x, -2, 2}, PlotRange -> All, Exclusions -> None]
+
+  }
+
 }
 
 
