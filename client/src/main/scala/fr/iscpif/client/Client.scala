@@ -40,8 +40,6 @@ object Client {
 
   val herdSpeed = 65
 
-  val vehicles: List[PilotedVehicle] = List( )
-
   val speed = Var(KilometersPerHour(50))
   val street = Street(Seconds(2), originSpatial, endingSpatial, South, speed.now, 1 )
 
@@ -65,14 +63,14 @@ object Client {
   val car =
     PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
 
-  val c = Var("blue")
-  val text = Rx(s"It is a ${c()} text!")
   val carTimingText = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText = Rx(s"Current car speed ${speed()} ")
 
   val paused = Var(false)
   val disruptLane = Var(false)
   val resetScene = Var(false)
+
+  val vehicleCount = Var(0)
 
   def updateTimingSlider(newTiming: Int): Unit = {
     carTiming() = Seconds(newTiming)
@@ -85,8 +83,6 @@ object Client {
   val togglePause = (e: dom.Event) => {
     val elementClicked = e.target.asInstanceOf[HTMLInputElement]
     elementClicked.value = if (paused.now == true) "Pause" else "Unpause"
-    println(elementClicked)
-//    (HtmlTag) e.target
     paused() = !paused.now
   }
 
@@ -117,9 +113,12 @@ object Client {
   // TODO Should this accept dom.document.body, to make it more obvious what's being mutated?
   // Also, I think that will make it simple to target other, more specific elements.
   def createButtons(element: HTMLElement) = {
+    val columnDiv = div(
+      cls := "col-md-6 text-center"
+    ).render
     val buttonStyleClasses = "bttn-simple bttn-md bttn-primary"
 
-    element.appendChild(
+    columnDiv.appendChild(
       input(
         tpe := "button",
         cls := buttonStyleClasses,
@@ -128,7 +127,7 @@ object Client {
       ).render
     )
 
-    element.appendChild(
+    columnDiv.appendChild(
       input(
         tpe := "button",
         cls := buttonStyleClasses,
@@ -137,7 +136,7 @@ object Client {
       ).render
     )
 
-    element.appendChild(
+    columnDiv.appendChild(
       input(
         cls := buttonStyleClasses,
         tpe := "button",
@@ -146,16 +145,21 @@ object Client {
       ).render
     )
 
+    element.appendChild(columnDiv)
+
   }
 
   def createSliders(element: HTMLElement) = {
-    element.appendChild(
+    val columnDiv = div(
+      cls := "col-md-6 text-center"
+    ).render
+    columnDiv.appendChild(
       button(
       )(carTimingText).render
     )
 
 
-    element.appendChild(
+    columnDiv.appendChild(
       input(
         tpe := "range",
         min := 1,
@@ -165,12 +169,12 @@ object Client {
       ).render
     )
 
-    element.appendChild(
+    columnDiv.appendChild(
       button(
       )(carSpeedText).render
     )
 
-    element.appendChild(
+    columnDiv.appendChild(
       input(
         id := "speedSlider",
         tpe := "range",
@@ -181,6 +185,7 @@ object Client {
         oninput := speedSliderUpdate
       ).render
     )
+    element.appendChild(columnDiv)
   }
 
 
@@ -190,18 +195,23 @@ object Client {
     val edges = Seq( )
     val millisecondsPerRefresh = 500
 
-//    dom.document.head.style.
-//    dom.document.head.
+    val allControls = div(
+      cls := "container"
+    ).render
+
     val buttonPanel = div(
-      id := "button-panel"
+      id := "button-panel",
+      cls := "row"
     ).render
     createButtons(buttonPanel)
-    dom.document.body.appendChild(buttonPanel)
+    allControls.appendChild(buttonPanel)
     val sliderPanel = div(
-      id := "slider-panel"
+      id := "slider-panel",
+      cls := "row"
     ).render
     createSliders(sliderPanel)
-    dom.document.body.appendChild(sliderPanel)
+    allControls.appendChild(sliderPanel)
+    dom.document.body.appendChild(allControls)
 
     div(
       id := "button-panel"
