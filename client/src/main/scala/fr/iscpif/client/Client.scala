@@ -241,7 +241,7 @@ object Client {
         window = new Window(sceneVolatile, nodes, edges)
         window.svgNode.forceRedraw()
       }
-    }, DT.toMilliseconds / 5) // TODO Make this understable and easily modified. Just some simple algebra.
+    }, DT.toMilliseconds * 5) // TODO Make this understable and easily modified. Just some simple algebra.
   }
 }
 

@@ -58,8 +58,8 @@ object CanvasRendering {
     */
   def warpLongStraightLineToSmoothSquareWave(x: Double): Double = {
     import scala.math._
-    val amplitude = 50.0
-    val period = 200.0 // aka L, T
+    val amplitude = 500.0
+    val period = 100.0 // aka L, T
     val offset = 0.0
 //    val blah: Double = 3.0 ^ 3.0
 
@@ -68,15 +68,18 @@ object CanvasRendering {
       else if (x1.abs <= 0.001) 0
       else 1
     }
-    amplitude * sgn(x) * sin( (2 * Pi * (x - offset)) / period)
+    // version 1 pretty simple trig function
+    val simpleTrigResults = amplitude * sgn(x) * sin( (2 * Pi * (x - offset)) / period)
 
-    val pieces
+    val squareSeriesResults
     = for (n <- Range(1, 51, 2)) yield {
 //      = for (n <- Range(1, 121, 2)) yield {
       (4 / Pi) * (amplitude / n) * sin( (n * Pi * x ) / period )
     }
-    pieces.sum
+    // version 2: series square function
+    squareSeriesResults.sum
 
+    simpleTrigResults
 //    pow((amplitude * -1.0), floor(2.0 * (x - offset)/ period))
 
 //    val epsilon = 0.01;

@@ -243,7 +243,7 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
       spatial.r.coordinates.tail.head / _spatialCanvas.heightDistancePerPixel
     val y =
 //      yInit
-      CanvasRendering.warpLongStraightLineToSmoothSquareWave(x) + 200 // Hack to prevent vehicles jumping above canvas
+      CanvasRendering.warpLongStraightLineToSmoothSquareWave(x) + 500 // Hack to prevent vehicles jumping above canvas
 
     val xV = spatial.v.coordinates.head
     val renderedWidth = vehicle.spatial.dimensions.coordinates(0) / _spatialCanvas.widthDistancePerPixel
@@ -255,7 +255,8 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
           // if (task.selected()) s" $SELECTED" else ""
         })
       )(
-        svgAttrs.transform := s"translate($x, $y)")(
+//        svgAttrs.transform := s"translate($x, $y)")(
+        svgAttrs.transform := s"translate($y, $x)")(
           svgTags.image(href := "images/sedan.svg", width := renderedWidth.px, height := renderedHeight.px).render
       )
     }
