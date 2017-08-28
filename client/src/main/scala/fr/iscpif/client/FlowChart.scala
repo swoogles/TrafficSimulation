@@ -242,8 +242,8 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _tasks: Seq[Task], _edges: Se
     val yInit =
       spatial.r.coordinates.tail.head / _spatialCanvas.heightDistancePerPixel
     val y =
-//      yInit
-      CanvasRendering.warpLongStraightLineToSmoothSquareWave(x) + 500 // Hack to prevent vehicles jumping above canvas
+      yInit
+//      CanvasRendering.warpLongStraightLineToSmoothSquareWave(x) + 500 // Hack to prevent vehicles jumping above canvas
 
     val xV = spatial.v.coordinates.head
     val renderedWidth = vehicle.spatial.dimensions.coordinates(0) / _spatialCanvas.widthDistancePerPixel
