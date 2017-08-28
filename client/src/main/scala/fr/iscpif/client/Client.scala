@@ -116,7 +116,7 @@ object Client {
     val columnDiv = div(
       cls := "col-md-6 text-center"
     ).render
-    val buttonStyleClasses = "bttn-simple bttn-md bttn-primary"
+    val buttonStyleClasses = "bttn-simple bttn-md bttn-primary lightly-padded"
 
     columnDiv.appendChild(
       input(
@@ -149,32 +149,24 @@ object Client {
 
   }
 
+  // TODO Rearrange these functions so they return the containing div, and are added to the body by the caller
   def createSliders(element: HTMLElement) = {
     val columnDiv = div(
       cls := "col-md-6 text-center"
-    ).render
-    columnDiv.appendChild(
-      button(
-      )(carTimingText).render
-    )
+    )(
+      button(carTimingText).render,
 
-
-    columnDiv.appendChild(
       input(
         tpe := "range",
         min := 1,
         max := 10,
         value := 3,
         oninput := updateSlider
-      ).render
-    )
+      ).render,
 
-    columnDiv.appendChild(
       button(
-      )(carSpeedText).render
-    )
+      )(carSpeedText).render,
 
-    columnDiv.appendChild(
       input(
         id := "speedSlider",
         tpe := "range",
@@ -184,7 +176,7 @@ object Client {
         step := 5,
         oninput := speedSliderUpdate
       ).render
-    )
+    ).render
     element.appendChild(columnDiv)
   }
 

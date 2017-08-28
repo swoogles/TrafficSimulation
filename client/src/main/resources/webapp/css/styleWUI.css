@@ -1,8 +1,13 @@
 
 body{
     margin: 0;
-    padding: 0;
+    /*padding: 0;*/
     overflow:hidden;
+}
+
+.lightly-padded {
+    padding: 10px;
+    margin: 10px;
 }
 
 p{ 
