@@ -1,13 +1,16 @@
 package fr.iscpif.app
 
 import org.scalatra._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import upickle.default
 import autowire._
 import shared._
 import upickle._
+
 import scala.concurrent.duration._
 import scala.concurrent.Await
+import scalatags.Text
 import scalatags.Text.all._
 import scalatags.Text.{all => tags}
 
@@ -17,6 +20,45 @@ object AutowireServer extends autowire.Server[String, upickle.default.Reader, up
 }
 
 object ApiImpl extends shared.Api {
+}
+
+case class LocalAndCdnResources(
+                               localRef: String,
+                               cdnRef: String
+                               )
+
+object ExternalResources {
+
+  val bootstrapMin = LocalAndCdnResources(
+    "css/bootstrap.min.css",
+    "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+  )
+
+  val bttn = LocalAndCdnResources(
+    "css/bttn.min.css",
+    "https://cdnjs.com/libraries/bttn.css" // TODO This isn't the file I expect...
+  )
+
+  val allResources = List(
+    bootstrapMin,
+    bttn
+  )
+  val blah = allResources
+  //  "css/bootstrap.min.css.map"
+  //  "css/bootstrap.css.map"
+  //}
+
+  val mkStyleSheet =
+    (ref: String) => tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := ref)
+
+  val localResources =
+    allResources.map(_.localRef)
+      .map(mkStyleSheet)
+
+  val externalResources =
+    allResources.map(_.cdnRef)
+      .map(mkStyleSheet)
+
 }
 
 class Servlet extends ScalatraServlet {
@@ -29,15 +71,12 @@ class Servlet extends ScalatraServlet {
     tags.html(
 
       tags.head(
+        ExternalResources.localResources,
+//        ExternalResources.externalResources,
         tags.meta(tags.httpEquiv := "Content-Type", tags.content := "text/html; charset=UTF-8"),
         tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/styleWUI.css"),
-//        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "https://cdnjs.com/libraries/bttn.css"),
-        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/bttn.min.css"),
-        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"),
-//        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css")(OutterStyles.TrafficStyles.render[String]),
         tags.script(tags.`type` := "text/javascript", tags.src := "js/client-opt.js"),
         tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.min.js")
-//        tags.script(tags.`type` := "text/javascript", tags.src := "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")
 
         /*
         <!-- Latest compiled and minified CSS -->
