@@ -183,8 +183,6 @@ object Client {
 
   @JSExport
   def run() {
-    val nodes = Seq( )
-    val edges = Seq( )
     val millisecondsPerRefresh = 500
 
     val allControls = div(
@@ -210,15 +208,17 @@ object Client {
     )
 
     var sceneVolatile: SceneImpl = originalScene
-    var window = new Window(sceneVolatile, nodes, edges)
+    var window = new Window(sceneVolatile)
+    println("starting up!!")
     dom.window.setInterval(() => {
       if (resetScene.now == true) {
         sceneVolatile = originalScene
         resetScene() = false
-        window = new Window(sceneVolatile, nodes, edges)
+        window = new Window(sceneVolatile)
         window.svgNode.forceRedraw()
       } else if (paused.now == false) {
         GLOBAL_T = sceneVolatile.t
+
 
         val newStreets = sceneVolatile.streets.map { street: Street =>
           val newLanes: List[LaneImpl] =
@@ -238,7 +238,7 @@ object Client {
         sceneVolatile = sceneVolatile.copy(streets = newStreets)
 
         sceneVolatile = sceneVolatile.update(speedLimit)
-        window = new Window(sceneVolatile, nodes, edges)
+        window = new Window(sceneVolatile)
         window.svgNode.forceRedraw()
       }
     }, DT.toMilliseconds * 5) // TODO Make this understable and easily modified. Just some simple algebra.
