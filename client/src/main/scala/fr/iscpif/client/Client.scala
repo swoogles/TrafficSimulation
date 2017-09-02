@@ -68,6 +68,7 @@ object Client {
 
   val paused = Var(false)
   val disruptLane = Var(false)
+  val disruptLaneExisting = Var(false)
   val resetScene = Var(false)
 
   val vehicleCount = Var(0)
@@ -88,6 +89,10 @@ object Client {
 
   val toggleDisrupt = (e: dom.Event) => {
     disruptLane() = true
+  }
+
+  val toggleDisruptExisting = (e: dom.Event) => {
+    disruptLaneExisting() = true
   }
 
   val initiateSceneReset = (e: dom.Event) => {
@@ -142,6 +147,15 @@ object Client {
         tpe := "button",
         value := "Disrupt the flow",
         onclick := toggleDisrupt
+      ).render
+    )
+
+    columnDiv.appendChild(
+      input(
+        cls := buttonStyleClasses,
+        tpe := "button",
+        value := "Disrupt the flow Existing",
+        onclick := toggleDisruptExisting
       ).render
     )
 
@@ -230,8 +244,14 @@ object Client {
               } else {
                 lane
               }
-              val newSource = laneAfterDisruption.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
-              laneAfterDisruption.copy(vehicleSource = newSource)
+              val laneAfterDisruptionExisting = if (disruptLaneExisting.now == true) {
+                disruptLaneExisting() = false
+                laneAfterDisruption.disruptVehicles()
+              } else {
+                laneAfterDisruption
+              }
+              val newSource = laneAfterDisruptionExisting.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
+              laneAfterDisruptionExisting.copy(vehicleSource = newSource)
             })
           street.copy(lanes = newLanes)
         }
