@@ -14,7 +14,7 @@ trait Segment {
    */
 }
 trait Lane {
-  val vehicles: List[PilotedVehicle]
+  val vehicles: List[PilotedVehicleImpl]
   val vehicleSource: VehicleSource
   val beginning: Spatial
   val end: Spatial
@@ -22,7 +22,7 @@ trait Lane {
   val infinitySpatial: Spatial
 }
 
-case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSourceImpl, beginning: Spatial, end: Spatial) extends Lane {
+case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: Spatial, end: Spatial) extends Lane {
 
   val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
   val vehicleAtInfinity: PilotedVehicle = {
@@ -67,9 +67,32 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
 
     val newPilotedVehicle = pilotedVehicle.copy(driver = newDriver, vehicle = newVehicle)
     val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
-    val vehicleList: List[PilotedVehicle] = (pastVehicles :+ newPilotedVehicle.copy(destination = end) ) ::: approachingVehicles
+    val vehicleList: List[PilotedVehicleImpl] = (pastVehicles :+ newPilotedVehicle.copy(destination = end) ) ::: approachingVehicles
     this.copy(vehicles =
       vehicleList
+    )
+
+  }
+
+  def disruptVehicles(): LaneImpl = {
+    val disruptionPoint: QuantityVector[Distance] = end.vectorTo(beginning).times(.25)
+
+    val isPastDisruption =
+      (v: PilotedVehicleImpl) =>
+//        v.spatial.vectorTo(end).
+        v.spatial.vectorTo(end).magnitude < disruptionPoint.magnitude
+
+//    val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
+    val (pastVehicles, approachingVehicles) = this.vehicles.splitAt(this.vehicles.length-5)
+
+//    val (disruptedVehicle :: restOfApproachingVehicles) = pastVehicles
+    val ( disruptedVehicle :: restOfApproachingVehicles) = approachingVehicles
+//    val ( restOfApproachingVehicles :+ disruptedVehicle) = approachingVehicles
+    val newV= disruptedVehicle.vehicle.spatial.copy(v=Spatial.ZERO_VELOCITY_VECTOR)
+    val newlyDisruptedVehicle = disruptedVehicle.copy(vehicle = disruptedVehicle.vehicle.copy(spatial = newV))
+//    val vehicleList: List[PilotedVehicleImpl] = (approachingVehicles :+ newlyDisruptedVehicle ) :::
+    val vehicleList: List[PilotedVehicleImpl] = (pastVehicles :+ newlyDisruptedVehicle ) ::: restOfApproachingVehicles
+    this.copy(vehicles = vehicleList
     )
 
   }
@@ -78,7 +101,7 @@ case class LaneImpl(vehicles: List[PilotedVehicle], vehicleSource: VehicleSource
 
 object Lane extends LaneFunctions {
 
-  def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, speed: Velocity, vehicles: List[PilotedVehicle] = Nil): LaneImpl = {
+  def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, speed: Velocity, vehicles: List[PilotedVehicleImpl] = Nil): LaneImpl = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
     val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.value * speed}
@@ -102,8 +125,8 @@ object Lane extends LaneFunctions {
   val MAX_VEHICLES_PER_LANE = 60
 
   def update(lane: LaneImpl, speedLimit: Velocity, t: Time, dt: Time): LaneImpl = {
-    val newVehicleOption: Option[PilotedVehicle] = lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
-    val newVehicleList: List[PilotedVehicle] =
+    val newVehicleOption: Option[PilotedVehicleImpl] = lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
+    val newVehicleList: List[PilotedVehicleImpl] =
       newVehicleOption match {
           // This could be tweaked so it's always reducing to MAX_VEHICLES_PER_LANE, rather than only dropping 1
         case Some(newVehicle) if (lane.vehicles.size > MAX_VEHICLES_PER_LANE) => lane.vehicles.drop(lane.vehicles.size - MAX_VEHICLES_PER_LANE) :+ newVehicle
@@ -113,7 +136,7 @@ object Lane extends LaneFunctions {
 
     val laneWithNewVehicle = lane.copy(vehicles = newVehicleList)
     val dMomentumList = responsesInOneLanePrep(laneWithNewVehicle, speedLimit)
-    val newVehicles: List[PilotedVehicle] =
+    val newVehicles: List[PilotedVehicleImpl] =
       newVehicleList.zip(dMomentumList) map {
         case (vehicle, dMomentum) => vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
       }
