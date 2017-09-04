@@ -258,18 +258,16 @@ object Client {
 
   @JSExport
   def run() {
-    val nodes = Seq()
-    val edges = Seq()
     val millisecondsPerRefresh = 500
 
     controlElements.createLayout(dom.document.body)
 
-    var window = new Window(model.sceneVar.now, nodes, edges)
+    var window = new Window(model.sceneVar.now)
     dom.window.setInterval(() => {
       if (model.resetScene.now == true) {
         model.sceneVar() = model.originalScene
         model.resetScene() = false
-        window = new Window(model.sceneVar.now, nodes, edges)
+        window = new Window(model.sceneVar.now)
         window.svgNode.forceRedraw()
       } else if (model.paused.now == false) {
         GLOBAL_T = model.sceneVar.now.t
@@ -292,7 +290,7 @@ object Client {
               }
               val newSource = laneAfterDisruptionExisting.vehicleSource
                 .copy(spacingInTime = model.carTiming.now)
-                .updateSpeed(speed.now)
+                .updateSpeed(model.speed.now)
               laneAfterDisruptionExisting.copy(vehicleSource = newSource)
             })
           street.copy(lanes = newLanes)
@@ -300,7 +298,7 @@ object Client {
         model.updateSceneWithStreets(newStreets)
         model.updateScene(speedLimit)
 
-        window = new Window(model.sceneVar.now, nodes, edges)
+        window = new Window(model.sceneVar.now)
         window.svgNode.forceRedraw()
       }
       def serializeIfNecessary(model: Model): Unit = {
@@ -324,7 +322,7 @@ object Client {
             // val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
             // sceneVar() = deserializedScene
             model.sceneVar() = model.savedScene.now
-            window = new Window(model.sceneVar.now, nodes, edges)
+            window = new Window(model.sceneVar.now)
             window.svgNode.forceRedraw()
             model.paused() = true
           }
