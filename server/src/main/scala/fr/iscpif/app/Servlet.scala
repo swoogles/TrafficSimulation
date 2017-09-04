@@ -64,6 +64,24 @@ object ExternalResources {
 }
 
 class Servlet extends ScalatraServlet {
+  import java.nio.file.{Paths, Files}
+
+  val currentDirectory = new java.io.File(".").getCanonicalPath
+
+//  new java.io.File("./server/target/webapp/js/client-opt.js").getCanonicalPath
+//  Paths.get("./server/target/webapp/js/client-opt.js")
+
+  val jsFolder = "./server/target/webapp/js/"
+  val clientJsFull = "client-opt.js"
+  val clientJsFast = "client-fastopt.js"
+  val jsDepsFull = "client-jsdeps.min.js"
+  val jsDepsFast = "client-jsdeps.js"
+  val fastDev = Files.exists(Paths.get(jsFolder + clientJsFast))
+  val clientJs = if (fastDev) clientJsFast else clientJsFull
+  val jsDeps = if (fastDev) jsDepsFast else jsDepsFull
+  println("opt.js exists: " + Files.exists(Paths.get("./server/target/webapp/js/client-opt.js")))
+
+  println("fastopt.js exists: " + Files.exists(Paths.get("./server/target/webapp/js/client-fastopt.js")))
 
   val basePath = "shared"
 
@@ -77,12 +95,13 @@ class Servlet extends ScalatraServlet {
 //        ExternalResources.externalResources,
         tags.meta(tags.httpEquiv := "Content-Type", tags.content := "text/html; charset=UTF-8"),
         tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/styleWUI.css"),
-//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-opt.js"),
+
+        tags.script(tags.`type` := "text/javascript", tags.src := "js/" + clientJs),
+//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.min.js"),
+
         // TODO Get this working for MUCH quicker edit/refresh cycles
-        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-fastopt.js"),
-//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.min.js")
-          tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.js")
-//          tags.script(tags.`type` := "text/javascript", tags.src := "js/client-fastjsdeps.min.js")
+//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-fastopt.js"),
+          tags.script(tags.`type` := "text/javascript", tags.src := "js/" + jsDeps)
 
         /*
         <!-- Latest compiled and minified CSS -->
@@ -103,7 +122,7 @@ integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7T
 crossorigin="anonymous"></script>
          */
       ),
-      tags.body(tags.onload := "Client().run();")
+      tags.body(tags.onload := "Client.run();")
     )
   }
 
