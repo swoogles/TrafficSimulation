@@ -86,6 +86,8 @@ object Client {
   val serializeScene = Var(false)
   val deserializeScene = Var(false)
 
+  val savedScene = Var(originalScene)
+
   val vehicleCount = Var(0)
 
   def updateTimingSlider(newTiming: Int): Unit = {
@@ -268,52 +270,13 @@ object Client {
     var sceneVar = Var(originalScene)
     var window = new Window(sceneVar.now, nodes, edges)
     dom.window.setInterval(() => {
-      if (serializeScene.now == true) {
-        //        val oos = new ObjectOutputStream(new FileOutputStream("/tmp/nflx"))
-        //        oos.writeObject(sceneVolatile)
-        //        oos.close
-        println(
-          sceneVar.now
-        )
-        //        val f = Ajax.get("http://localhost:8080/writeScene")
-        val f = Ajax.post("http://localhost:8080/writeScene", data=sceneVar.now.toString)
-        f.onComplete {
-          case Success(xhr) =>
-            println("response: " + xhr.responseText)
-          case Failure(cause) => println("failed: " + cause)
-        }
-        serializeScene() = false
-      }
-      if (deserializeScene.now == true) {
-        //        val oos = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
-        //        sceneVolatile = oos.readObject.asInstanceOf[SceneImpl]
-        //        val f = Ajax.get("http://localhost:8080/writeScene")
-        val f = Ajax.get("http://localhost:8080/loadScene", data=sceneVar.now.toString)
-//        Await.result(f, Duration(100, "millis"))
-        f.onComplete {
-          case Success(xhr) => {
-            println("response: " + xhr.responseText)
-            try {
-              val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
-              sceneVar() = deserializedScene
-              println("loaded scene: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum)
-              paused() = true
-            } catch {
-              case ex: Exception => println("exception: " + ex)
-            }
-          }
-
-          case Failure(cause) => println("failed: " + cause)
-        }
-        deserializeScene() = false
-      }
       if (resetScene.now == true) {
         sceneVar() = originalScene
         resetScene() = false
         window = new Window(sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
       } else if (paused.now == false) {
-        println("sceneSize: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum )
+//        println("sceneSize: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum )
         GLOBAL_T = sceneVar.now.t
 
         val newStreets = sceneVar.now.streets.map { street: Street =>
@@ -342,6 +305,42 @@ object Client {
         sceneVar() = sceneVar.now.update(speedLimit)
         window = new Window(sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
+      }
+      if (serializeScene.now == true) {
+        savedScene() = sceneVar.now
+//        println(
+//          sceneVar.now
+//        )
+        val f = Ajax.post("http://localhost:8080/writeScene", data=sceneVar.now.toString)
+        f.onComplete {
+          case Success(xhr) =>
+//            println("response: " + xhr.responseText)
+          case Failure(cause) => println("failed: " + cause)
+        }
+        serializeScene() = false
+      }
+      if (deserializeScene.now == true) {
+        val f = Ajax.get("http://localhost:8080/loadScene", data=sceneVar.now.toString)
+        f.onComplete {
+          case Success(xhr) => {
+            println("response: " + xhr.responseText)
+            try {
+              val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
+              // Wish this was working :/
+              //              sceneVar() = deserializedScene
+              sceneVar() = savedScene.now
+//              println("loaded scene: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum)
+              window = new Window(sceneVar.now, nodes, edges)
+              window.svgNode.forceRedraw()
+              paused() = true
+            } catch {
+              case ex: Exception => println("exception: " + ex)
+            }
+          }
+
+          case Failure(cause) => println("failed: " + cause)
+        }
+        deserializeScene() = false
       }
 
     }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
