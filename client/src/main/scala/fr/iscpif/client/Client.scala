@@ -187,19 +187,19 @@ case class ButtonBehaviors(val model: Model) {
 }
 
 case class Model (
-  val originalScene: SceneImpl,
-  val speed: Var[Velocity] = Var(KilometersPerHour(50)),
-  val carTiming: Var[Time] = Var(Seconds(3)),
-  val paused: Var[Boolean] = Var(false),
-  val disruptLane: Var[Boolean] = Var(false),
-  val disruptLaneExisting: Var[Boolean] = Var(false),
-  val resetScene: Var[Boolean] = Var(false),
-  val serializeScene: Var[Boolean] = Var(false),
-  val deserializeScene: Var[Boolean] = Var(false),
-  val vehicleCount: Var[Int] = Var(0)
+  originalScene: SceneImpl,
+  speed: Var[Velocity] = Var(KilometersPerHour(50)),
+  carTiming: Var[Time] = Var(Seconds(3)),
+  paused: Var[Boolean] = Var(false),
+  disruptLane: Var[Boolean] = Var(false),
+  disruptLaneExisting: Var[Boolean] = Var(false),
+  resetScene: Var[Boolean] = Var(false),
+  serializeScene: Var[Boolean] = Var(false),
+  deserializeScene: Var[Boolean] = Var(false),
+  vehicleCount: Var[Int] = Var(0)
                  ) {
-  val savedScene = Var(originalScene)
-  var sceneVar = Var(originalScene)
+  val savedScene: Var[SceneImpl] = Var(originalScene)
+  var sceneVar: Var[SceneImpl] = Var(originalScene)
   val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
@@ -256,7 +256,7 @@ object Client {
   val buttonBehaviors = ButtonBehaviors(model)
   val controlElements = CreateControlElements(buttonBehaviors)
 
-  val savedScene = Var(originalScene)
+  val savedScene: Var[SceneImpl] = Var(originalScene)
 
   // Just a snippet to remind me how to pass html parameters around
   val startingColor = modifier(
@@ -274,8 +274,6 @@ object Client {
 
     controlElements.createLayout(dom.document.body)
 
-    var sceneVolatile: SceneImpl = originalScene
-    var sceneVar = Var(originalScene)
     var window = new Window(model.sceneVar.now, nodes, edges)
     dom.window.setInterval(() => {
       if (model.resetScene.now == true) {
@@ -284,7 +282,6 @@ object Client {
         window = new Window(model.sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
       } else if (model.paused.now == false) {
-//        println("sceneSize: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum )
         GLOBAL_T = model.sceneVar.now.t
 
         val newStreets = model.sceneVar.now.streets.map { street: Street =>
@@ -314,30 +311,30 @@ object Client {
         window = new Window(model.sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
       }
-      if (model.serializeScene.now == true) {
-        model.savedScene() = sceneVar.now
-        val f = Ajax.post("http://localhost:8080/writeScene", data=sceneVar.now.toString)
-        f.onComplete {
-          case Success(xhr) =>
-          case Failure(cause) => println("failed: " + cause)
+      def serializeIfNecessary(model: Model): Unit = {
+        if (model.serializeScene.now == true) {
+          model.savedScene() = model.sceneVar.now
+          val f = Ajax.post("http://localhost:8080/writeScene", data = model.sceneVar.now.toString)
+          f.onComplete {
+            case Success(xhr) => println("serialized some stuff and sent it off")
+            case Failure(cause) => println("failed: " + cause)
+          }
+          model.serializeScene() = false
         }
-        model.serializeScene() = false
       }
+      serializeIfNecessary(model)
+
       if (model.deserializeScene.now == true) {
-        val f = Ajax.get("http://localhost:8080/loadScene", data=sceneVar.now.toString)
+        val f = Ajax.get("http://localhost:8080/loadScene")
         f.onComplete {
           case Success(xhr) => {
-            try {
-              val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
-              // Wish this was working :/
-              //              sceneVar() = deserializedScene
-              model.sceneVar() = model.savedScene.now
-              window = new Window(model.sceneVar.now, nodes, edges)
-              window.svgNode.forceRedraw()
-              model.paused() = true
-            } catch {
-              case ex: Exception => println("exception: " + ex)
-            }
+            // Wish this was working :/
+            // val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
+            // sceneVar() = deserializedScene
+            model.sceneVar() = model.savedScene.now
+            window = new Window(model.sceneVar.now, nodes, edges)
+            window.svgNode.forceRedraw()
+            model.paused() = true
           }
 
           case Failure(cause) => println("failed: " + cause)
