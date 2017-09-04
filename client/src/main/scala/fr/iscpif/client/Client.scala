@@ -117,6 +117,25 @@ case class CreateControlElements(buttonBehaviors: ButtonBehaviors) {
     element.appendChild(columnDiv)
   }
 
+  def createLayout(element: HTMLElement) = {
+    val allControls = div(
+      cls := "container"
+    ).render
+
+    val buttonPanel = div(
+      id := "button-panel",
+      cls := "row"
+    ).render
+    createButtons(buttonPanel)
+    allControls.appendChild(buttonPanel)
+    val sliderPanel = div(
+      id := "slider-panel",
+      cls := "row"
+    ).render
+    createSliders(sliderPanel)
+    allControls.appendChild(sliderPanel)
+    element.appendChild(allControls)
+  }
 }
 
 case class ButtonBehaviors(val model: Model) {
@@ -168,7 +187,7 @@ case class ButtonBehaviors(val model: Model) {
 }
 
 case class Model (
-  val originalScene: Var[SceneImpl],
+  val originalScene: SceneImpl,
   val speed: Var[Velocity] = Var(KilometersPerHour(50)),
   val carTiming: Var[Time] = Var(Seconds(3)),
   val paused: Var[Boolean] = Var(false),
@@ -180,8 +199,15 @@ case class Model (
   val vehicleCount: Var[Int] = Var(0)
                  ) {
   val savedScene = Var(originalScene)
+  var sceneVar = Var(originalScene)
   val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
+
+  def updateSceneWithStreets(streets: List[Street]) =
+    sceneVar() = sceneVar.now.copy(streets = streets)
+
+  def updateScene(speedLimit: Velocity)(implicit dt: Time) =
+    sceneVar() = sceneVar.now.update(speedLimit)
 }
 
 @JSExportTopLevel("Client")
@@ -226,7 +252,7 @@ object Client {
     speedLimit,
     canvasDimensions
   )
-  val model = Model(Var(originalScene))
+  val model = Model(originalScene)
   val buttonBehaviors = ButtonBehaviors(model)
   val controlElements = CreateControlElements(buttonBehaviors)
 
@@ -240,200 +266,39 @@ object Client {
   val car =
     PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
 
-  def updateTimingSlider(newTiming: Int): Unit = {
-    carTiming() = Seconds(newTiming)
-  }
-
-  def updateSpeedSlider(newTiming: Int): Unit = {
-    speed() = KilometersPerHour(newTiming)
-  }
-
-  val togglePause = (e: dom.Event) => {
-    val elementClicked = e.target.asInstanceOf[HTMLInputElement]
-    elementClicked.value = if (paused.now == true) "Pause" else "Unpause"
-    paused() = !paused.now
-  }
-
-  val toggleDisrupt =
-    (e: dom.Event) => disruptLane() = true
-
-  val toggleDisruptExisting =
-    (e: dom.Event) => disruptLaneExisting() = true
-
-  val initiateSceneReset =
-    (e: dom.Event) => resetScene() = true
-
-  val initiateSceneSerialization =
-    (e: dom.Event) => serializeScene() = true
-
-  val initiateSceneDeserialization = (e: dom.Event) => {
-    deserializeScene() = true
-  }
-
-  val updateSlider = (e: dom.Event) => {
-    val value = e.target match {
-      case inputElement: Input  => inputElement.value.toInt
-      case _ => 3 // TODO de-magick this
-    }
-    updateTimingSlider(value)
-  }
-
-  val speedSliderUpdate = (e: dom.Event) => {
-    val value = e.target match {
-      case inputElement: Input  => inputElement.value.toInt
-      case _ => 65 // TODO de-magick this
-    }
-    updateSpeedSlider(value)
-  }
-
-  def createButtons(element: HTMLElement) = {
-    val columnDiv = div(
-      cls := "col-md-6 text-center"
-    ).render
-    val buttonStyleClasses = "bttn-simple bttn-md bttn-primary lightly-padded"
-
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Pause",
-        onclick := togglePause
-      ).render
-    )
-
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Reset the scene!",
-        onclick := initiateSceneReset
-      ).render
-    )
-
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Serialize the scene",
-        onclick := initiateSceneSerialization
-      ).render
-    )
-
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Deserialize the scene",
-        onclick := initiateSceneDeserialization
-      ).render
-    )
-
-    columnDiv.appendChild(
-      input(
-        cls := buttonStyleClasses,
-        tpe := "button",
-        value := "Disrupt the flow",
-        onclick := toggleDisrupt
-      ).render
-    )
-
-    columnDiv.appendChild(
-      input(
-        cls := buttonStyleClasses,
-        tpe := "button",
-        value := "Disrupt the flow Existing",
-        onclick := toggleDisruptExisting
-      ).render
-    )
-
-    element.appendChild(columnDiv)
-  }
-
-  def createSliders(element: HTMLElement) = {
-    val columnDiv = div(
-      cls := "col-md-6 text-center"
-    )(
-      button(carTimingText).render,
-
-      input(
-        tpe := "range",
-        min := 1,
-        max := 10,
-        value := 3,
-        oninput := updateSlider
-      ).render,
-
-      button(
-      )(carSpeedText).render,
-
-      input(
-        id := "speedSlider",
-        tpe := "range",
-        min := 20,
-        max := 80,
-        value := 65,
-        step := 5,
-        oninput := speedSliderUpdate
-      ).render
-    ).render
-    element.appendChild(columnDiv)
-  }
-
-
   @JSExport
   def run() {
-    val nodes = Seq( )
-    val edges = Seq( )
+    val nodes = Seq()
+    val edges = Seq()
     val millisecondsPerRefresh = 500
 
-    val allControls = div(
-      cls := "container"
-    ).render
-
-    val buttonPanel = div(
-      id := "button-panel",
-      cls := "row"
-    ).render
-//    controlElements.createButtons(buttonPanel)
-    createButtons(buttonPanel)
-    allControls.appendChild(buttonPanel)
-    val sliderPanel = div(
-      id := "slider-panel",
-      cls := "row"
-    ).render
-    createSliders(sliderPanel)
-    allControls.appendChild(sliderPanel)
-    dom.document.body.appendChild(allControls)
-
-    div(
-      id := "button-panel"
-    )
+    controlElements.createLayout(dom.document.body)
 
     var sceneVolatile: SceneImpl = originalScene
     var sceneVar = Var(originalScene)
-    var window = new Window(sceneVar.now, nodes, edges)
+    var window = new Window(model.sceneVar.now, nodes, edges)
     dom.window.setInterval(() => {
-      if (resetScene.now == true) {
-        sceneVar() = originalScene
-        resetScene() = false
-        window = new Window(sceneVar.now, nodes, edges)
+      if (model.resetScene.now == true) {
+        model.sceneVar() = model.originalScene
+        model.resetScene() = false
+        window = new Window(model.sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
-      } else if (paused.now == false) {
+      } else if (model.paused.now == false) {
 //        println("sceneSize: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum )
-        GLOBAL_T = sceneVar.now.t
+        GLOBAL_T = model.sceneVar.now.t
 
-        val newStreets = sceneVar.now.streets.map { street: Street =>
+        val newStreets = model.sceneVar.now.streets.map { street: Street =>
           val newLanes: List[LaneImpl] =
             street.lanes.map(lane => {
               // TODO Move this to match other UI response conditionals above.
-              val laneAfterDisruption = if (disruptLane.now == true) {
-                disruptLane() = false
+              val laneAfterDisruption = if (model.disruptLane.now == true) {
+                model.disruptLane() = false
                 lane.addDisruptiveVehicle(car)
               } else {
                 lane
               }
-              val laneAfterDisruptionExisting = if (disruptLaneExisting.now == true) {
-                disruptLaneExisting() = false
+              val laneAfterDisruptionExisting = if (model.disruptLaneExisting.now == true) {
+                model.disruptLaneExisting() = false
                 laneAfterDisruption.disruptVehicles()
               } else {
                 laneAfterDisruption
@@ -443,22 +308,22 @@ object Client {
             })
           street.copy(lanes = newLanes)
         }
-        sceneVar() = sceneVar.now.copy(streets = newStreets)
+        model.updateSceneWithStreets(newStreets)
+        model.updateScene(speedLimit)
 
-        sceneVar() = sceneVar.now.update(speedLimit)
-        window = new Window(sceneVar.now, nodes, edges)
+        window = new Window(model.sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
       }
-      if (serializeScene.now == true) {
-        savedScene() = sceneVar.now
+      if (model.serializeScene.now == true) {
+        model.savedScene() = sceneVar.now
         val f = Ajax.post("http://localhost:8080/writeScene", data=sceneVar.now.toString)
         f.onComplete {
           case Success(xhr) =>
           case Failure(cause) => println("failed: " + cause)
         }
-        serializeScene() = false
+        model.serializeScene() = false
       }
-      if (deserializeScene.now == true) {
+      if (model.deserializeScene.now == true) {
         val f = Ajax.get("http://localhost:8080/loadScene", data=sceneVar.now.toString)
         f.onComplete {
           case Success(xhr) => {
@@ -466,10 +331,10 @@ object Client {
               val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
               // Wish this was working :/
               //              sceneVar() = deserializedScene
-              sceneVar() = savedScene.now
-              window = new Window(sceneVar.now, nodes, edges)
+              model.sceneVar() = model.savedScene.now
+              window = new Window(model.sceneVar.now, nodes, edges)
               window.svgNode.forceRedraw()
-              paused() = true
+              model.paused() = true
             } catch {
               case ex: Exception => println("exception: " + ex)
             }
@@ -477,7 +342,7 @@ object Client {
 
           case Failure(cause) => println("failed: " + cause)
         }
-        deserializeScene() = false
+        model.deserializeScene() = false
       }
 
     }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
