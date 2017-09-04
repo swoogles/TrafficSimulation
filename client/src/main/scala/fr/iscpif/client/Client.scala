@@ -229,16 +229,6 @@ object Client {
   val herdSpeed = 65
 
   val speed = Var(KilometersPerHour(50))
-  val carTiming: Var[Time] = Var(Seconds(3))
-  val carTimingText = Rx(s"Current car timing ${carTiming()} ")
-  val carSpeedText = Rx(s"Current car speed ${speed()} ")
-  val paused = Var(false)
-  val disruptLane = Var(false)
-  val disruptLaneExisting = Var(false)
-  val resetScene: Var[Boolean] = Var(false)
-  val serializeScene = Var(false)
-  val deserializeScene = Var(false)
-  val vehicleCount = Var(0)
 
   val street = Street(Seconds(2), originSpatial, endingSpatial, South, speed.now, 1 )
 
@@ -300,7 +290,9 @@ object Client {
               } else {
                 laneAfterDisruption
               }
-              val newSource = laneAfterDisruptionExisting.vehicleSource.copy(spacingInTime = carTiming.now).updateSpeed(speed.now)
+              val newSource = laneAfterDisruptionExisting.vehicleSource
+                .copy(spacingInTime = model.carTiming.now)
+                .updateSpeed(speed.now)
               laneAfterDisruptionExisting.copy(vehicleSource = newSource)
             })
           street.copy(lanes = newLanes)
