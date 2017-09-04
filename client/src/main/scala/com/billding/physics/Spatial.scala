@@ -3,7 +3,7 @@ package com.billding.physics
 import breeze.linalg.DenseVector
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import squants.motion._
-import squants.space.{LengthUnit, Meters}
+import squants.space.{Length, LengthUnit, Meters}
 import squants.{DoubleVector, Length, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
 
 trait Spatial {
@@ -26,6 +26,13 @@ trait Spatial {
   }
   def move(orientation: Orientation, distance: Distance): Spatial
 }
+
+
+import io.circe.generic.auto._
+import io.circe.generic.JsonCodec
+import io.circe._, io.circe.generic.semiauto._
+import io.circe.syntax._
+
 case class SpatialImpl (
                          r: QuantityVector[Distance],
                          v: QuantityVector[Velocity],
@@ -146,6 +153,50 @@ object Spatial {
     new SpatialImpl(p, v, d)
   }
 
+//  def jsonDistance(distance: Distance) = {
+//    implicit val fooEncoder: Encoder[Distance] = deriveEncoder[Distance]
+//    fooEncoder.apply(distance)
+//  }
+
+//  import argonaut._, Argonaut._, ArgonautShapeless._
+
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+
+
+
+  def jsonRepresentation(spatial: SpatialImpl) = {
+    implicit val locationWrites = new Writes[Length] {
+      def writes(location: Length) = Json.obj(
+        "value" -> location.value,
+        "unit" -> location.unit.toString
+      )
+    }
+
+//    implicit def quantityVectorWrites[A] = new Writes[QuantityVector[A]] {
+//      def writes(vec: QuantityVector[A]) = Json.obj(
+//        vec.
+//        "value" -> location.value,
+//        "unit" -> location.unit.toString
+//      )
+//    }
+//    implicit val locationReads: Reads[Length] = (
+//      (JsPath \ "value").read[Double] and
+//        (JsPath \ "unit").read[String]
+//      )(results=> )
+
+//    implicit val lengthFormats = Json.format[Length]
+//    implicit val spatialReads = Json.reads[SpatialImpl]
+//    implicit val spatialWrites = Json.writes[SpatialImpl]
+//    implicit val spatialFormats = Json.format[SpatialImpl]
+//    import play.api.libs.json._
+
+//    Json.toJson(spatial)
+
+    //      implicit val fooEncoder: Encoder[SpatialImpl] = deriveEncoder[SpatialImpl]
+//      fooEncoder.apply(spatial)
+      //    sceneImpl.asJson
+    }
 }
 
 

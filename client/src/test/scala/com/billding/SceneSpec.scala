@@ -26,7 +26,7 @@ class SceneSpec extends  FlatSpec{
 
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
-                     vIn1: (Double, Double, Double, VelocityUnit)): PilotedVehicle = {
+                     vIn1: (Double, Double, Double, VelocityUnit)): PilotedVehicleImpl = {
     PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, endingSpatial)
   }
   type basicSpatial = ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit))
