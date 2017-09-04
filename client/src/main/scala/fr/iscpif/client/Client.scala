@@ -1,5 +1,7 @@
 package client
 
+import java.io.{FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
+
 import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
 import fr.iscpif.client.OutterStyles
@@ -7,7 +9,7 @@ import org.scalajs.dom
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{HTMLElement, HTMLInputElement, HTMLStyleElement}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import squants.{Length, Time}
 
 import scala.scalajs.js.annotation.JSExport
@@ -20,6 +22,17 @@ import rx._
 import scaladget.tools.JsRxTags._
 import scalatags.JsDom.TypedTag
 import scalatags.JsDom.all._
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
+import io.circe.generic.semiauto._
+import org.scalajs.dom.ext.Ajax
+
+import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success}
+
+
 
 
 @JSExport("Client")
@@ -70,6 +83,8 @@ object Client {
   val disruptLane = Var(false)
   val disruptLaneExisting = Var(false)
   val resetScene = Var(false)
+  val serializeScene = Var(false)
+  val deserializeScene = Var(false)
 
   val vehicleCount = Var(0)
 
@@ -97,6 +112,14 @@ object Client {
 
   val initiateSceneReset = (e: dom.Event) => {
     resetScene() = true
+  }
+
+  val initiateSceneSerialization = (e: dom.Event) => {
+    serializeScene() = true
+  }
+
+  val initiateSceneDeserialization = (e: dom.Event) => {
+    deserializeScene() = true
   }
 
   val updateSlider = (e: dom.Event) => {
@@ -136,8 +159,26 @@ object Client {
       input(
         tpe := "button",
         cls := buttonStyleClasses,
-        value := "Reset the scene",
+        value := "Reset the scene!",
         onclick := initiateSceneReset
+      ).render
+    )
+
+    columnDiv.appendChild(
+      input(
+        tpe := "button",
+        cls := buttonStyleClasses,
+        value := "Serialize the scene",
+        onclick := initiateSceneSerialization
+      ).render
+    )
+
+    columnDiv.appendChild(
+      input(
+        tpe := "button",
+        cls := buttonStyleClasses,
+        value := "Deserialize the scene",
+        onclick := initiateSceneDeserialization
       ).render
     )
 
@@ -224,17 +265,58 @@ object Client {
     )
 
     var sceneVolatile: SceneImpl = originalScene
-    var window = new Window(sceneVolatile, nodes, edges)
+    var sceneVar = Var(originalScene)
+    var window = new Window(sceneVar.now, nodes, edges)
     dom.window.setInterval(() => {
+      if (serializeScene.now == true) {
+        //        val oos = new ObjectOutputStream(new FileOutputStream("/tmp/nflx"))
+        //        oos.writeObject(sceneVolatile)
+        //        oos.close
+        println(
+          sceneVar.now
+        )
+        //        val f = Ajax.get("http://localhost:8080/writeScene")
+        val f = Ajax.post("http://localhost:8080/writeScene", data=sceneVar.now.toString)
+        f.onComplete {
+          case Success(xhr) =>
+            println("response: " + xhr.responseText)
+          case Failure(cause) => println("failed: " + cause)
+        }
+        serializeScene() = false
+      }
+      if (deserializeScene.now == true) {
+        //        val oos = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
+        //        sceneVolatile = oos.readObject.asInstanceOf[SceneImpl]
+        //        val f = Ajax.get("http://localhost:8080/writeScene")
+        val f = Ajax.get("http://localhost:8080/loadScene", data=sceneVar.now.toString)
+//        Await.result(f, Duration(100, "millis"))
+        f.onComplete {
+          case Success(xhr) => {
+            println("response: " + xhr.responseText)
+            try {
+              val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
+              sceneVar() = deserializedScene
+              println("loaded scene: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum)
+              paused() = true
+            } catch {
+              case ex: Exception => println("exception: " + ex)
+            }
+          }
+
+          case Failure(cause) => println("failed: " + cause)
+        }
+        deserializeScene() = false
+      }
       if (resetScene.now == true) {
-        sceneVolatile = originalScene
+        sceneVar() = originalScene
         resetScene() = false
-        window = new Window(sceneVolatile, nodes, edges)
+        window = new Window(sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
       } else if (paused.now == false) {
-        GLOBAL_T = sceneVolatile.t
+        println("sceneSize: " + sceneVar.now.streets.flatMap(_.lanes.map(_.vehicles.length)).sum )
+        GLOBAL_T = sceneVar.now.t
 
-        val newStreets = sceneVolatile.streets.map { street: Street =>
+        val newStreets = sceneVar.now.streets.map { street: Street =>
           val newLanes: List[LaneImpl] =
             street.lanes.map(lane => {
               // TODO Move this to match other UI response conditionals above.
@@ -255,13 +337,14 @@ object Client {
             })
           street.copy(lanes = newLanes)
         }
-        sceneVolatile = sceneVolatile.copy(streets = newStreets)
+        sceneVar() = sceneVar.now.copy(streets = newStreets)
 
-        sceneVolatile = sceneVolatile.update(speedLimit)
-        window = new Window(sceneVolatile, nodes, edges)
+        sceneVar() = sceneVar.now.update(speedLimit)
+        window = new Window(sceneVar.now, nodes, edges)
         window.svgNode.forceRedraw()
       }
-    }, DT.toMilliseconds / 5) // TODO Make this understable and easily modified. Just some simple algebra.
+
+    }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
   }
 }
 

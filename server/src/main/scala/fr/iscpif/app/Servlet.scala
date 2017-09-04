@@ -1,5 +1,7 @@
 package fr.iscpif.app
 
+import java.io.{FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
+
 import org.scalatra._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -105,6 +107,25 @@ crossorigin="anonymous"></script>
     )
   }
 
+  post("/writeScene") {
+
+    val oos = new ObjectOutputStream(new FileOutputStream("/tmp/nflx"))
+    oos.writeObject(request.body)
+    oos.close
+
+    val ois = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
+    val newString = ois.readObject.asInstanceOf[String]
+    println("newString: "+ newString)
+
+    newString
+
+  }
+
+  get("/loadScene") {
+    val ois = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
+    val newString = ois.readObject.asInstanceOf[String]
+    newString
+  }
   post(s"/$basePath/*") {
     Await.result(AutowireServer.route[shared.Api](ApiImpl)(
       autowire.Core.Request(Seq(basePath) ++ multiParams("splat").head.split("/"),

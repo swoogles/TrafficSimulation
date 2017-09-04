@@ -16,7 +16,11 @@ val rxVersion = "0.3.2"
 val scaladgetVersion = "0.9.4"
 val scalajsDomVersion = "0.9.3"
 val jqueryVersion = "2.2.1"
-val Resolvers = Seq(Resolver.sonatypeRepo("snapshots"),
+val circeVersion = "0.8.0"
+
+val Resolvers = Seq(
+  Resolver.sonatypeRepo("snapshots"),
+  Resolver.sonatypeRepo("releases"),
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 )
 
@@ -51,7 +55,14 @@ lazy val client = project.in(file("client")) settings(
     // be compatible with the Apache License. No GPL code, as best I know.
     "org.scalanlp" %% "breeze-natives" % "0.13.1",
 
-    // The visualization library is distributed separately as well.
+//    "io.argonaut" %%% "argonaut" % "6.2",
+//    "com.chuusai" %%% "shapeless" % "2.3.2",
+
+//    "com.github.alexarchambault" %%% "argonaut-shapeless_6.2" % "1.2.0-M4",
+    "com.typesafe.play" % "play-json_2.12" % "2.6.3",
+
+
+// The visualization library is distributed separately as well.
     // It depends on LGPL code
     "org.scalanlp" %% "breeze-viz" % "0.13.1",
     "org.typelevel" %%% "cats" % "0.9.0",
@@ -61,7 +72,13 @@ lazy val client = project.in(file("client")) settings(
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "com.lihaoyi" %%% "pprint" % "0.5.2",
     "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
-  )
+  ),
+  libraryDependencies ++= Seq(
+    "io.circe" %% "circe-core",
+    "io.circe" %% "circe-generic",
+    "io.circe" %% "circe-parser"
+  ).map(_ % circeVersion)
+
 ) dependsOn (shared) enablePlugins (ScalaJSPlugin)
 
 lazy val server = project.in(file("server")) settings(
