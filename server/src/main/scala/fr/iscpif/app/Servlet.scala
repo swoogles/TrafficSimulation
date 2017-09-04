@@ -77,11 +77,11 @@ class Servlet extends ScalatraServlet {
 //        ExternalResources.externalResources,
         tags.meta(tags.httpEquiv := "Content-Type", tags.content := "text/html; charset=UTF-8"),
         tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/styleWUI.css"),
-        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-opt.js"),
+//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-opt.js"),
         // TODO Get this working for MUCH quicker edit/refresh cycles
-//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-fastopt.js"),
-        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.min.js")
-//          tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.js")
+        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-fastopt.js"),
+//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.min.js")
+          tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.js")
 //          tags.script(tags.`type` := "text/javascript", tags.src := "js/client-fastjsdeps.min.js")
 
         /*

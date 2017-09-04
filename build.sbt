@@ -105,8 +105,8 @@ lazy val bootstrap = project.in(file("target/bootstrap")) settings(
   version := Version,
   scalaVersion := ScalaVersion,
   go := {
-    val clientTarget = (fullOptJS in client in Compile).value
-//    val clientTarget = (fastOptJS in client in Compile).value
+    val clientTarget = (fastOptJS in client in Compile).value
+//    val clientTarget = (fullOptJS in client in Compile).value
     val clientResource = (resourceDirectory in client in Compile).value
     val serverTarget = (target in server in Compile).value
 
@@ -116,7 +116,8 @@ lazy val bootstrap = project.in(file("target/bootstrap")) settings(
 
 def copy(clientTarget: Attributed[File], resources: File, webappServerTarget: File) = {
   clientTarget.map { ct =>
-    val depName = ct.getName.replace("opt.js", "jsdeps.min.js")
+//    val depName = ct.getName.replace("opt.js", "jsdeps.min.js")
+    val depName = ct.getName.replace("fastopt.js", "jsdeps.js")
 //    val depName = ct.getName
     recursiveCopy(new File(resources, "webapp"), webappServerTarget)
     recursiveCopy(ct, new File(webappServerTarget, "js/" + ct.getName))
