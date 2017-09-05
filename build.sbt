@@ -105,8 +105,8 @@ lazy val bootstrap = project.in(file("target/bootstrap")) settings(
   version := Version,
   scalaVersion := ScalaVersion,
   go := {
-    val clientTarget = (fastOptJS in client in Compile).value
 //    val clientTarget = (fullOptJS in client in Compile).value
+        val clientTarget = (fastOptJS in client in Compile).value
     val clientResource = (resourceDirectory in client in Compile).value
     val serverTarget = (target in server in Compile).value
 
