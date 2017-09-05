@@ -31,22 +31,6 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
   }
   override val infinitySpatial: Spatial = vehicleAtInfinity.spatial
 
-  /**
-    TODO Flesh out this process
-      -Want to place vehicle 75% of way down the lane
-      -Make sure it doesn't drop on top of an existing vehicle
-      -Resolve canvas size / lane length discrepency
-        -Putting things 75% of the way down the lane puts them *way* past the edge of the canvas currently
-          -Think this is done.
-      -New vehicle
-        - Will get an updated target
-        - *Could* get a slightly updated position
-        - Will keep current speed.
-        - Could push Lane capacity above the limit
-          - Does this need to be handled specially here, or will it just be resolved the next time the Source produces
-           a vehicle?
-
-   */
   def addDisruptiveVehicle(pilotedVehicle: PilotedVehicleImpl): LaneImpl = {
     val disruptionPoint: QuantityVector[Distance] = end.vectorTo(beginning).times(.25)
 
@@ -75,26 +59,13 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
   }
 
   def disruptVehicles(): LaneImpl = {
-    val disruptionPoint: QuantityVector[Distance] = end.vectorTo(beginning).times(.25)
-
-    val isPastDisruption =
-      (v: PilotedVehicleImpl) =>
-//        v.spatial.vectorTo(end).
-        v.spatial.vectorTo(end).magnitude < disruptionPoint.magnitude
-
-//    val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
     val (pastVehicles, approachingVehicles) = this.vehicles.splitAt(this.vehicles.length-5)
 
-//    val (disruptedVehicle :: restOfApproachingVehicles) = pastVehicles
     val ( disruptedVehicle :: restOfApproachingVehicles) = approachingVehicles
-//    val ( restOfApproachingVehicles :+ disruptedVehicle) = approachingVehicles
     val newV= disruptedVehicle.vehicle.spatial.copy(v=Spatial.ZERO_VELOCITY_VECTOR)
     val newlyDisruptedVehicle = disruptedVehicle.copy(vehicle = disruptedVehicle.vehicle.copy(spatial = newV))
-//    val vehicleList: List[PilotedVehicleImpl] = (approachingVehicles :+ newlyDisruptedVehicle ) :::
     val vehicleList: List[PilotedVehicleImpl] = (pastVehicles :+ newlyDisruptedVehicle ) ::: restOfApproachingVehicles
-    this.copy(vehicles = vehicleList
-    )
-
+    this.copy(vehicles = vehicleList)
   }
 
 }
