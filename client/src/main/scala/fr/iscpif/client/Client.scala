@@ -246,8 +246,6 @@ object Client {
   val buttonBehaviors = ButtonBehaviors(model)
   val controlElements = CreateControlElements(buttonBehaviors)
 
-  val savedScene: Var[SceneImpl] = Var(originalScene)
-
   // Just a snippet to remind me how to pass html parameters around
   val startingColor = modifier(
     color := "blue"
