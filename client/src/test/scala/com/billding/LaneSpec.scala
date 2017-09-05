@@ -7,9 +7,8 @@ import org.scalatest.Matchers._
 import SquantsMatchers._
 import com.billding.physics.Spatial
 import com.billding.traffic._
-import squants.time.{Milliseconds, Seconds, Time}
+import squants.time.Seconds
 import squants.time.TimeConversions._
-import squants.space.LengthConversions._
 
 class LaneSpec extends  FlatSpec {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
@@ -24,14 +23,7 @@ class LaneSpec extends  FlatSpec {
 
   val emptyLane = LaneImpl(Nil, vehicleSource, laneStartingPoint, laneEndingPoint)
 
-  def createVehicle(
-                     pIn1: (Double, Double, Double, LengthUnit),
-                     vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour),
-                     destination: Spatial = emptyLane.vehicleAtInfinity.spatial
-                   ): PilotedVehicleImpl = {
-    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, destination)
-  }
-
+  import PilotedVehicle.createVehicle
   it should "add a disruptive car" in {
     val originSpatial = Spatial((0, 0, 0, Meters))
     val endingSpatial = Spatial((100, 0, 0, Meters))

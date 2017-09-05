@@ -1,11 +1,9 @@
 package com.billding.traffic
 
-import client.Client
-import squants.motion.Acceleration
+import squants.motion.{Acceleration, DistanceUnit, KilometersPerHour, VelocityUnit}
 import com.billding.physics.{Spatial, SpatialForDefaults, SpatialImpl}
 import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
-import squants.motion.{DistanceUnit, VelocityUnit}
-import squants.time.Seconds
+import squants.space.LengthUnit
 import squants.{Time, Velocity}
 
 sealed trait PilotedVehicle {
@@ -17,6 +15,14 @@ sealed trait PilotedVehicle {
 }
 
 object PilotedVehicle {
+
+  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
+  def createVehicle(
+                     pIn1: (Double, Double, Double, LengthUnit),
+                     vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour),
+                   endingSpatial: Spatial = Spatial.BLANK): PilotedVehicleImpl = {
+    PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, endingSpatial)
+  }
 
   def commuter(
                 pIn: (Double, Double, Double, DistanceUnit),
@@ -61,7 +67,6 @@ case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destinat
 
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicleImpl = {
     val updatedSpatial: SpatialImpl = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP, destination)
-//    pprint.pprintln(updatedSpatial)
     this.copy(
       driver = driver.copy(spatial=updatedSpatial),
       vehicle = vehicle.copy(spatial = updatedSpatial)
