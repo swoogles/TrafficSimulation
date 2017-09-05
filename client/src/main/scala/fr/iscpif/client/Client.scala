@@ -4,6 +4,7 @@ package client
 import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
 import org.scalajs.dom
+import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{HTMLElement, HTMLInputElement}
 
@@ -28,61 +29,39 @@ case class CreateControlElements(buttonBehaviors: ButtonBehaviors) {
     val columnDiv = div(
       cls := "col-md-6 text-center"
     ).render
-    val buttonStyleClasses = "bttn-simple bttn-md bttn-primary lightly-padded"
+    val buttonBaseClasses = "bttn-simple bttn-md lightly-padded"
 
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Pause",
-        onclick := buttonBehaviors.togglePause
-      ).render
-    )
+    val buttonStyleClasses = buttonBaseClasses + " bttn-primary"
+    val dangerButtonClasses = buttonBaseClasses + " bttn-danger"
 
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Reset the scene!",
-        onclick := buttonBehaviors.initiateSceneReset
-      ).render
-    )
+    def normalButton(content: String, behavior: (Event) => Unit ) = {
+      columnDiv.appendChild(
+        input(
+          tpe := "button",
+          cls := buttonStyleClasses,
+          value := content,
+          onclick := behavior
+        ).render
+      )
+    }
 
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Serialize the scene",
-        onclick := buttonBehaviors.initiateSceneSerialization
-      ).render
-    )
+    def dangerButton(content: String, behavior: (Event) => Unit ) = {
+      columnDiv.appendChild(
+        input(
+          tpe := "button",
+          cls := dangerButtonClasses,
+          value := content,
+          onclick := behavior
+        ).render
+      )
+    }
 
-    columnDiv.appendChild(
-      input(
-        tpe := "button",
-        cls := buttonStyleClasses,
-        value := "Deserialize the scene",
-        onclick := buttonBehaviors.initiateSceneDeserialization
-      ).render
-    )
-
-    columnDiv.appendChild(
-      input(
-        cls := buttonStyleClasses,
-        tpe := "button",
-        value := "Disrupt the flow",
-        onclick := buttonBehaviors.toggleDisrupt
-      ).render
-    )
-
-    columnDiv.appendChild(
-      input(
-        cls := buttonStyleClasses,
-        tpe := "button",
-        value := "Disrupt the flow Existing",
-        onclick := buttonBehaviors.toggleDisruptExisting
-      ).render
-    )
+    normalButton("Pause", buttonBehaviors.togglePause)
+    normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset)
+    normalButton("Serialize the scene", buttonBehaviors.initiateSceneSerialization)
+    normalButton("Deserialize the scene", buttonBehaviors.initiateSceneDeserialization)
+    dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt)
+    dangerButton("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting)
 
     element.appendChild(columnDiv)
   }
@@ -245,6 +224,7 @@ object Client {
   val model = Model(originalScene)
   val buttonBehaviors = ButtonBehaviors(model)
   val controlElements = CreateControlElements(buttonBehaviors)
+
 
   // Just a snippet to remind me how to pass html parameters around
   val startingColor = modifier(
