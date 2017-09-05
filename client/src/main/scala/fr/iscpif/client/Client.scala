@@ -5,8 +5,8 @@ import com.billding.physics.{South, Spatial}
 import com.billding.traffic._
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.scalajs.dom.html.Input
-import org.scalajs.dom.raw.{HTMLElement, HTMLInputElement}
+import org.scalajs.dom.html.{Div, Input}
+import org.scalajs.dom.raw.{HTMLElement, HTMLInputElement, Node}
 
 import scala.concurrent.Future
 import squants.{Length, Time}
@@ -25,45 +25,34 @@ import org.scalajs.dom.ext.Ajax
 import scala.util.{Failure, Success}
 
 case class CreateControlElements(buttonBehaviors: ButtonBehaviors) {
-  def createButtons(element: HTMLElement) = {
-    val columnDiv = div(
-      cls := "col-md-6 text-center"
-    ).render
+  def createButtons(): Div = {
     val buttonBaseClasses = "bttn-simple bttn-md lightly-padded"
 
     val buttonStyleClasses = buttonBaseClasses + " bttn-primary"
     val dangerButtonClasses = buttonBaseClasses + " bttn-danger"
 
-    def normalButton(content: String, behavior: (Event) => Unit ) = {
-      columnDiv.appendChild(
+    def button(styleClasses: String): (String, (Event) => Unit ) => Input =
+      (content, behavior) =>
         input(
           tpe := "button",
-          cls := buttonStyleClasses,
+          cls := styleClasses,
           value := content,
           onclick := behavior
         ).render
-      )
-    }
 
-    def dangerButton(content: String, behavior: (Event) => Unit ) = {
-      columnDiv.appendChild(
-        input(
-          tpe := "button",
-          cls := dangerButtonClasses,
-          value := content,
-          onclick := behavior
-        ).render
-      )
-    }
+    val normalButton = button(buttonStyleClasses)
+    val dangerButton = button(dangerButtonClasses)
 
-    normalButton("Pause", buttonBehaviors.togglePause)
-    normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset)
-    normalButton("Serialize the scene", buttonBehaviors.initiateSceneSerialization)
-    normalButton("Deserialize the scene", buttonBehaviors.initiateSceneDeserialization)
-    dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt)
-    dangerButton("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting)
-
-    element.appendChild(columnDiv)
+    div(
+      cls := "col-md-6 text-center"
+    )(
+      normalButton("Pause", buttonBehaviors.togglePause),
+      normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset),
+      normalButton("Serialize the scene", buttonBehaviors.initiateSceneSerialization),
+      normalButton("Deserialize the scene", buttonBehaviors.initiateSceneDeserialization),
+      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
+      dangerButton("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting)
+    ).render
   }
 
   def createSliders(element: HTMLElement) = {
@@ -105,7 +94,7 @@ case class CreateControlElements(buttonBehaviors: ButtonBehaviors) {
       id := "button-panel",
       cls := "row"
     ).render
-    createButtons(buttonPanel)
+    buttonPanel.appendChild(createButtons())
     allControls.appendChild(buttonPanel)
     val sliderPanel = div(
       id := "slider-panel",
