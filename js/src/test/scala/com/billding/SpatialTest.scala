@@ -4,6 +4,8 @@ import scala.language.postfixOps
 import com.billding.physics._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
+import shared.Orientation.{East, North, South, West}
+import squants.Quantity
 import squants.motion._
 import squants.space.{Kilometers, Meters}
 import squants.time.TimeConversions._
@@ -11,7 +13,24 @@ import squants.time.TimeConversions._
 class SpatialTest extends FlatSpec {
   private val dt = 1 seconds
 
-  val destination = Spatial.apply((1, 0, 0, Kilometers))
+  val destination: SpatialImpl = Spatial.apply((1, 0, 0, Kilometers))
+
+  import boopickle.Default._
+
+  //          Unpick
+//  val sceneBytes = Pickle.intoBytes(destination)
+//implicit val residentReads = Json.reads[SpatialImpl]
+//  implicit val quantityVectorWrites = Json.writes[squants.QuantityVector[A <: Quantity[A]]]
+//  implicit val quantityVectorWrites = Json.writes[squants.QuantityVector[Quantity[_]]]
+//  implicit val residentWrites = Json.writes[SpatialImpl]
+//  Json.toJson(destination)
+
+  it should "serialize good" in {
+
+    import play.api.libs.json.Json
+    import JsonShit.qvWrites
+    pprint.pprintln(Json.toJson(destination.r))
+  }
 
   it should "accelerate a spatial in the direction of travel." in {
     val acceleration = MetersPerSecondSquared(1)

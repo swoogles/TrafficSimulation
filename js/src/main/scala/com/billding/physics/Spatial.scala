@@ -2,10 +2,11 @@ package com.billding.physics
 
 import breeze.linalg.DenseVector
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
-import shared.Orientation;
+import play.api.libs.json.Writes
+import shared.Orientation
 import squants.motion._
 import squants.space.{Length, LengthUnit, Meters}
-import squants.{DoubleVector, Length, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
+import squants.{DoubleVector, Length, Quantity, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
 
 trait Spatial {
   val numberOfDimensions = 3
@@ -28,6 +29,24 @@ trait Spatial {
   def move(orientation: Orientation, distance: Distance): Spatial
 }
 
+import play.api.libs.json.Json
+
+object JsonShit {
+  def parseVector(quantityVector: QuantityVector[Distance]) ={
+    quantityVector.coordinates.map{
+      piece => Json.obj("val" -> piece.toMeters)
+    }
+
+  }
+  implicit val qvWrites  = new Writes[QuantityVector[Distance]] {
+    def writes(quantityVector: QuantityVector[Distance]) =
+    Json.toJson(
+      quantityVector.coordinates.map {
+        piece => Json.obj("val" -> piece.toMeters)
+      }
+    )
+  }
+}
 
 import io.circe.generic.auto._
 import io.circe.generic.JsonCodec

@@ -5,11 +5,10 @@ import squants.motion._
 import squants.space.{Length, LengthUnit, Meters}
 import squants.{DoubleVector, Length, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
 
-
-
 trait Api {
   def uuid(): String = java.util.UUID.randomUUID.toString
 }
+
 
 sealed trait Orientation {
   val vec: DoubleVector

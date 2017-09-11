@@ -65,34 +65,35 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
     scalaVersion := ScalaVersion,
     resolvers ++= Resolvers,
     version := "0.1-SNAPSHOT",
-      libraryDependencies ++= Seq(
+    libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "autowire" % autowireVersion,
       "com.lihaoyi" %%% "upickle" % upickleVersion,
       "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
       "com.lihaoyi" %%% "scalarx" % rxVersion,
       "com.timushev" % "scalatags-rx_sjs0.6_2.12" % "0.3.0",
-        "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
+      "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
       "org.json4s" %% "json4s-jackson" % json4sVersion,
       "org.scalanlp" %% "breeze" % "0.13.1",
-        "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
-        "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
-        "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
+      "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
+      "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
+      "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
 
 
-// Native libraries are not included by default. add this if you want them (as of 0.7)
+      // Native libraries are not included by default. add this if you want them (as of 0.7)
       // Native libraries greatly improve performance, but increase jar sizes.
       // It also packages various blas implementations, which have licenses that may or may not
       // be compatible with the Apache License. No GPL code, as best I know.
       "org.scalanlp" %% "breeze-natives" % "0.13.1",
 
-      //    "io.argonaut" %%% "argonaut" % "6.2",
-      //    "com.chuusai" %%% "shapeless" % "2.3.2",
-
       //    "com.github.alexarchambault" %%% "argonaut-shapeless_6.2" % "1.2.0-M4",
-      "com.typesafe.play" % "play-json_2.12" % "2.6.3",
+      "com.typesafe.play" %%% "play-json" % "2.6.3",
+//      "me.chrons" %%% "boopickle" % "1.2.6",
+//      "io.suzaku" %%% "boopickle_sjs0.6_2.12" % "1.2.6",
+            "io.suzaku" %%% "boopickle" % "1.2.6",
+//      "me.chrons" %%% "boopickle_sjs0.6_2.12" % "1.2.5",
 
 
-      // The visualization library is distributed separately as well.
+// The visualization library is distributed separately as well.
       // It depends on LGPL code
       "org.scalanlp" %% "breeze-viz" % "0.13.1",
       "org.typelevel" %%% "cats" % "0.9.0",
@@ -102,11 +103,11 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
       "com.lihaoyi" %%% "pprint" % "0.5.2",
       "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
     ),
-  libraryDependencies ++= Seq(
-    "io.circe" %% "circe-core",
-    "io.circe" %% "circe-generic",
-    "io.circe" %% "circe-parser"
-  ).map(_ % circeVersion)
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-core",
+      "io.circe" %% "circe-generic",
+      "io.circe" %% "circe-parser"
+    ).map(_ % circeVersion)
   ).
   jvmSettings(
     // Add JVM-specific settings here

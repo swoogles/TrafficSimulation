@@ -8,6 +8,7 @@ import org.scalatest.Matchers._
 import squants.motion.KilometersPerHour
 import squants.space.{Kilometers, Meters}
 import squants.time.Seconds
+import shared.Orientation.{East, North, South, West}
 
 class StreetSpec extends FlatSpec {
   val beginning = Spatial.apply((0, 0, 0, Meters))
