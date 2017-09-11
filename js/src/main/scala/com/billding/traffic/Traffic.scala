@@ -25,7 +25,6 @@ trait Scene {
 }
 
 case class SceneImpl(
-//  lanes: List[LaneImpl],
   streets: List[Street],
   t: Time,
   dt: Time,
