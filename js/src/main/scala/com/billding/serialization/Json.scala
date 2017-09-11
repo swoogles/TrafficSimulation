@@ -2,12 +2,14 @@ package com.billding.serialization
 
 import com.billding.physics.Spatial
 import com.billding.traffic._
-import play.api.libs.json.{JsString, Json, Writes}
+import play.api.libs.json._
 import squants.mass.Kilograms
 import squants.{Acceleration, Mass, QuantityVector, Time}
 import squants.motion.{Distance, MetersPerSecond, MetersPerSecondSquared, Velocity}
-import squants.space.Meters
+import squants.space.{Length, Meters}
 import squants.time.Milliseconds
+
+import scala.util.Try
 
 object JsonShit {
   def parseVector(quantityVector: QuantityVector[Distance]) ={
@@ -29,6 +31,30 @@ object JsonShit {
 implicit val distanceWrites  = new Writes[Distance] {
   def writes(distance: Distance) = new JsString(distance.toMeters + " " + Meters.symbol)
 }
+
+//  implicit val distanceReads  = new Reads[Distance] {
+//    def reads(jsObject: JsObject) = {
+//      val eh: JsLookupResult = jsObject \ "val"
+//      val unsafeGet: JsValue =  eh.get
+//      val result: Try[Distance] = Length(unsafeGet.toString)
+//      result.get
+//    }
+//  }
+
+  def distanceConverter(s: String) =
+    Length.apply(s).get
+
+  def distanceConverterJs(s: JsString) =
+    Length.apply(s.value).get
+
+  val someValue: Reads[String] = ((JsPath \ "val").read[String])
+//  someValue.
+    import play.api.libs.json.Reads.JsStringReads
+//  StringReads
+  import play.api.libs.json._
+  import play.api.libs.functional.syntax._
+  implicit val distanceReads: Reads[Distance]  =
+    JsStringReads.map(distanceConverterJs)
 
   implicit val velocityWrites  = new Writes[Velocity] {
     def writes(velocity: Velocity) = new JsString(velocity.toMetersPerSecond + " " + MetersPerSecond.symbol)
