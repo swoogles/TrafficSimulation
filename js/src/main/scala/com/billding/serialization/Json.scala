@@ -1,7 +1,7 @@
 package com.billding.serialization
 
 import com.billding.physics.Spatial
-import com.billding.traffic.{DriverImpl, PilotedVehicleImpl, VehicleImpl}
+import com.billding.traffic._
 import play.api.libs.json.{JsString, Json, Writes}
 import squants.mass.Kilograms
 import squants.{Acceleration, Mass, QuantityVector, Time}
@@ -109,6 +109,8 @@ implicit val distanceWrites  = new Writes[Distance] {
   }
 
 
+
+
 //  PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destination: Spatial)
 implicit val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
   def writes(pilotedVehicleImpl: PilotedVehicleImpl) =
@@ -119,4 +121,56 @@ implicit val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
     )
 }
 
+  implicit val vehicleSourceWrites  = new Writes[VehicleSource] {
+    def writes(vehicleSource: VehicleSource) =
+      Json.toJson(
+        "spacing_in_time" -> vehicleSource.spacingInTime,
+        "spatial" -> vehicleSource.spatial,
+        "starting_velocity_spacial" -> vehicleSource.startingVelocitySpacial
+    )
+  }
+
+  implicit val laneWrites  = new Writes[Lane] {
+    def writes(lane: Lane) =
+      Json.toJson(
+        "vehicles" -> lane.vehicles,
+        "vehicle_source" -> lane.vehicleSource,
+        "beginning" -> lane.beginning,
+        "end" -> lane.end,
+        "vehicle_at_infinity" -> lane.vehicleAtInfinity,
+        "infinity_spatial" -> lane.infinitySpatial
+      )
+  }
+
+  implicit val streetWrites  = new Writes[Street] {
+    def writes(street: Street) =
+      Json.toJson(
+        "lanes" -> street.lanes,
+        "beginning" -> street.beginning,
+        "end" -> street.end,
+        "source_timing" -> street.sourceTiming
+      )
+  }
+
+  implicit val sceneWrites  = new Writes[Scene] {
+    def writes(scene: Scene) =
+      Json.toJson(
+        "streets" -> scene.streets,
+        "t" -> scene.t,
+        "dt" -> scene.dt,
+        "speed_limit" -> scene.speedLimit,
+        "canvas_dimensions" -> scene.canvasDimensions
+      )
+  }
+
+
+  /*
+  case class SceneImpl(
+                        streets: List[Street],
+                        t: Time,
+                        dt: Time,
+                        speedLimit: Velocity,
+                        canvasDimensions: (Length, Length)
+                      )
+                      */
 }

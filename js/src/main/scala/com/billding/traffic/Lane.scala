@@ -18,14 +18,14 @@ trait Lane {
   val vehicleSource: VehicleSource
   val beginning: Spatial
   val end: Spatial
-  val vehicleAtInfinity: PilotedVehicle
+  val vehicleAtInfinity: PilotedVehicleImpl
   val infinitySpatial: Spatial
 }
 
 case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: Spatial, end: Spatial) extends Lane {
 
   val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
-  val vehicleAtInfinity: PilotedVehicle = {
+  val vehicleAtInfinity: PilotedVehicleImpl = {
     val spatial =  Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY_VECTOR, Spatial.ZERO_DIMENSIONS_VECTOR )
     PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
   }
