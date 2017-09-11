@@ -17,29 +17,29 @@ import squants.time.{Milliseconds, Seconds}
 class JsonSpec extends FlatSpec{
   val destination: SpatialImpl = Spatial.apply((1, 0, 0, Kilometers))
 
+  it should "roundtrip serialize a distance" in {
+    import com.billding.serialization.JsonShit.distanceReads
+    import com.billding.serialization.JsonShit.distanceWrites
+    val testVal = Meters(10)
+    val serializedJson = Json.toJson(testVal)
+    pprint.pprintln(serializedJson)
+    val result = Json.fromJson(
+      serializedJson
+    ).get
+    result shouldBe testVal
+
+
+  }
+
   it should "serialize good" in {
     import com.billding.serialization.JsonShit.qvWrites
     import com.billding.serialization.JsonShit.qvVelocityWrites
-    pprint.pprintln(Json.toJson(destination.r))
-    println(
-      Json.prettyPrint(
-        Json.toJson(destination.r)
-      )
-    )
+    Json.toJson(destination.r)
 
-    pprint.pprintln(Json.toJson(destination.v))
-    println(
-      Json.prettyPrint(
-        Json.toJson(destination.v)
-      )
-    )
+    Json.toJson(destination.v)
 
     import com.billding.serialization.JsonShit.spatialWrites
-    println(
-      Json.prettyPrint(
-        Json.toJson(destination)
-      )
-    )
+    Json.toJson(destination)
   }
 
   val pIn: (Double, Double, Double, LengthUnit) = (0, 0, 0, Kilometers)
@@ -49,11 +49,7 @@ class JsonSpec extends FlatSpec{
 
   it should "serialize vehicles" in {
     import com.billding.serialization.JsonShit.pilotedVehicleWrites
-    println(
-      Json.prettyPrint(
         Json.toJson(pilotedVehicle)
-      )
-    )
   }
 
   it should "serialize a Lane" in {
@@ -69,11 +65,7 @@ class JsonSpec extends FlatSpec{
 
     val emptyLane = LaneImpl(Nil, vehicleSource, laneStartingPoint, laneEndingPoint)
     import com.billding.serialization.JsonShit.laneWrites
-    println(
-      Json.prettyPrint(
         Json.toJson(emptyLane)
-      )
-    )
   }
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
@@ -88,11 +80,7 @@ class JsonSpec extends FlatSpec{
   it should "serialize a Street" in {
 
     import com.billding.serialization.JsonShit.streetWrites
-    println(
-      Json.prettyPrint(
         Json.toJson(street)
-      )
-    )
 
   }
 
@@ -114,11 +102,7 @@ class JsonSpec extends FlatSpec{
     )
 
     import com.billding.serialization.JsonShit.sceneWrites
-    println(
-      Json.prettyPrint(
         Json.toJson(scene)
-      )
-    )
   }
 
 }
