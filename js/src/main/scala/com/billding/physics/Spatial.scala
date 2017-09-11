@@ -2,11 +2,10 @@ package com.billding.physics
 
 import breeze.linalg.DenseVector
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
-import play.api.libs.json.Writes
 import shared.Orientation
 import squants.motion._
-import squants.space.{Length, LengthUnit, Meters}
-import squants.{DoubleVector, Length, Quantity, QuantityVector, SVector, Time, UnitOfMeasure, Velocity}
+import squants.space.{LengthUnit, Meters}
+import squants.{Length, QuantityVector, Time, UnitOfMeasure, Velocity}
 
 trait Spatial {
   val numberOfDimensions = 3
@@ -29,11 +28,6 @@ trait Spatial {
   def move(orientation: Orientation, distance: Distance): Spatial
 }
 
-
-import io.circe.generic.auto._
-import io.circe.generic.JsonCodec
-import io.circe._, io.circe.generic.semiauto._
-import io.circe.syntax._
 
 case class SpatialImpl (
                          r: QuantityVector[Distance],
@@ -83,8 +77,6 @@ object Spatial {
   new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
   new position:   	x(t+Δt) = x(t) + v(t)Δt + 1/2 (dv/dt) (Δt)2,
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
-  TODO: Restrict this so nobody tries to reverse.
-  TODO: HERE! This is where that stupid spatial is shitting the bed.
   */
   def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dV: Acceleration, destination: Spatial): SpatialImpl = {
     val unitVec =
@@ -106,8 +98,6 @@ object Spatial {
       else
         newV
 
-
-//    val changeInPositionViaVelocity: QuantityVector[Length] = spatial.v.map{ v: Velocity => v * dt }
     val changeInPositionViaVelocity: QuantityVector[Length] = if (spatial.v.normalize.dotProduct(unitVec).value == -1 )
       ZERO_DIMENSIONS_VECTOR
     else
@@ -175,33 +165,8 @@ object Spatial {
       )
     }
 
-//    implicit def quantityVectorWrites[A] = new Writes[QuantityVector[A]] {
-//      def writes(vec: QuantityVector[A]) = Json.obj(
-//        vec.
-//        "value" -> location.value,
-//        "unit" -> location.unit.toString
-//      )
-//    }
-//    implicit val locationReads: Reads[Length] = (
-//      (JsPath \ "value").read[Double] and
-//        (JsPath \ "unit").read[String]
-//      )(results=> )
-
-//    implicit val lengthFormats = Json.format[Length]
-//    implicit val spatialReads = Json.reads[SpatialImpl]
-//    implicit val spatialWrites = Json.writes[SpatialImpl]
-//    implicit val spatialFormats = Json.format[SpatialImpl]
-//    import play.api.libs.json._
-
-//    Json.toJson(spatial)
-
-    //      implicit val fooEncoder: Encoder[SpatialImpl] = deriveEncoder[SpatialImpl]
-//      fooEncoder.apply(spatial)
-      //    sceneImpl.asJson
     }
 }
-
-
 
 /*
   TODO: This class will enable spatial behavior with a class.

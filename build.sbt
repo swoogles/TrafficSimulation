@@ -1,6 +1,3 @@
-import java.io.File
-import org.scalatra.sbt.ScalatraPlugin
-//import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
 val Organization = "fr.iscpif"
 val Name = "Traffice Simulator"
@@ -17,6 +14,9 @@ val scaladgetVersion = "0.9.5"
 val scalajsDomVersion = "0.9.3"
 val jqueryVersion = "2.2.1"
 val circeVersion = "0.8.0"
+
+import java.io.File
+import org.scalatra.sbt.ScalatraPlugin
 
 val Resolvers = Seq(
   Resolver.sonatypeRepo("snapshots"),
@@ -78,22 +78,15 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
       "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
       "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
 
-
       // Native libraries are not included by default. add this if you want them (as of 0.7)
       // Native libraries greatly improve performance, but increase jar sizes.
       // It also packages various blas implementations, which have licenses that may or may not
       // be compatible with the Apache License. No GPL code, as best I know.
       "org.scalanlp" %% "breeze-natives" % "0.13.1",
 
-      //    "com.github.alexarchambault" %%% "argonaut-shapeless_6.2" % "1.2.0-M4",
       "com.typesafe.play" %%% "play-json" % "2.6.3",
-//      "me.chrons" %%% "boopickle" % "1.2.6",
-//      "io.suzaku" %%% "boopickle_sjs0.6_2.12" % "1.2.6",
-            "io.suzaku" %%% "boopickle" % "1.2.6",
-//      "me.chrons" %%% "boopickle_sjs0.6_2.12" % "1.2.5",
 
-
-// The visualization library is distributed separately as well.
+    // The visualization library is distributed separately as well.
       // It depends on LGPL code
       "org.scalanlp" %% "breeze-viz" % "0.13.1",
       "org.typelevel" %%% "cats" % "0.9.0",
@@ -102,15 +95,9 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
       "org.scalatest" %% "scalatest" % "3.0.0" % "test",
       "com.lihaoyi" %%% "pprint" % "0.5.2",
       "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
-    ),
-    libraryDependencies ++= Seq(
-      "io.circe" %% "circe-core",
-      "io.circe" %% "circe-generic",
-      "io.circe" %% "circe-parser"
-    ).map(_ % circeVersion)
+    )
   ).
   jvmSettings(
-    // Add JVM-specific settings here
     libraryDependencies ++= Seq(
       "org.scalatra" %% "scalatra" % scalatraVersion,
       "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided",
@@ -121,7 +108,6 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
   jsSettings(
     skip in packageJSDependencies := false,
     jsDependencies += "org.webjars" % "d3js" % "3.5.12" / "d3.min.js"
-    // Add JS-specific settings here
   )
 
 lazy val fooJVM = foo.jvm enablePlugins (JettyPlugin)
