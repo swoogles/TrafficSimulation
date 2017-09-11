@@ -29,24 +29,6 @@ trait Spatial {
   def move(orientation: Orientation, distance: Distance): Spatial
 }
 
-import play.api.libs.json.Json
-
-object JsonShit {
-  def parseVector(quantityVector: QuantityVector[Distance]) ={
-    quantityVector.coordinates.map{
-      piece => Json.obj("val" -> piece.toMeters)
-    }
-
-  }
-  implicit val qvWrites  = new Writes[QuantityVector[Distance]] {
-    def writes(quantityVector: QuantityVector[Distance]) =
-    Json.toJson(
-      quantityVector.coordinates.map {
-        piece => Json.obj("val" -> piece.toMeters)
-      }
-    )
-  }
-}
 
 import io.circe.generic.auto._
 import io.circe.generic.JsonCodec
