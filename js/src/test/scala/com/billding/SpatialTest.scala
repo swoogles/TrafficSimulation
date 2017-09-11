@@ -15,23 +15,6 @@ class SpatialTest extends FlatSpec {
 
   val destination: SpatialImpl = Spatial.apply((1, 0, 0, Kilometers))
 
-  import boopickle.Default._
-
-  //          Unpick
-//  val sceneBytes = Pickle.intoBytes(destination)
-//implicit val residentReads = Json.reads[SpatialImpl]
-//  implicit val quantityVectorWrites = Json.writes[squants.QuantityVector[A <: Quantity[A]]]
-//  implicit val quantityVectorWrites = Json.writes[squants.QuantityVector[Quantity[_]]]
-//  implicit val residentWrites = Json.writes[SpatialImpl]
-//  Json.toJson(destination)
-
-  it should "serialize good" in {
-
-    import play.api.libs.json.Json
-    import JsonShit.qvWrites
-    pprint.pprintln(Json.toJson(destination.r))
-  }
-
   it should "accelerate a spatial in the direction of travel." in {
     val acceleration = MetersPerSecondSquared(1)
     val endingSpatial = Spatial.accelerateAlongCurrentDirection(movableSpatial, dt, acceleration, destination)
