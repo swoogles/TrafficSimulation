@@ -102,17 +102,6 @@ implicit val distanceWrites  = new Writes[Distance] {
   }
 
 
-  import BillSquants.distance._
-  import BillSquants.length
-  import BillSquants.length._
-  import BillSquants.velocity
-
-  import com.billding.serialization.JsonShit.BillSquants.length
-  import com.billding.serialization.JsonShit.BillSquants.length.singleReads
-  import com.billding.serialization.JsonShit.BillSquants.length.qvWrites
-  import com.billding.serialization.JsonShit.BillSquants.velocity.qvWrites
-  import com.billding.serialization.JsonShit.BillSquants.distance.qvWrites
-
   implicit val spatialWrites  = new Writes[Spatial] {
     def writes(spatial: Spatial) =
       Json.toJson(
@@ -123,12 +112,6 @@ implicit val distanceWrites  = new Writes[Distance] {
   }
 
   implicit val vehicleWrites  = new Writes[VehicleImpl] {
-    /*
-    spatial: SpatialImpl,
-    accelerationAbility: Acceleration,
-    brakingAbility: Acceleration,
-    weight: Mass
-    */
     def writes(vehicleImpl: VehicleImpl) =
       Json.toJson(
         "spatial" -> vehicleImpl.spatial,

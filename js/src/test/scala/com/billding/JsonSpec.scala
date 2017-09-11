@@ -46,22 +46,22 @@ class JsonSpec extends FlatSpec{
     result shouldBe testVal
   }
 
-//  it should "roundtrip serialize a Velocity Quantity Vector" in {
-//    import com.billding.serialization.JsonShit.qvVelocityReads
-//    import com.billding.serialization.JsonShit.qvVelocityWrites
-//    val testVal =
-//      QuantityVector(
-//        MetersPerSecond(10),
-//        MetersPerSecond(30),
-//        MetersPerSecond(7)
-//      )
-//    val serializedJson = Json.toJson(testVal)
-//    pprint.pprintln(serializedJson)
-//    val result = Json.fromJson(
-//      serializedJson
-//    ).get
-//    result shouldBe testVal
-//  }
+  it should "roundtrip serialize a Velocity Quantity Vector" in {
+    import com.billding.serialization.JsonShit.BillSquants.velocity.qvWrites
+    import com.billding.serialization.JsonShit.BillSquants.velocity.generalReads
+    val testVal =
+      QuantityVector(
+        MetersPerSecond(10),
+        MetersPerSecond(30),
+        MetersPerSecond(7)
+      )
+    val serializedJson = Json.toJson(testVal)
+    pprint.pprintln(serializedJson)
+    val result = Json.fromJson(
+      serializedJson
+    ).get
+    result shouldBe testVal
+  }
 
   it should "serialize good" in {
 //    import com.billding.serialization.JsonShit.BillSquants.distance.qvWrites
