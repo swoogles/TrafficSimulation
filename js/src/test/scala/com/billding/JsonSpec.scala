@@ -6,7 +6,7 @@ import com.billding.traffic._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import shared.Orientation.{East, North, South, West}
-import squants.{Length, Quantity}
+import squants.{Length, Quantity, QuantityVector}
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.TimeConversions._
@@ -27,8 +27,23 @@ class JsonSpec extends FlatSpec{
       serializedJson
     ).get
     result shouldBe testVal
+  }
 
-
+  it should "roundtrip serialize a distance Quantity Vector" in {
+    import com.billding.serialization.JsonShit.qvReads
+    import com.billding.serialization.JsonShit.qvWrites
+    val testVal =
+      QuantityVector(
+        Meters(10),
+        Meters(30),
+        Meters(7)
+      )
+    val serializedJson = Json.toJson(testVal)
+    pprint.pprintln(serializedJson)
+    val result = Json.fromJson(
+      serializedJson
+    ).get
+    result shouldBe testVal
   }
 
   it should "serialize good" in {

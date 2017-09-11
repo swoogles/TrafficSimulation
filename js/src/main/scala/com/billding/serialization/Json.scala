@@ -9,50 +9,25 @@ import squants.motion.{Distance, MetersPerSecond, MetersPerSecondSquared, Veloci
 import squants.space.{Length, Meters}
 import squants.time.Milliseconds
 
-import scala.util.Try
-
 object JsonShit {
   def parseVector(quantityVector: QuantityVector[Distance]) ={
     quantityVector.coordinates.map{
       piece => Json.obj("val" -> piece.toMeters)
     }
-
   }
-
-//  implicit val qvWrites  = new Writes[QuantityVector[Distance]] {
-//    def writes(quantityVector: QuantityVector[Distance]) =
-//      Json.toJson(
-//        quantityVector.coordinates.map {
-//          piece => Json.obj("val" -> piece.toMeters)
-//        }
-//      )
-//  }
 
 implicit val distanceWrites  = new Writes[Distance] {
   def writes(distance: Distance) = new JsString(distance.toMeters + " " + Meters.symbol)
 }
 
-//  implicit val distanceReads  = new Reads[Distance] {
-//    def reads(jsObject: JsObject) = {
-//      val eh: JsLookupResult = jsObject \ "val"
-//      val unsafeGet: JsValue =  eh.get
-//      val result: Try[Distance] = Length(unsafeGet.toString)
-//      result.get
-//    }
-//  }
-
-  def distanceConverter(s: String) =
-    Length.apply(s).get
-
   def distanceConverterJs(s: JsString) =
     Length.apply(s.value).get
 
   val someValue: Reads[String] = ((JsPath \ "val").read[String])
-//  someValue.
     import play.api.libs.json.Reads.JsStringReads
-//  StringReads
   import play.api.libs.json._
   import play.api.libs.functional.syntax._
+
   implicit val distanceReads: Reads[Distance]  =
     JsStringReads.map(distanceConverterJs)
 
@@ -86,6 +61,20 @@ implicit val distanceWrites  = new Writes[Distance] {
         }
       )
   }
+
+  implicit val qvReads  = new Reads[QuantityVector[Distance]] {
+    def reads(jsValue: JsValue): JsResult[QuantityVector[Distance]] = {
+//      val blah: Seq[JsString] = jsObject.as[Seq[JsString]]
+      val blah: Seq[JsValue] = jsValue.as[Seq[JsValue]]
+      val egh: Seq[JsResult[Distance]] = blah.map(x => distanceReads.reads(x) )
+      val foo: Seq[Distance] = egh.map(jsRes => jsRes.get)
+      val res: JsResult[QuantityVector[Distance]] = JsSuccess(
+      QuantityVector.apply(foo: _*)
+      )
+      res
+    }
+  }
+
 
   implicit val qvVelocityWrites  = new Writes[QuantityVector[Velocity]] {
     def writes(quantityVector: QuantityVector[Velocity]) =
