@@ -16,20 +16,20 @@ trait Segment {
 trait Lane {
   val vehicles: List[PilotedVehicleImpl]
   val vehicleSource: VehicleSource
-  val beginning: Spatial
-  val end: Spatial
+  val beginning: SpatialImpl
+  val end: SpatialImpl
   val vehicleAtInfinity: PilotedVehicleImpl
-  val infinitySpatial: Spatial
+  val infinitySpatial: SpatialImpl
 }
 
-case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: Spatial, end: Spatial) extends Lane {
+case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: SpatialImpl, end: SpatialImpl) extends Lane {
 
   val infinityPoint: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
   val vehicleAtInfinity: PilotedVehicleImpl = {
     val spatial =  Spatial.withVecs(infinityPoint, Spatial.ZERO_VELOCITY_VECTOR, Spatial.ZERO_DIMENSIONS_VECTOR )
     PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
   }
-  override val infinitySpatial: Spatial = vehicleAtInfinity.spatial
+  override val infinitySpatial: SpatialImpl = vehicleAtInfinity.spatial
 
   def addDisruptiveVehicle(pilotedVehicle: PilotedVehicleImpl): LaneImpl = {
     val disruptionPoint: QuantityVector[Distance] = end.vectorTo(beginning).times(.25)
@@ -72,7 +72,7 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
 
 object Lane extends LaneFunctions {
 
-  def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, speed: Velocity, vehicles: List[PilotedVehicleImpl] = Nil): LaneImpl = {
+  def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speed: Velocity, vehicles: List[PilotedVehicleImpl] = Nil): LaneImpl = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
     val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.value * speed}

@@ -5,14 +5,14 @@ import squants.motion.KilometersPerHour
 import squants.{Time, Velocity}
 
 trait VehicleSource {
-  def produceVehicle(t: Time, dt: Time, destination: Spatial): Option[PilotedVehicleImpl]
+  def produceVehicle(t: Time, dt: Time, destination: SpatialImpl): Option[PilotedVehicleImpl]
   val spacingInTime: Time
-  val spatial: Spatial // TODO This will include starting velocity. Might not belong here.
-  val startingVelocitySpacial: Spatial
+  val spatial: SpatialImpl // TODO This will include starting velocity. Might not belong here.
+  val startingVelocitySpacial: SpatialImpl
 }
 
-case class VehicleSourceImpl(spacingInTime: Time, spatial: Spatial, startingVelocitySpacial: SpatialImpl) extends  VehicleSource {
-  override def produceVehicle(t: Time, dt: Time, destination: Spatial): Option[PilotedVehicleImpl] = {
+case class VehicleSourceImpl(spacingInTime: Time, spatial: SpatialImpl, startingVelocitySpacial: SpatialImpl) extends  VehicleSource {
+  override def produceVehicle(t: Time, dt: Time, destination: SpatialImpl): Option[PilotedVehicleImpl] = {
     val res = t % spacingInTime
     if (res.abs < dt.toSeconds) {
       val vehicleSpatial = Spatial.withVecs(spatial.r, startingVelocitySpacial.v, spatial.dimensions)

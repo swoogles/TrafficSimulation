@@ -10,7 +10,7 @@ sealed trait PilotedVehicle {
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
   def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicleImpl
-  def spatial: Spatial
+  def spatial: SpatialImpl
   def tooClose(pilotedVehicle: PilotedVehicle): Boolean
 }
 
@@ -20,7 +20,7 @@ object PilotedVehicle {
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
                      vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour),
-                   endingSpatial: Spatial = Spatial.BLANK): PilotedVehicleImpl = {
+                   endingSpatial: SpatialImpl = Spatial.BLANK): PilotedVehicleImpl = {
     PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, endingSpatial)
   }
 
@@ -28,7 +28,7 @@ object PilotedVehicle {
                 pIn: (Double, Double, Double, DistanceUnit),
                 vIn: (Double, Double, Double, VelocityUnit),
                 idm: IntelligentDriverModel,
-                destination: Spatial
+                destination: SpatialImpl
               ): PilotedVehicleImpl = {
     val spatial = Spatial(pIn, vIn, VehicleStats.Commuter.dimensions)
       new PilotedVehicleImpl( Driver.commuter(spatial, idm), VehicleImpl.simpleCar(pIn, vIn), destination)
@@ -37,16 +37,16 @@ object PilotedVehicle {
   def commuter(
               spatial: SpatialImpl,
               idm: IntelligentDriverModel,
-              destination: Spatial
+              destination: SpatialImpl
               ): PilotedVehicleImpl = {
     new PilotedVehicleImpl( Driver.commuter(spatial, idm), VehicleImpl.simpleCar(spatial.r, spatial.v), destination)
   }
 
 }
 
-case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destination: Spatial) extends PilotedVehicle {
+case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destination: SpatialImpl) extends PilotedVehicle {
 
-  def spatial: Spatial = vehicle.spatial
+  def spatial: SpatialImpl = vehicle.spatial
 
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration = {
     driver.idm.deltaVDimensionallySafe(
