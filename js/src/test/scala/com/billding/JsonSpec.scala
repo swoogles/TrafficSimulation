@@ -15,52 +15,6 @@ import squants.time.{Milliseconds, Seconds}
 class JsonSpec extends FlatSpec{
   val destination: SpatialImpl = Spatial.apply((1, 0, 0, Kilometers))
 
-  it should "roundtrip serialize a distance" in {
-    import com.billding.serialization.JsonShit.BillSquants.distance.singleWrites
-    import com.billding.serialization.JsonShit.BillSquants.distance.singleReads
-    val testVal = Meters(10)
-    val serializedJson = Json.toJson(testVal)
-    pprint.pprintln(serializedJson)
-    val result = Json.fromJson(
-      serializedJson
-    ).get
-    result shouldBe testVal
-  }
-
-  it should "roundtrip serialize a distance Quantity Vector" in {
-    import com.billding.serialization.JsonShit.BillSquants.distance.qvWrites
-    import com.billding.serialization.JsonShit.BillSquants.distance.generalReads
-    val testVal: QuantityVector[Distance] =
-      QuantityVector(
-        Meters(10),
-        Meters(30),
-        Meters(7)
-      )
-    val serializedJson: JsValue = Json.toJson(testVal)
-    pprint.pprintln(serializedJson)
-    val result  = Json.fromJson(
-      serializedJson
-    ).get
-    result shouldBe testVal
-  }
-
-  it should "roundtrip serialize a Velocity Quantity Vector" in {
-    import com.billding.serialization.JsonShit.BillSquants.velocity.qvWrites
-    import com.billding.serialization.JsonShit.BillSquants.velocity.generalReads
-    val testVal =
-      QuantityVector(
-        MetersPerSecond(10),
-        MetersPerSecond(30),
-        MetersPerSecond(7)
-      )
-    val serializedJson = Json.toJson(testVal)
-    pprint.pprintln(serializedJson)
-    val result = Json.fromJson(
-      serializedJson
-    ).get
-    result shouldBe testVal
-  }
-
   it should "serialize good" in {
 //    import com.billding.serialization.JsonShit.BillSquants.distance.qvWrites
 //    import com.billding.serialization.JsonShit.BillSquants.velocity.qvWrites
