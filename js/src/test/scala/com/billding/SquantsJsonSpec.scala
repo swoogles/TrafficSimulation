@@ -1,15 +1,12 @@
 package com.billding
 
 import scala.language.postfixOps
-import com.billding.physics._
-import com.billding.serialization.JsonShit.BillSquants
-import com.billding.traffic._
+import com.billding.serialization.BillSquants
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import squants.{Length, Quantity, QuantityVector}
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
-import squants.time.TimeConversions._
 import play.api.libs.json.{JsArray, JsString, JsValue, Json}
 import squants.mass.Kilograms
 import squants.time.{Milliseconds, Seconds, Time}
