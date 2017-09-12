@@ -1,14 +1,14 @@
 package com.billding.traffic
 
-import com.billding.physics.{Spatial}
-import shared.Orientation;
+import com.billding.physics.{Spatial, SpatialImpl}
+import shared.Orientation
 import squants.{Time, Velocity}
 import squants.space.{Length, Meters}
 
-case class Street(lanes: List[LaneImpl], beginning: Spatial, end: Spatial, sourceTiming: Time)
+case class Street(lanes: List[LaneImpl], beginning: SpatialImpl, end: SpatialImpl, sourceTiming: Time)
 
 object Street {
-  def apply(sourceTiming: Time, beginning: Spatial, end: Spatial, speed: Velocity, numLanes: Integer): Street = {
+  def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speed: Velocity, numLanes: Integer): Street = {
 
     val lanes = for (i <- Range(0, numLanes).toList) yield {
       val offset = Meters(6) * i

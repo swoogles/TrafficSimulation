@@ -1,9 +1,9 @@
 package com.billding.serialization
 
-import com.billding.physics.Spatial
+import com.billding.physics.{Spatial, SpatialImpl}
 import com.billding.traffic._
 import play.api.libs.json._
-import squants.mass.Kilograms
+import squants.mass.{Kilograms, Mass}
 import squants.{Acceleration, Mass, Quantity, QuantityVector, Time}
 import squants.motion._
 import squants.space.{Length, Meters}
@@ -15,9 +15,14 @@ import play.api.libs.functional.syntax._
 
 object JsonShit {
   sealed trait BillSquants[T <: Quantity[T]] {
-    implicit val singleReads: Reads[T]
-    implicit val singleWrites: Writes[T]
-    //    val theReads: Reads[QuantityVector[T]]
+    val fromJsString: JsString => T
+    val toJsString: T => JsString
+
+    implicit val singleWrites  = new Writes[T] {
+      override def writes(o: T): JsValue = toJsString(o)
+    }
+
+    implicit val singleReads: Reads[T] = JsStringReads.map(fromJsString)
 
     implicit val generalReads = new Reads[QuantityVector[T]] {
       def reads(jsValue: JsValue): JsResult[QuantityVector[T]] = {
@@ -30,9 +35,7 @@ object JsonShit {
       }
     }
 
-    implicit val qvWrites: Writes[QuantityVector[T]] {
-      def writes(quantityVector: QuantityVector[T]): JsValue
-    } = new Writes[QuantityVector[T]] {
+    implicit val qvWrites: Writes[QuantityVector[T]] = new Writes[QuantityVector[T]] {
       def writes(quantityVector: QuantityVector[T]) =
         Json.toJson(
           quantityVector.coordinates.map {
@@ -40,67 +43,73 @@ object JsonShit {
           }
         )
     }
+
   }
-  case class BillSquantsImpl[T <: Quantity[T]](singleReads: Reads[T], singleWrites: Writes[T]) extends BillSquants[T]
+  case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
 
   object BillSquants {
-    def distanceConverterJs(s: JsString) =
+    val distanceConverterJs = (s: JsString) =>
       Length.apply(s.value).get
 
-    def velocityConverterJs(s: JsString) =
+    val velocityConverterJs = (s: JsString) =>
       Velocity.apply(s.value).get
 
-    def accelerationConverterJs(s: JsString) =
+    val accelerationConverterJs = (s: JsString) =>
       Acceleration.apply(s.value).get
 
-    def timeConverterJs(s: JsString) =
+    val timeConverterJs = (s: JsString) =>
       new TimeConversions.TimeStringConversions(s.value).toTime.get
 
-    implicit val distanceWrites  = new Writes[Distance] {
-      def writes(distance: Distance) = new JsString(distance.toMeters + " " + Meters.symbol)
-    }
-    implicit val distanceReads: Reads[Distance]  =
-      JsStringReads.map(distanceConverterJs)
+    val massConverterJs = (s: JsString) =>
+      Mass(s.value).get
 
-    implicit val velocityWrites  = new Writes[Velocity] {
-      def writes(velocity: Velocity) = new JsString(velocity.toMetersPerSecond + " " + MetersPerSecond.symbol)
-    }
-    implicit val velocityReads: Reads[Velocity]  =
-      JsStringReads.map(velocityConverterJs)
+    val distanceToJsString = (distance: Distance) => new JsString(distance.toMeters + " " + Meters.symbol)
+    val velocityToJsString =  (velocity: Velocity) => new JsString(velocity.toMetersPerSecond + " " + MetersPerSecond.symbol)
+    val accelerationToJsString  = (acceleration: Acceleration) => new JsString(acceleration.toMetersPerSecondSquared + " " + MetersPerSecondSquared.symbol)
+    val timeToJsString = (time: Time) => new JsString(time.toMilliseconds + " " + Milliseconds.symbol)
+    val massToJsString = (mass: Mass) => new JsString(mass.toKilograms + " " + Kilograms.symbol)
 
-    implicit val accelerationWrites  = new Writes[Acceleration] {
-      def writes(acceleration: Acceleration) = new JsString(acceleration.toMetersPerSecondSquared + " " + MetersPerSecondSquared.symbol)
-    }
-
-    implicit val accelerationReads: Reads[Acceleration]  =
-      JsStringReads.map(accelerationConverterJs)
-
-    implicit val timeWrites  = new Writes[Time] {
-      def writes(time: Time) = new JsString(time.toMilliseconds + " " + Milliseconds.symbol)
-    }
-    implicit val timeReads: Reads[Time]  =
-      JsStringReads.map(timeConverterJs)
-
-    implicit val distance = BillSquantsImpl(distanceReads, distanceWrites)
-    implicit val velocity = BillSquantsImpl(velocityReads, velocityWrites)
-    implicit val acceleration = BillSquantsImpl(accelerationReads, accelerationWrites)
-    implicit val time = BillSquantsImpl(timeReads, timeWrites)
+    implicit val distance = BillSquantsImpl(distanceConverterJs, distanceToJsString)
+    implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityToJsString)
+    implicit val acceleration: BillSquants[Acceleration] = BillSquantsImpl(accelerationConverterJs, accelerationToJsString)
+    implicit val time = BillSquantsImpl(timeConverterJs, timeToJsString)
+    implicit val mass = BillSquantsImpl(massConverterJs, massToJsString)
   }
 
-  implicit val massWrites  = new Writes[Mass] {
-    def writes(mass: Mass) = new JsString(mass.toKilograms + " " + Kilograms.symbol)
-  }
-
-  implicit val spatialWrites  = new Writes[Spatial] {
-    def writes(spatial: Spatial) =
+  implicit val spatialWrites  = new Writes[SpatialImpl] {
+    def writes(spatial: SpatialImpl) =
       Json.toJson(
         "r" -> com.billding.serialization.JsonShit.BillSquants.distance.qvWrites.writes(spatial.r),
         "v" -> com.billding.serialization.JsonShit.BillSquants.velocity.qvWrites.writes(spatial.v),
         "dimensions" -> com.billding.serialization.JsonShit.BillSquants.distance.qvWrites.writes(spatial.dimensions)
       )
   }
+  implicit val localAccelerationWrites = BillSquants.acceleration.singleWrites
+  implicit val localAccelerationReads = BillSquants.acceleration.singleReads
+  implicit val localMassReads = BillSquants.mass.singleReads
+  implicit val localVelocityWrites = BillSquants.velocity.singleWrites
+  implicit val localDistanceWrites = BillSquants.distance.singleWrites
+  implicit val distanceQvReads = BillSquants.distance.generalReads
+  implicit val velocityQvReads = BillSquants.velocity.generalReads
+  implicit val distanceReads = BillSquants.distance.singleReads
+  implicit val localMassWrites = BillSquants.mass.singleWrites
+  import BillSquants.time.singleWrites
 
-  import BillSquants._
+  implicit val spatialReads: Reads[SpatialImpl] = (
+    (JsPath \ "r").read[QuantityVector[Distance]] and
+      (JsPath \ "v").read[QuantityVector[Velocity]] and
+      (JsPath \ "dimensions").read[QuantityVector[Distance]]
+    )(SpatialImpl.apply _)
+
+//  val spatialRead: Reads[Spatial] = (JsPath \ "spatial").read[Spatial]
+  val vehicleReads =
+    (
+      (JsPath \ "spatial").read[SpatialImpl] and
+        (JsPath \ "acceleration_ability").read[Acceleration] and
+        (JsPath \ "braking_ability").read[Acceleration] and
+        (JsPath \ "weight").read[Mass]
+      ) (VehicleImpl.apply _)
+
   implicit val vehicleWrites  = new Writes[VehicleImpl] {
     def writes(vehicleImpl: VehicleImpl) =
       Json.toJson(
@@ -142,8 +151,8 @@ implicit val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
     )
   }
 
-  implicit val laneWrites  = new Writes[Lane] {
-    def writes(lane: Lane) =
+  implicit val laneWrites  = new Writes[LaneImpl] {
+    def writes(lane: LaneImpl) =
       Json.toJson(
         "vehicles" -> lane.vehicles,
         "vehicle_source" -> lane.vehicleSource,
