@@ -5,12 +5,10 @@ import com.billding.physics._
 import com.billding.traffic._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import shared.Orientation.{East, North, South, West}
 import squants.{Length, Quantity, QuantityVector}
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.TimeConversions._
-import org.scalatest.FlatSpec
 import play.api.libs.json.{JsValue, Json}
 import squants.time.{Milliseconds, Seconds}
 
@@ -18,8 +16,8 @@ class JsonSpec extends FlatSpec{
   val destination: SpatialImpl = Spatial.apply((1, 0, 0, Kilometers))
 
   it should "roundtrip serialize a distance" in {
-    import com.billding.serialization.JsonShit.distanceReads
-    import com.billding.serialization.JsonShit.lengthWrites
+    import com.billding.serialization.JsonShit.BillSquants.distanceReads
+    import com.billding.serialization.JsonShit.BillSquants.distanceWrites
     val testVal = Meters(10)
     val serializedJson = Json.toJson(testVal)
     pprint.pprintln(serializedJson)
