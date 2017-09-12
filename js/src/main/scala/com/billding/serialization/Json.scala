@@ -24,6 +24,9 @@ object JsonShit {
 
     implicit val singleReads: Reads[T] = JsStringReads.map(fromJsString)
 
+    implicit val format: Format[T] =
+      Format(singleReads, singleWrites)
+
     implicit val generalReads = new Reads[QuantityVector[T]] {
       def reads(jsValue: JsValue): JsResult[QuantityVector[T]] = {
         val blah: Seq[JsValue] = jsValue.as[Seq[JsValue]]
@@ -44,6 +47,8 @@ object JsonShit {
         )
     }
 
+    implicit val formatQv: Format[QuantityVector[T]] =
+      Format(generalReads, qvWrites)
   }
   case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
 
