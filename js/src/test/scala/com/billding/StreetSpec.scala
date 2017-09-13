@@ -2,7 +2,7 @@ package com.billding
 
 import scala.language.postfixOps
 import com.billding.physics._
-import com.billding.traffic.Street
+import com.billding.traffic.{Street, StreetImpl}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import squants.motion.KilometersPerHour

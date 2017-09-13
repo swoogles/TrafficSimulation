@@ -176,7 +176,7 @@ case class Model (
   val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
-  def updateSceneWithStreets(streets: List[Street]) =
+  def updateSceneWithStreets(streets: List[StreetImpl]) =
     sceneVar() = sceneVar.now.copy(streets = streets)
 
   def updateScene(speedLimit: Velocity)(implicit dt: Time) =
@@ -244,7 +244,7 @@ object Client {
       } else if (model.paused.now == false) {
         GLOBAL_T = model.sceneVar.now.t
 
-        val newStreets = model.sceneVar.now.streets.map { street: Street =>
+        val newStreets = model.sceneVar.now.streets.map { street: StreetImpl =>
           val newLanes: List[LaneImpl] =
             street.lanes.map(lane => {
               // TODO Move this to match other UI response conditionals above.

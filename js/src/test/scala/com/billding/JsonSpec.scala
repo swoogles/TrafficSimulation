@@ -53,31 +53,10 @@ class JsonSpec extends FlatSpec{
   it should "roundtrip a pilotedVehicle" in {
     import com.billding.serialization.JsonShit.pilotedVehicleFormat
     val jsonResults = Json.toJson(pilotedVehicle)
-    pprint.pprintln(jsonResults)
     val result = Json.fromJson(
       jsonResults
     ).get
-    println("Goal: " )
-    pprint.pprintln(pilotedVehicle)
-    println("Result: " )
-    pprint.pprintln(result)
     result shouldBe pilotedVehicle
-  }
-
-  it should "serialize a Lane" in {
-    val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
-    val speedLimit = KilometersPerHour(150)
-
-    val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-    val laneStartingPoint = Spatial.BLANK
-    val laneEndingPoint = Spatial.apply((1, 0, 0, Kilometers))
-    val herdSpeed = 65
-    val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
-    val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint, velocitySpatial)
-
-    val emptyLane = LaneImpl(Nil, vehicleSource, laneStartingPoint, laneEndingPoint)
-    import com.billding.serialization.JsonShit.laneWrites
-        Json.toJson(emptyLane)
   }
 
   val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
@@ -89,23 +68,52 @@ class JsonSpec extends FlatSpec{
   val speed = KilometersPerHour(50)
   val street = Street(Seconds(1), laneStartingPoint, laneEndingPoint, speed, 3)
 
-  it should "serialize a Street" in {
+  val herdSpeed = 65
 
-    import com.billding.serialization.JsonShit.streetWrites
-        Json.toJson(street)
+  val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
+  val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint, velocitySpatial)
 
+  val lane = LaneImpl(List(pilotedVehicle), vehicleSource, laneStartingPoint, laneEndingPoint)
+
+  it should "roundtrip a VehicleSource" in {
+    import com.billding.serialization.JsonShit.vehicleSourceFormat
+    val jsonResults = Json.toJson(vehicleSource)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    result shouldBe vehicleSource
+  }
+  it should "roundtrip a Lane" in {
+    import com.billding.serialization.JsonShit.laneFormat
+    val jsonResults = Json.toJson(lane)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    result shouldBe lane
+  }
+
+  it should "roundtrip a street" in {
+    import com.billding.serialization.JsonShit.streetFormat
+    val jsonResults = Json.toJson(street)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    println("Goal: " )
+    pprint.pprintln(street)
+    println("Result: " )
+    pprint.pprintln(result)
+    result shouldBe street
   }
 
   val speedLimit = KilometersPerHour(150)
   val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(1))
 
   it should "serialize a whole scene" in {
-    val vehicleSource = VehicleSourceImpl(Seconds(1), originSpatial, endingSpatial)
-    val lane = new LaneImpl(List(pilotedVehicle), vehicleSource, originSpatial, endingSpatial)
-    val street = Street(List(lane), originSpatial, endingSpatial, Seconds(1))
+    import com.billding.serialization.JsonShit.sceneFormats
+    val street = StreetImpl(List(lane), originSpatial, endingSpatial, Seconds(1))
     val t = Seconds(500)
     implicit val dt = Milliseconds(500)
-    val scene: Scene = SceneImpl(
+    val scene: SceneImpl = SceneImpl(
       List(street),
       t,
       dt,
@@ -113,8 +121,15 @@ class JsonSpec extends FlatSpec{
       canvasDimensions
     )
 
-//    import com.billding.serialization.JsonShit.sceneWrites
-//        Json.toJson(scene)
+    val jsonResults = Json.toJson(scene)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    println("Goal: " )
+    pprint.pprintln(scene)
+    println("Result: " )
+    pprint.pprintln(result)
+    result shouldBe scene
   }
 
 }
