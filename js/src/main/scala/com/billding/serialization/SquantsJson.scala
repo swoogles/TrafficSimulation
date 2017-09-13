@@ -27,8 +27,9 @@ sealed trait BillSquants[T <: Quantity[T]] {
       val blah: Seq[JsValue] = jsValue.as[Seq[JsValue]]
       val egh: Seq[JsResult[T]] = blah.map(x => singleReads.reads(x))
       val foo: Seq[T] = egh.map(jsRes => jsRes.get)
+      val der: QuantityVector[T] = QuantityVector.apply(foo: _*)
       JsSuccess(
-        QuantityVector.apply(foo: _*)
+        der
       )
     }
   }
@@ -48,11 +49,11 @@ sealed trait BillSquants[T <: Quantity[T]] {
 case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
 
 object BillSquants {
-  val distanceConverterJs = (s: JsString) =>
-    Length.apply(s.value).get
+  val distanceConverterJs: (JsString) => Distance = (s: JsString) =>
+    Meters(Length.apply(s.value).get.toMeters)
 
   val velocityConverterJs = (s: JsString) =>
-    Velocity.apply(s.value).get
+    KilometersPerHour(Velocity.apply(s.value).get.toKilometersPerHour)
 
   val accelerationConverterJs = (s: JsString) =>
     Acceleration.apply(s.value).get
@@ -64,8 +65,8 @@ object BillSquants {
     Mass(s.value).get
 
   val distanceToJsString = (distance: Distance) => new JsString(distance.toMeters + " " + Meters.symbol)
-  val velocityToJsString =  (velocity: Velocity) => new JsString(velocity.toMetersPerSecond + " " + MetersPerSecond.symbol)
-  val accelerationToJsString  = (acceleration: Acceleration) => new JsString(acceleration.toMetersPerSecondSquared + " " + MetersPerSecondSquared.symbol)
+  val velocityToJsString = (velocity: Velocity) => new JsString(velocity.toKilometersPerHour + " " + KilometersPerHour.symbol)
+  val accelerationToJsString = (acceleration: Acceleration) => new JsString(acceleration.toMetersPerSecondSquared + " " + MetersPerSecondSquared.symbol)
   val timeToJsString = (time: Time) => new JsString(time.toMilliseconds + " " + Milliseconds.symbol)
   val massToJsString = (mass: Mass) => new JsString(mass.toKilograms + " " + Kilograms.symbol)
 

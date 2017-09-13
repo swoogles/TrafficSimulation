@@ -1,8 +1,8 @@
 package com.billding.serialization
 
-import com.billding.physics.{SpatialImpl}
+import com.billding.physics.SpatialImpl
 import com.billding.traffic._
-import squants.{Acceleration, Mass, Quantity, QuantityVector, Time}
+import squants.{Acceleration, Length, Mass, Quantity, QuantityVector, Time}
 import squants.motion._
 import play.api.libs.json.Reads.JsStringReads
 import play.api.libs.json._
@@ -107,8 +107,8 @@ val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
 
   implicit val pilotedVehicleFormat: Format[PilotedVehicleImpl] = Format(pilotedVehicleReads, pilotedVehicleWrites)
 
-  implicit val vehicleSourceWrites  = new Writes[VehicleSource] {
-    def writes(vehicleSource: VehicleSource) =
+  val vehicleSourceWrites  = new Writes[VehicleSourceImpl] {
+    def writes(vehicleSource: VehicleSourceImpl) =
       Json.obj(
         "spacing_in_time" -> vehicleSource.spacingInTime,
         "spatial" -> vehicleSource.spatial,
@@ -116,21 +116,39 @@ val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
     )
   }
 
-  implicit val laneWrites  = new Writes[LaneImpl] {
+  val vehicleSourceReads: Reads[VehicleSourceImpl] =
+    (
+      (JsPath \ "spacing_in_time").read[Time] and
+        (JsPath \ "spatial").read[SpatialImpl] and
+        (JsPath \ "starting_velocity_spacial").read[SpatialImpl]
+      ) (VehicleSourceImpl.apply _)
+
+  implicit val vehicleSourceFormat: Format[VehicleSourceImpl] = Format(vehicleSourceReads, vehicleSourceWrites)
+
+  val laneWrites  = new Writes[LaneImpl] {
     def writes(lane: LaneImpl) =
-//    Json.arr(lane.vehicles)
       Json.obj(
-        "vehicles" -> Json.arr(lane.vehicles), // TODO Reimplement
+        "vehicles" -> lane.vehicles,
         "vehicle_source" -> lane.vehicleSource,
         "beginning" -> lane.beginning,
         "end" -> lane.end,
-//        "vehicle_at_infinity" -> lane.vehicleAtInfinity, // TODO Reimplement
+        "vehicle_at_infinity" -> lane.vehicleAtInfinity,
         "infinity_spatial" -> lane.infinitySpatial
       )
   }
 
-  implicit val streetWrites  = new Writes[Street] {
-    def writes(street: Street) =
+  val laneReads: Reads[LaneImpl] =
+    (
+      (JsPath \ "vehicles").read[List[PilotedVehicleImpl]] and
+        (JsPath \ "vehicle_source").read[VehicleSourceImpl] and
+        (JsPath \ "beginning").read[SpatialImpl] and
+        (JsPath \ "end").read[SpatialImpl]
+      ) (LaneImpl.apply _)
+
+  implicit val laneFormat: Format[LaneImpl] = Format(laneReads, laneWrites)
+
+  val streetWrites  = new Writes[StreetImpl] {
+    def writes(street: StreetImpl) =
       Json.obj(
         "lanes" -> street.lanes,
         "beginning" -> street.beginning,
@@ -139,15 +157,36 @@ val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
       )
   }
 
-//  implicit val sceneWrites  = new Writes[Scene] {
-//    def writes(scene: Scene) =
-//      Json.toJson(
-//        "streets" -> scene.streets,
-//        "t" -> scene.t,
-//        "dt" -> scene.dt,
-//        "speed_limit" -> scene.speedLimit,
-//        "canvas_dimensions" -> scene.canvasDimensions
-//      )
-//  }
+  val streetReads: Reads[StreetImpl] =
+    (
+      (JsPath \ "lanes").read[List[LaneImpl]] and
+        (JsPath \ "beginning").read[SpatialImpl] and
+        (JsPath \ "end").read[SpatialImpl] and
+        (JsPath \ "source_timing").read[Time]
+      ) (StreetImpl.apply _)
 
+  implicit val streetFormat: Format[StreetImpl] = Format(streetReads, streetWrites)
+
+  val sceneWrites  = new Writes[SceneImpl] {
+    def writes(scene: SceneImpl) =
+      Json.obj(
+        "streets" -> scene.streets,
+        "t" -> scene.t,
+        "dt" -> scene.dt,
+        "speed_limit" -> scene.speedLimit,
+        "canvas_dimensions" -> scene.canvasDimensions
+      )
+  }
+
+  val sceneReads: Reads[SceneImpl] =
+    (
+      (JsPath \ "streets").read[List[StreetImpl]] and
+        (JsPath \ "t").read[Time] and
+        (JsPath \ "dt").read[Time] and
+        (JsPath \ "speed_limit").read[Velocity] and
+        (JsPath \ "canvas_dimensions").read[(Length, Length)]
+      ) (SceneImpl.apply _)
+
+
+  implicit val sceneFormats: Format[SceneImpl] = Format(sceneReads, sceneWrites)
 }

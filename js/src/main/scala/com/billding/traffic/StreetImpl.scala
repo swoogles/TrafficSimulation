@@ -5,10 +5,10 @@ import shared.Orientation
 import squants.{Time, Velocity}
 import squants.space.{Length, Meters}
 
-case class Street(lanes: List[LaneImpl], beginning: SpatialImpl, end: SpatialImpl, sourceTiming: Time)
+case class StreetImpl(lanes: List[LaneImpl], beginning: SpatialImpl, end: SpatialImpl, sourceTiming: Time)
 
 object Street {
-  def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speed: Velocity, numLanes: Integer): Street = {
+  def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speed: Velocity, numLanes: Integer): StreetImpl = {
 
     val lanes = for (i <- Range(0, numLanes).toList) yield {
       val offset = Meters(6) * i
@@ -17,6 +17,6 @@ object Street {
       val newEnd = end.move(Orientation.South, offset)
       Lane(sourceTiming, newBeginning, newEnd, speed)
     }
-    Street(lanes, beginning, end, sourceTiming)
+    StreetImpl(lanes, beginning, end, sourceTiming)
   }
 }
