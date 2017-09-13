@@ -34,5 +34,11 @@ trait IntelligentDriverModel {
                                s: Distance,
                                s0: Distance
                              ): Acceleration
+
+  val name = "IDM"
+
 }
 
+object DefaultDriverModel {
+  val idm = new IntelligentDriverModelImpl
+}

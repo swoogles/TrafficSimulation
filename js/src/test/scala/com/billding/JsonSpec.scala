@@ -15,25 +15,53 @@ import squants.time.{Milliseconds, Seconds}
 class JsonSpec extends FlatSpec{
   val destination: SpatialImpl = Spatial.apply((1, 0, 0, Kilometers))
 
-  it should "serialize good" in {
-//    import com.billding.serialization.JsonShit.BillSquants.distance.qvWrites
-//    import com.billding.serialization.JsonShit.BillSquants.velocity.qvWrites
-//    Json.toJson(destination.r)
-//
-//    Json.toJson(destination.v)
-//
-//    import com.billding.serialization.JsonShit.spatialWrites
-//    Json.toJson(destination)
-  }
-
-  val pIn: (Double, Double, Double, LengthUnit) = (0, 0, 0, Kilometers)
+  val pIn: (Double, Double, Double, LengthUnit) = (0, 0, 0, Meters)
   val vIn: (Double, Double, Double, VelocityUnit) = (120, 0, 0, KilometersPerHour)
-  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
+  val idm: IntelligentDriverModel = DefaultDriverModel.idm
   val pilotedVehicle = PilotedVehicle.commuter(Spatial(pIn, vIn), idm, destination)
 
-  it should "serialize vehicles" in {
-    import com.billding.serialization.JsonShit.pilotedVehicleWrites
-        Json.toJson(pilotedVehicle)
+  it should "roundtrip a Spatial" in {
+    import com.billding.serialization.JsonShit.spatialFormat
+    val testVal = pilotedVehicle.driver.spatial
+    val jsonResults = Json.toJson(testVal)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    result shouldBe testVal
+  }
+
+  it should "roundtrip a driver" in {
+    import com.billding.serialization.JsonShit.driverFormat
+    val driver = pilotedVehicle.driver
+    val jsonResults = Json.toJson(driver)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    result shouldBe driver
+  }
+
+  it should "roundtrip a vehicle" in {
+    import com.billding.serialization.JsonShit.vehicleFormat
+    val vehicle = pilotedVehicle.vehicle
+    val jsonResults = Json.toJson(vehicle)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    result shouldBe vehicle
+  }
+
+  it should "roundtrip a pilotedVehicle" in {
+    import com.billding.serialization.JsonShit.pilotedVehicleFormat
+    val jsonResults = Json.toJson(pilotedVehicle)
+    pprint.pprintln(jsonResults)
+    val result = Json.fromJson(
+      jsonResults
+    ).get
+    println("Goal: " )
+    pprint.pprintln(pilotedVehicle)
+    println("Result: " )
+    pprint.pprintln(result)
+    result shouldBe pilotedVehicle
   }
 
   it should "serialize a Lane" in {

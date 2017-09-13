@@ -12,33 +12,34 @@ object JsonShit {
 
   implicit val localAccelerationFormat = BillSquants.acceleration.format
 
-  implicit val localVelocityWrites = BillSquants.velocity.singleWrites
   implicit val distanceQvReads = BillSquants.distance.generalReads
   implicit val velocityQvReads = BillSquants.velocity.generalReads
 
   implicit val localDistanceFormat = BillSquants.distance.format
 
   implicit val localMassFormat = BillSquants.mass.format
-  import BillSquants.time.singleWrites
+  implicit val timeFormat = BillSquants.time.format
+  implicit val velocityFormat = BillSquants.velocity.format
 
 
-  implicit val spatialWrites  = new Writes[SpatialImpl] {
+  val spatialWrites  = new Writes[SpatialImpl] {
     def writes(spatial: SpatialImpl) =
-      Json.toJson(
+      Json.obj(
         "r" -> com.billding.serialization.BillSquants.distance.qvWrites.writes(spatial.r),
         "v" -> com.billding.serialization.BillSquants.velocity.qvWrites.writes(spatial.v),
         "dimensions" -> com.billding.serialization.BillSquants.distance.qvWrites.writes(spatial.dimensions)
       )
   }
-  implicit val spatialReads: Reads[SpatialImpl] = (
+  val spatialReads: Reads[SpatialImpl] = (
     (JsPath \ "r").read[QuantityVector[Distance]] and
       (JsPath \ "v").read[QuantityVector[Velocity]] and
       (JsPath \ "dimensions").read[QuantityVector[Distance]]
     )(SpatialImpl.apply _)
 
 
+  implicit val spatialFormat: Format[SpatialImpl] = Format(spatialReads, spatialWrites)
 
-  val vehicleReads =
+  val vehicleReads: Reads[VehicleImpl] =
     (
       (JsPath \ "spatial").read[SpatialImpl] and
         (JsPath \ "acceleration_ability").read[Acceleration] and
@@ -46,9 +47,9 @@ object JsonShit {
         (JsPath \ "weight").read[Mass]
       ) (VehicleImpl.apply _)
 
-  implicit val vehicleWrites  = new Writes[VehicleImpl] {
+  val vehicleWrites  = new Writes[VehicleImpl] {
     def writes(vehicleImpl: VehicleImpl) =
-      Json.toJson(
+      Json.obj(
         "spatial" -> vehicleImpl.spatial,
         "acceleration_ability" -> vehicleImpl.accelerationAbility,
         "braking_ability" -> vehicleImpl.brakingAbility,
@@ -56,31 +57,59 @@ object JsonShit {
       )
   }
 
+  implicit val vehicleFormat: Format[VehicleImpl] = Format(vehicleReads, vehicleWrites)
 
-  implicit val driverWrites  = new Writes[DriverImpl] {
+  /* TODO enable this for IDM serialilzation
+    */
+  val idmFromString = (s: JsString) => DefaultDriverModel.idm
+  implicit val idmReads: Reads[IntelligentDriverModel] = JsStringReads.map(idmFromString)
+
+  val driverWrites  = new Writes[DriverImpl] {
     def writes(driverImpl: DriverImpl) =
-      Json.toJson(
+      Json.obj(
         "spatial" -> driverImpl.spatial,
-//        "idm" -> driverImpl.idm, // TODO Get this figured out.
-        "reactionTime" -> driverImpl.reactionTime,
+        "idm" -> driverImpl.idm.name, // TODO Get this figured out.
+        "reaction_time" -> driverImpl.reactionTime,
         "preferred_dynamic_spacing" -> driverImpl.preferredDynamicSpacing,
-        "minimum_distance" -> BillSquants.distance.singleWrites.writes(driverImpl.minimumDistance),
+        "minimum_distance" -> driverImpl.minimumDistance,
         "desired_speed" -> driverImpl.desiredSpeed
       )
   }
 
-implicit val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
+  val driverReads: Reads[DriverImpl] =
+    (
+      (JsPath \ "spatial").read[SpatialImpl] and
+        (JsPath \ "idm").read[IntelligentDriverModel] and
+        (JsPath \ "reaction_time").read[Time] and
+        (JsPath \ "preferred_dynamic_spacing").read[Time] and
+        (JsPath \ "minimum_distance").read[Distance] and
+        (JsPath \ "desired_speed").read[Velocity]
+      ) (DriverImpl.apply _)
+
+
+  implicit val driverFormat: Format[DriverImpl] = Format(driverReads, driverWrites)
+
+val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
   def writes(pilotedVehicleImpl: PilotedVehicleImpl) =
-    Json.toJson(
+    Json.obj(
       "driver" -> pilotedVehicleImpl.driver,
       "vehicle" -> pilotedVehicleImpl.vehicle,
       "destination" -> pilotedVehicleImpl.destination
     )
 }
 
+  val pilotedVehicleReads: Reads[PilotedVehicleImpl] =
+    (
+      (JsPath \ "driver").read[DriverImpl] and
+        (JsPath \ "vehicle").read[VehicleImpl] and
+        (JsPath \ "destination").read[SpatialImpl]
+      ) (PilotedVehicleImpl.apply _)
+
+  implicit val pilotedVehicleFormat: Format[PilotedVehicleImpl] = Format(pilotedVehicleReads, pilotedVehicleWrites)
+
   implicit val vehicleSourceWrites  = new Writes[VehicleSource] {
     def writes(vehicleSource: VehicleSource) =
-      Json.toJson(
+      Json.obj(
         "spacing_in_time" -> vehicleSource.spacingInTime,
         "spatial" -> vehicleSource.spatial,
         "starting_velocity_spacial" -> vehicleSource.startingVelocitySpacial
@@ -89,19 +118,20 @@ implicit val pilotedVehicleWrites  = new Writes[PilotedVehicleImpl] {
 
   implicit val laneWrites  = new Writes[LaneImpl] {
     def writes(lane: LaneImpl) =
-      Json.toJson(
-        "vehicles" -> lane.vehicles,
+//    Json.arr(lane.vehicles)
+      Json.obj(
+        "vehicles" -> Json.arr(lane.vehicles), // TODO Reimplement
         "vehicle_source" -> lane.vehicleSource,
         "beginning" -> lane.beginning,
         "end" -> lane.end,
-        "vehicle_at_infinity" -> lane.vehicleAtInfinity,
+//        "vehicle_at_infinity" -> lane.vehicleAtInfinity, // TODO Reimplement
         "infinity_spatial" -> lane.infinitySpatial
       )
   }
 
   implicit val streetWrites  = new Writes[Street] {
     def writes(street: Street) =
-      Json.toJson(
+      Json.obj(
         "lanes" -> street.lanes,
         "beginning" -> street.beginning,
         "end" -> street.end,
