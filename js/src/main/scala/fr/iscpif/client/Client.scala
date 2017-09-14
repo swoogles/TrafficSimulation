@@ -1,9 +1,9 @@
 package client
 
 
-import com.billding.physics.{Spatial}
+import com.billding.physics.Spatial
 import com.billding.traffic._
-import shared.Orientation;
+import shared.Orientation
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.{Div, Input}
@@ -22,6 +22,7 @@ import rx._
 import scaladget.tools.JsRxTags._
 import scalatags.JsDom.all._
 import org.scalajs.dom.ext.Ajax
+import play.api.libs.json.Json
 
 import scala.util.{Failure, Success}
 
@@ -276,7 +277,9 @@ object Client {
       def serializeIfNecessary(model: Model): Unit = {
         if (model.serializeScene.now == true) {
           model.savedScene() = model.sceneVar.now
-          val f = Ajax.post("http://localhost:8080/writeScene", data = model.sceneVar.now.toString)
+          import com.billding.serialization.JsonShit.sceneFormats
+
+          val f = Ajax.post("http://localhost:8080/writeScene", data = Json.toJson(model.sceneVar.now).toString)
           f.onComplete {
             case Success(xhr) => println("serialized some stuff and sent it off")
             case Failure(cause) => println("failed: " + cause)
@@ -293,7 +296,13 @@ object Client {
             // Wish this was working :/
             // val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
             // sceneVar() = deserializedScene
-            model.sceneVar() = model.savedScene.now
+            import com.billding.serialization.JsonShit.sceneFormats
+            val res = Json.fromJson(
+              Json.parse(xhr.responseText  )
+            ).get
+            model.sceneVar() = res
+
+//            model.sceneVar() = model.savedScene.now
             window = new Window(model.sceneVar.now)
             window.svgNode.forceRedraw()
             model.paused() = true

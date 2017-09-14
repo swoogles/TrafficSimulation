@@ -7,6 +7,8 @@ import org.scalatra._
 import scala.concurrent.ExecutionContext.Implicits.global
 import upickle.default
 import autowire._
+import com.billding.traffic.SceneImpl
+import play.api.libs.json.{JsObject, JsResult, Json}
 import shared._
 import upickle._
 
@@ -144,6 +146,12 @@ crossorigin="anonymous"></script>
     val ois = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
     val newString = ois.readObject.asInstanceOf[String]
     newString
+    import com.billding.serialization.JsonShit.sceneFormats
+    val res: JsResult[SceneImpl] = Json.fromJson(
+      Json.parse(newString)
+    )
+    pprint.pprintln(res)
+    Json.parse(newString)
   }
   post(s"/$basePath/*") {
     Await.result(AutowireServer.route[shared.Api](ApiImpl)(
