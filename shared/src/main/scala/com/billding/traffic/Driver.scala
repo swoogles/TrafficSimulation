@@ -12,13 +12,13 @@ trait Driver {
   val preferredDynamicSpacing: Time
   val minimumDistance: Distance
   val desiredSpeed: Velocity
-  val idm: IntelligentDriverModel
+  val idm: IntelligentDriverModelImpl
 }
 
 object Driver {
   def commuter(
                 spatial: SpatialImpl,
-                idm: IntelligentDriverModel) = {
+                idm: IntelligentDriverModelImpl) = {
     val reactionTime: Time = (0.5 seconds)
     val preferredDynamicSpacing: Time = (1 seconds)
     val minimumDistance: Distance = (2 meters)
@@ -28,7 +28,7 @@ object Driver {
 
   def aggressive(
                 spatial: SpatialImpl,
-                idm: IntelligentDriverModel) = {
+                idm: IntelligentDriverModelImpl) = {
     val reactionTime: Time = (0.5 seconds)
     val preferredDynamicSpacing: Time = (0.5 seconds)
     val minimumDistance: Distance = (1 meters)
@@ -40,7 +40,7 @@ object Driver {
 
 case class DriverImpl(
                      spatial: SpatialImpl,
-                     idm: IntelligentDriverModel,
+                     idm: IntelligentDriverModelImpl,
                      reactionTime: Time,
                      preferredDynamicSpacing: Time,
                      minimumDistance: Distance,

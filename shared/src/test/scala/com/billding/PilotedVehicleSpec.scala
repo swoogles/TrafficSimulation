@@ -13,7 +13,7 @@ import org.scalatest.Matchers._
  */
 class PilotedVehicleSpec extends FlatSpec {
   val speedLimit = KilometersPerHour(150)
-  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
+  val idm: IntelligentDriverModelImpl = new IntelligentDriverModelImpl
 
   val destination = Spatial.apply((100.0, 0.0, 0.0, Meters))
 

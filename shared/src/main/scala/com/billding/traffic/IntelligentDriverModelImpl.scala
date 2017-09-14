@@ -7,7 +7,7 @@ import squants.space.Meters
 import scala.language.postfixOps
 import scala.math.{max, pow}
 
-class IntelligentDriverModelImpl extends IntelligentDriverModel {
+case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.
   // It's basically a magic value via research done by others.
   val aExp: Int = 4
