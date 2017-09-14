@@ -17,7 +17,7 @@ class JsonSpec extends FlatSpec{
 
   val pIn: (Double, Double, Double, LengthUnit) = (0, 0, 0, Meters)
   val vIn: (Double, Double, Double, VelocityUnit) = (120, 0, 0, KilometersPerHour)
-  val idm: IntelligentDriverModel = DefaultDriverModel.idm
+  val idm: IntelligentDriverModelImpl = DefaultDriverModel.idm
   val pilotedVehicle = PilotedVehicle.commuter(Spatial(pIn, vIn), idm, destination)
 
   it should "roundtrip a Spatial" in {

@@ -16,7 +16,7 @@ sealed trait PilotedVehicle {
 
 object PilotedVehicle {
 
-  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
+  val idm: IntelligentDriverModelImpl = new IntelligentDriverModelImpl
   def createVehicle(
                      pIn1: (Double, Double, Double, LengthUnit),
                      vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour),
@@ -27,7 +27,7 @@ object PilotedVehicle {
   def commuter(
                 pIn: (Double, Double, Double, DistanceUnit),
                 vIn: (Double, Double, Double, VelocityUnit),
-                idm: IntelligentDriverModel,
+                idm: IntelligentDriverModelImpl,
                 destination: SpatialImpl
               ): PilotedVehicleImpl = {
     val spatial = Spatial(pIn, vIn, VehicleStats.Commuter.dimensions)
@@ -36,7 +36,7 @@ object PilotedVehicle {
   // TODO: Beware of arbitrary spacial. It should be locked down on Commuter.
   def commuter(
               spatial: SpatialImpl,
-              idm: IntelligentDriverModel,
+              idm: IntelligentDriverModelImpl,
               destination: SpatialImpl
               ): PilotedVehicleImpl = {
     new PilotedVehicleImpl( Driver.commuter(spatial, idm), VehicleImpl.simpleCar(spatial.r, spatial.v), destination)
