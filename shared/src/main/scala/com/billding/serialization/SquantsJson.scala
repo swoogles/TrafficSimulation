@@ -7,7 +7,6 @@ import squants.space.{Length, Meters}
 import squants.time.{Milliseconds, Time, TimeConversions}
 import play.api.libs.json.Reads.JsStringReads
 import play.api.libs.json._
-import play.api.libs.functional.syntax._
 
 sealed trait BillSquants[T <: Quantity[T]] {
   val fromJsString: JsString => T
@@ -50,10 +49,10 @@ case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsStri
 
 object BillSquants {
   val distanceConverterJs: (JsString) => Distance = (s: JsString) =>
-    Meters(Length.apply(s.value).get.toMeters)
+    Length.apply(s.value).get
 
   val velocityConverterJs = (s: JsString) =>
-    KilometersPerHour(Velocity.apply(s.value).get.toKilometersPerHour)
+    Velocity.apply(s.value).get
 
   val accelerationConverterJs = (s: JsString) =>
     Acceleration.apply(s.value).get

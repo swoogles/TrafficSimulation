@@ -2,6 +2,7 @@ package com.billding
 
 import scala.language.postfixOps
 import com.billding.physics._
+import com.billding.serialization.{BillSquants, TrafficJson}
 import com.billding.traffic._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -20,8 +21,18 @@ class JsonSpec extends FlatSpec{
   val idm: IntelligentDriverModelImpl = DefaultDriverModel.idm
   val pilotedVehicle = PilotedVehicle.commuter(Spatial(pIn, vIn), idm, destination)
 
+  val json = TrafficJson()(
+    BillSquants.distance.format,
+    BillSquants.distance.formatQv,
+    BillSquants.mass.format,
+    BillSquants.time.format,
+    BillSquants.acceleration.format,
+    BillSquants.velocity.format,
+    BillSquants.velocity.formatQv
+  )
+
   it should "roundtrip a Spatial" in {
-    import com.billding.serialization.JsonShit.spatialFormat
+    import json.spatialFormat
     val testVal = pilotedVehicle.driver.spatial
     val jsonResults = Json.toJson(testVal)
     val result = Json.fromJson(
@@ -31,7 +42,7 @@ class JsonSpec extends FlatSpec{
   }
 
   it should "roundtrip a driver" in {
-    import com.billding.serialization.JsonShit.driverFormat
+    import json.driverFormat
     val driver = pilotedVehicle.driver
     val jsonResults = Json.toJson(driver)
     val result = Json.fromJson(
@@ -41,7 +52,7 @@ class JsonSpec extends FlatSpec{
   }
 
   it should "roundtrip a vehicle" in {
-    import com.billding.serialization.JsonShit.vehicleFormat
+    import json.vehicleFormat
     val vehicle = pilotedVehicle.vehicle
     val jsonResults = Json.toJson(vehicle)
     val result = Json.fromJson(
@@ -51,7 +62,7 @@ class JsonSpec extends FlatSpec{
   }
 
   it should "roundtrip a pilotedVehicle" in {
-    import com.billding.serialization.JsonShit.pilotedVehicleFormat
+    import json.pilotedVehicleFormat
     val jsonResults = Json.toJson(pilotedVehicle)
     val result = Json.fromJson(
       jsonResults
@@ -76,7 +87,7 @@ class JsonSpec extends FlatSpec{
   val lane = LaneImpl(List(pilotedVehicle), vehicleSource, laneStartingPoint, laneEndingPoint)
 
   it should "roundtrip a VehicleSource" in {
-    import com.billding.serialization.JsonShit.vehicleSourceFormat
+    import json.vehicleSourceFormat
     val jsonResults = Json.toJson(vehicleSource)
     val result = Json.fromJson(
       jsonResults
@@ -84,7 +95,7 @@ class JsonSpec extends FlatSpec{
     result shouldBe vehicleSource
   }
   it should "roundtrip a Lane" in {
-    import com.billding.serialization.JsonShit.laneFormat
+    import json.laneFormat
     val jsonResults = Json.toJson(lane)
     val result = Json.fromJson(
       jsonResults
@@ -93,7 +104,7 @@ class JsonSpec extends FlatSpec{
   }
 
   it should "roundtrip a street" in {
-    import com.billding.serialization.JsonShit.streetFormat
+    import json.streetFormat
     val jsonResults = Json.toJson(street)
     val result = Json.fromJson(
       jsonResults
@@ -109,7 +120,7 @@ class JsonSpec extends FlatSpec{
   val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(1))
 
   it should "serialize a whole scene" in {
-    import com.billding.serialization.JsonShit.sceneFormats
+    import json.sceneFormats
     val street = StreetImpl(List(lane), originSpatial, endingSpatial, Seconds(1))
     val t = Seconds(500)
     implicit val dt = Milliseconds(500)
