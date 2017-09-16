@@ -277,7 +277,7 @@ object Client {
       def serializeIfNecessary(model: Model): Unit = {
         if (model.serializeScene.now == true) {
           model.savedScene() = model.sceneVar.now
-          import com.billding.serialization.JsonShit.sceneFormats
+          import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
 
           val f = Ajax.post("http://localhost:8080/writeScene", data = Json.toJson(model.sceneVar.now).toString)
           f.onComplete {
@@ -293,16 +293,11 @@ object Client {
         val f = Ajax.get("http://localhost:8080/loadScene")
         f.onComplete {
           case Success(xhr) => {
-            // Wish this was working :/
-            // val deserializedScene = xhr.responseText.asInstanceOf[SceneImpl]
-            // sceneVar() = deserializedScene
-            import com.billding.serialization.JsonShit.sceneFormats
+            import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
             val res = Json.fromJson(
               Json.parse(xhr.responseText  )
             ).get
             model.sceneVar() = res
-
-//            model.sceneVar() = model.savedScene.now
             window = new Window(model.sceneVar.now)
             window.svgNode.forceRedraw()
             model.paused() = true
