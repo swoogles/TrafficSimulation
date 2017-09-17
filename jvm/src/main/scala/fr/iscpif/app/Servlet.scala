@@ -146,7 +146,7 @@ crossorigin="anonymous"></script>
     val ois = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
     val newString = ois.readObject.asInstanceOf[String]
     newString
-    import com.billding.serialization.JsonShit.sceneFormats
+    import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
     val res: JsResult[SceneImpl] = Json.fromJson(
       Json.parse(newString)
     )
