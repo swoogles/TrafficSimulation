@@ -1,39 +1,49 @@
-# ScalaWUI (Scala Web UI)#
+# Embouteillage #
 
-The project aims at building a small but complete client / server application using very powerfull scala tools to construct fully typed and reactive Web applications. Among them:
+The project is a traffic simulator that runs in your browser, powered by ScalaJS.
+It is a client / server application that is about 80% client.
+Features so far:
+
+    * Single-lane, 1-dimensional traffic.
+    * Intelligent Driving Model to determine vehicle behavior.
+    * Save/Load full Scenes from the server.
+    * Pause and reset Scene.
+    * Adjustable Parameters
+        * Timing in between vehicles
+        * Initial vehicle velocity
+
+    * Disrupt traffic via 2 means:
+        * Bring an existing vehicle to a dead stop.
+        * Plop a new vehicle down in the middle of the road. (Unreliable behavior if dropped on an existing vehicle.)
+
+It uses powerful scala tools to construct a fully typed and reactive Web applications. Among them:
 
 - [scalajs](https://github.com/scala-js/scala-js)
 - [scalatra](http://scalatra.org/)
-- [scalatags](https://github.com/lihaoyi/scalatags)
-- [scala.rx](https://github.com/lihaoyi/scala.rx)
-- [autowire](https://github.com/lihaoyi/autowire)
-
-as well as [scaladget](https://github.com/mathieuleclaire/scaladget) to draw some svg and display a [http://d3js.org/](D3.js)-like workflow.
-
-It is an empty ready-to-work application, dealing with all the starting wiring. This prototype also exposes as example a small Graph editor inspired from [http://bl.ocks.org/cjrd/6863459](http://bl.ocks.org/cjrd/6863459) javascript example, but written witten in a reactive way thanks to the [scala.rx](https://github.com/lihaoyi/scala.rx) library.
+- [scalatags](https://github.com/lihaoyi/scalatags) for UI.
+- [scala.rx](https://github.com/lihaoyi/scala.rx) for tracking changes in the UI.
+<!-- - [autowire](https://github.com/lihaoyi/autowire) -->
+- [scaladget](https://github.com/mathieuleclaire/scaladget) to draw some svg.
 
 ## Build & Run##
 First, build the javascript:
 ```sh
 $ cd scalaWUI
 $ sbt
-> go // Build the client JS files and move them to the right place
+> bootstrap /go// Build the client JS files and move them to the right place
+> go  // Not currently working with the new build.sbt
 ```
 
 Then, start the server:
 ```sh
-> jetty:start // Start the server
+> jetty:start // Not currently working with the new build.sbt
+> fooJVM/jetty:start
 ```
 
-## Play with the graph ##
+## Play with the Simulation ##
 
 Open [http://localhost:8080/](http://localhost:8080/) in your browser.
 
-The demo provides with a small graph based on d3.js library but with no D3 at all. It only relies on the previously cited libraries. Try to :
-- drag the nodes to move them
-- shift-click on graph to create a node
-- shift-click on a node and then drag to another node to connect them with a directed edge
-- click on node or edge and press delete to delete
 
+![](https://i.imgur.com/Cw1YIO7.png)
 
-![](http://public.iscpif.fr/~leclaire/graph.png)
