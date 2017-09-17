@@ -328,3 +328,21 @@ object Post extends autowire.Client[String, upickle.default.Reader, upickle.defa
 
   def write[Result: upickle.default.Writer](r: Result) = upickle.default.write(r)
 }
+
+//import play.api.libs.json.{Format, Json, Reads, Writes}
+//object PostJson extends autowire.Client[String, Reads, Writes] {
+//
+//  override def doCall(req: Request): Future[String] = {
+//    val url = req.path.mkString("/")
+//    dom.ext.Ajax.post(
+//      url = "http://localhost:8080/" + url,
+//      data = upickle.default.write(req.args)
+//    ).map {
+//      _.responseText
+//    }
+//  }
+//
+//  def read[JsValue: Reads](p: String) = Json.parse(p)
+//
+//  def write[Result: Writes](r: Result) = upickle.default.write(r)
+//}
