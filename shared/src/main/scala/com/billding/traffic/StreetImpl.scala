@@ -19,4 +19,8 @@ object Street {
     }
     StreetImpl(lanes, beginning, end, sourceTiming)
   }
+
+  def isVehicleBlockingTargetLane(street: StreetImpl, agent: PilotedVehicleImpl) = {
+    ???
+  }
 }
