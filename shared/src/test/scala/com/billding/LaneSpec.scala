@@ -120,7 +120,7 @@ class LaneSpec extends  FlatSpec {
       createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
     )
 
-    val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
+    val lane = LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
     val accelerations: List[Acceleration] = responsesInOneLanePrep(lane, speedLimit)
     accelerations.head shouldBe speedingUp
     every(accelerations.tail) shouldBe slowingDown
@@ -151,7 +151,7 @@ class LaneSpec extends  FlatSpec {
       followingCar
     )
 
-    val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
+    val lane = LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
     val foundVehicle = getVehicleBeforeAndAfter(target, lane)
 //    pprint.pprintln(foundVehicle)
   }
@@ -173,7 +173,7 @@ class LaneSpec extends  FlatSpec {
       followingCar
     )
 
-    val lane = new LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
+    val lane = LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial)
     val leadFractionCompleted = Lane.fractionCompleted(leadCar, lane)
     val targetFractionCompleted = Lane.fractionCompleted(target, lane)
     val followingFractionCompleted = Lane.fractionCompleted(followingCar, lane)
@@ -183,6 +183,7 @@ class LaneSpec extends  FlatSpec {
   }
 
   it should "report that a vehicle can be placed in a lane without hitting existing vehicles" in {
+    // This is more of the full scene test, while the test below is focused just on the method in question
     val originSpatial = Spatial((0, 0, 0, Meters))
     val endingSpatial = Spatial((100, 0, 0, Meters))
 
@@ -199,10 +200,10 @@ class LaneSpec extends  FlatSpec {
     )
 
     val currentLaneSource = VehicleSourceImpl(1.seconds, originSpatial, endingSpatial)
-    val currentLane = new LaneImpl(List(target), currentLaneSource, originSpatial, endingSpatial)
+    val currentLane = LaneImpl(List(target), currentLaneSource, originSpatial, endingSpatial)
     val fractionCompleted = Lane.fractionCompleted(target, currentLane)
     val vehicleSource = VehicleSourceImpl(1.seconds, targetOriginSpatial, targetEndingSpatial)
-    val targetLane = new LaneImpl(targetVehicles, vehicleSource, originSpatial, endingSpatial)
+    val targetLane = LaneImpl(targetVehicles, vehicleSource, originSpatial, endingSpatial)
 
     targetLane.vehicleCanBePlaced(target, fractionCompleted) shouldBe true
   }
@@ -211,11 +212,9 @@ class LaneSpec extends  FlatSpec {
     val originSpatial = Spatial((0, 0, 0, Meters))
     val endingSpatial = Spatial((100, 0, 0, Meters))
 
-    val targetOriginSpatial = Spatial((0, 10, 0, Meters))
-    val targetEndingSpatial = Spatial((100, 10, 0, Meters))
+    val target = createVehicle((60, 10, 0, Meters), (70, 0, 0, KilometersPerHour))
 
     val leadCar = createVehicle((90, 0, 0, Meters))
-    val target = createVehicle((60, 10, 0, Meters), (70, 0, 0, KilometersPerHour))
     val followingCar = createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
 
     val targetVehicles = List(
@@ -223,15 +222,12 @@ class LaneSpec extends  FlatSpec {
       followingCar
     )
 
-    val currentLaneSource = VehicleSourceImpl(1.seconds, originSpatial, endingSpatial)
-    val currentLane = new LaneImpl(List(target), currentLaneSource, targetOriginSpatial, targetEndingSpatial)
-    val fractionCompleted = Lane.fractionCompleted(target, currentLane)
+    val targetLane = LaneImpl(targetVehicles, vehicleSource, originSpatial, endingSpatial)
 
-    println("fractionCompleted: " + fractionCompleted)
-
-    val vehicleSource = VehicleSourceImpl(1.seconds, targetOriginSpatial, targetEndingSpatial)
-    val targetLane = new LaneImpl(targetVehicles, vehicleSource, originSpatial, endingSpatial)
-
-    targetLane.vehicleCanBePlaced(target, fractionCompleted) shouldBe false
+    targetLane.vehicleCanBePlaced(target, 0.5) shouldBe true
+    targetLane.vehicleCanBePlaced(target, 0.6) shouldBe false
+    targetLane.vehicleCanBePlaced(target, 0.7) shouldBe true
+    targetLane.vehicleCanBePlaced(target, 0.9) shouldBe false
+    targetLane.vehicleCanBePlaced(target, .99) shouldBe true
   }
 }

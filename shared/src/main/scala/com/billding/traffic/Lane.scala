@@ -68,6 +68,9 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
 
   }
 
+  /**
+    * TODO: Also check lane start/end points OR that fraction is between 0 and 1. I think Option B.
+    */
   def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean = {
     val disruptionPoint: QuantityVector[Distance] = beginning.vectorTo(end).times(fractionCompleted)
     pprint.pprintln("disruptionPoint:" )
