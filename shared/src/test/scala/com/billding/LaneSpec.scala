@@ -25,12 +25,11 @@ class LaneSpec extends  FlatSpec {
   val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint, velocitySpatial)
 
   val emptyLane = LaneImpl(Nil, vehicleSource, laneStartingPoint, laneEndingPoint)
+  val originSpatial = Spatial((0, 0, 0, Meters))
+  val endingSpatial = Spatial((100, 0, 0, Meters))
 
   import PilotedVehicle.createVehicle
   it should "add a disruptive car" in {
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial = Spatial((100, 0, 0, Meters))
-
     val speed = KilometersPerHour(50)
     val vehicleSource = VehicleSourceImpl(1.seconds, originSpatial, endingSpatial)
 
@@ -111,9 +110,6 @@ class LaneSpec extends  FlatSpec {
   Is it possible to do all lane updating while ignoring that?
    */
   it should "correctly update all cars in a lane" in {
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial =Spatial((100, 0, 0, Kilometers))
-
     val vehicles = List(
       createVehicle((100, 0, 0, Meters)),
       createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour)),
@@ -127,9 +123,6 @@ class LaneSpec extends  FlatSpec {
   }
 
   it should "make sure all cars have the right starting velocity" in {
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial = Spatial((100, 0, 0, Kilometers))
-
     val speed = KilometersPerHour(50)
     val lane = Lane(Seconds(1), originSpatial, endingSpatial, speed)
     val t = Seconds(1)
@@ -139,9 +132,6 @@ class LaneSpec extends  FlatSpec {
   }
 
   it should "find vehicles before and after target vehicle" in {
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial =Spatial((100, 0, 0, Kilometers))
-
     val leadCar = createVehicle((100, 0, 0, Meters))
     val target = createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour))
     val followingCar = createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
@@ -161,9 +151,6 @@ class LaneSpec extends  FlatSpec {
   implicit val doubleEq = TolerantNumerics.tolerantDoubleEquality(epsilon)
 
   it should "calculate the fraction of a lane that a car has driven" in {
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial =Spatial((100, 0, 0, Meters))
-
     val leadCar = createVehicle((90, 0, 0, Meters))
     val target = createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour))
     val followingCar = createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour))
@@ -184,9 +171,6 @@ class LaneSpec extends  FlatSpec {
 
   it should "report that a vehicle can be placed in a lane without hitting existing vehicles" in {
     // This is more of the full scene test, while the test below is focused just on the method in question
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial = Spatial((100, 0, 0, Meters))
-
     val targetOriginSpatial = Spatial((0, 10, 0, Meters))
     val targetEndingSpatial = Spatial((100, 10, 0, Meters))
 
@@ -209,9 +193,6 @@ class LaneSpec extends  FlatSpec {
   }
 
   it should "report that a vehicle cannot be placed in a lane without hitting existing vehicles" in {
-    val originSpatial = Spatial((0, 0, 0, Meters))
-    val endingSpatial = Spatial((100, 0, 0, Meters))
-
     val target = createVehicle((60, 10, 0, Meters), (70, 0, 0, KilometersPerHour))
 
     val leadCar = createVehicle((90, 0, 0, Meters))
