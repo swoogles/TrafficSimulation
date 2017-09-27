@@ -73,8 +73,8 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
     */
   def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean = {
     val disruptionPoint: QuantityVector[Distance] = beginning.vectorTo(end).times(fractionCompleted)
-    pprint.pprintln("disruptionPoint:" )
-    pprint.pprintln(disruptionPoint)
+//    pprint.pprintln("disruptionPoint:" )
+//    pprint.pprintln(disruptionPoint)
 
     val vehiclePlacementInLane: SpatialImpl = pilotedVehicle.spatial.copy(r=disruptionPoint)
     // TODO Use actual vehicle sizes instead of set meters distance
@@ -202,13 +202,13 @@ object Lane extends LaneFunctions {
 //    val laneDistanceVector: QuantityVector[Distance] = lane.beginning.vectorTo(lane.end)
     val laneDistance = lane.beginning.distanceTo(lane.end)
 
-    println("laneDistance: " + laneDistance)
-    pprint.pprintln("pilotedVehicle spatial: " + pilotedVehicleImpl.spatial)
+//    println("laneDistance: " + laneDistance)
+//    pprint.pprintln("pilotedVehicle spatial: " + pilotedVehicleImpl.spatial)
     val vehicleDistanceVector: QuantityVector[Distance] = pilotedVehicleImpl.spatial.vectorTo(lane.end)
-    pprint.pprintln("vehicleDistanceVector: " + vehicleDistanceVector)
+//    pprint.pprintln("vehicleDistanceVector: " + vehicleDistanceVector)
     vehicleDistanceVector.coordinates.foreach(println)
     val vehicleDistance: Distance = pilotedVehicleImpl.spatial.distanceTo(lane.end)
-    println("vehicleDistance: " + vehicleDistance)
+//    println("vehicleDistance: " + vehicleDistance)
     (1.0 - vehicleDistance / laneDistance)
   }
 

@@ -6,21 +6,22 @@ import squants.motion.{Acceleration, MetersPerSecondSquared}
 
 trait SquantsMatchers {
 
-  class AccelerationMatcher() extends BeMatcher[Acceleration] {
+  // TODO Um, unfuck these messages
+  object SpeedingUp extends BeMatcher[Acceleration] {
     def apply(left: Acceleration) =
       MatchResult(
         left > MetersPerSecondSquared(0),
         s"""Acceleration was slowing down. """,
-        s"second message"
+        s""
       )
   }
 
-  class AccelerationBeMatcher() extends BeMatcher[Acceleration] {
+  object SlowingDown extends BeMatcher[Acceleration] {
     def apply(left: Acceleration) =
       MatchResult(
         left < MetersPerSecondSquared(0),
-        s"""Acceleration was slowing down. """,
-        s"second message"
+        s"""Acceleration was speeding up. """,
+        s""
       )
   }
 
@@ -28,14 +29,12 @@ trait SquantsMatchers {
     def apply(left: Acceleration) =
       MatchResult(
         left =~ MetersPerSecondSquared(0),
-        s"""Acceleration was slowing down. """,
-        s"second message"
+        s"""Acceleration was not constant. """,
+        s""
       )
   }
 
-  def speedingUp() = new AccelerationMatcher()
-  def slowingDown() = new AccelerationBeMatcher()
-  def maintainingVelocity(implicit tolerance: Acceleration) = new SittingStillMatcher()
+  def MaintainingVelocity(implicit tolerance: Acceleration) = new SittingStillMatcher()
 }
 
 // Make them easy to import with:

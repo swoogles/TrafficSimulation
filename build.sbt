@@ -65,6 +65,8 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
     scalaVersion := ScalaVersion,
     resolvers ++= Resolvers,
     version := "0.1-SNAPSHOT",
+    testFrameworks += new TestFramework("utest.runner.Framework"),
+
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "autowire" % autowireVersion,
       "com.lihaoyi" %%% "upickle" % upickleVersion,
@@ -94,7 +96,8 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
       "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
       "org.scalatest" %% "scalatest" % "3.0.0" % "test",
       "com.lihaoyi" %%% "pprint" % "0.5.2",
-      "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test"
+      "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test",
+      "com.lihaoyi" %%% "utest" % "0.5.3" % "test"
     )
   ).
   jvmSettings(

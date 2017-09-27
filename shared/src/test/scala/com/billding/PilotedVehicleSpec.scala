@@ -44,7 +44,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (2, 0, 0, Kilometers),
       (40, 0, 0, KilometersPerHour)
     )
-    res shouldBe speedingUp
+    res shouldBe SpeedingUp
   }
 
   it should "hold steady when pacing the target car" in {
@@ -56,7 +56,7 @@ class PilotedVehicleSpec extends FlatSpec {
     )
     implicit val tolerance: Acceleration = MetersPerSecondSquared(0.1)
 
-    res shouldBe maintainingVelocity
+    res shouldBe MaintainingVelocity
   }
 
   it should "accelerate when obstacle is close but moving faster" in {
@@ -67,7 +67,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (140, 0, 0, KilometersPerHour)
     )
 
-    res shouldBe speedingUp
+    res shouldBe SpeedingUp
   }
 
   it should "decelerate when obstacle is close but moving slower" in {
@@ -89,7 +89,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (140, 0, 0, KilometersPerHour)
     )
 
-    res shouldBe slowingDown
+    res shouldBe SlowingDown
   }
 
   it should "slow down a when obstacle is far away, if it's stopped/slow" in {
@@ -100,7 +100,7 @@ class PilotedVehicleSpec extends FlatSpec {
       (10, 0, 0, KilometersPerHour)
     )
 
-    res shouldBe slowingDown
+    res shouldBe SlowingDown
   }
 
 }
