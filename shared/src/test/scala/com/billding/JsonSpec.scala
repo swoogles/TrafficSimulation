@@ -76,15 +76,15 @@ class JsonSpec extends FlatSpec{
   val laneEndingPoint = Spatial.apply((1, 0, 0, Kilometers))
   val endingSpatial = laneEndingPoint
 
-  val speed = KilometersPerHour(50)
-  val street = Street(Seconds(1), laneStartingPoint, laneEndingPoint, speed, 3)
+  val speedLimit = KilometersPerHour(50)
+  val street = Street(Seconds(1), laneStartingPoint, laneEndingPoint, speedLimit, 3)
 
   val herdSpeed = 65
 
   val velocitySpatial = Spatial((0, 0, 0, Meters), (herdSpeed, 0, 0, KilometersPerHour), zeroDimensions)
   val vehicleSource = VehicleSourceImpl(1.seconds, laneStartingPoint, velocitySpatial)
 
-  val lane = LaneImpl(List(pilotedVehicle), vehicleSource, laneStartingPoint, laneEndingPoint)
+  val lane = LaneImpl(List(pilotedVehicle), vehicleSource, laneStartingPoint, laneEndingPoint, speedLimit)
 
   it should "roundtrip a VehicleSource" in {
     import json.vehicleSourceFormat
@@ -116,7 +116,6 @@ class JsonSpec extends FlatSpec{
     result shouldBe street
   }
 
-  val speedLimit = KilometersPerHour(150)
   val canvasDimensions: (Length, Length) = (Kilometers(1), Kilometers(1))
 
   it should "serialize a whole scene" in {

@@ -21,10 +21,11 @@ trait Lane {
   val end: SpatialImpl
   val vehicleAtInfinityForward: PilotedVehicleImpl
   val infinitySpatial: SpatialImpl
+  val speedLimit: Velocity
   def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean
 }
 
-case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: SpatialImpl, end: SpatialImpl) extends Lane {
+case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: SpatialImpl, end: SpatialImpl, speedLimit: Velocity) extends Lane {
 
   val infinityPointForward: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * 10000}
   val infinityPointBackwards: QuantityVector[Distance] = beginning.vectorTo(end).normalize.map{ x: Distance => x * -10000}
@@ -100,14 +101,14 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
 
 object Lane extends LaneFunctions {
 
-  def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speed: Velocity, vehicles: List[PilotedVehicleImpl] = Nil): LaneImpl = {
+  def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speedLimit: Velocity, vehicles: List[PilotedVehicleImpl] = Nil): LaneImpl = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
-    val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.value * speed}
+    val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.value * speedLimit}
 
     val velocitySpatial = SpatialImpl(beginning.r, startingV, beginning.dimensions)
     val source = VehicleSourceImpl(sourceTiming, beginning, velocitySpatial)
-    LaneImpl(vehicles, source, beginning, end)
+    LaneImpl(vehicles, source, beginning, end, speedLimit)
   }
 
   private def responsesInOneLane(vehicles: NonEmptyList[PilotedVehicle], speedLimit: Velocity): NonEmptyList[Acceleration] = {
@@ -123,18 +124,19 @@ object Lane extends LaneFunctions {
 
   val MAX_VEHICLES_PER_LANE = 60
 
-  def update(lane: LaneImpl, speedLimit: Velocity, t: Time, dt: Time): LaneImpl = {
+  // TODO Make speedLimit part of the lane. It never should have gone here.
+  def update(lane: LaneImpl, t: Time, dt: Time): LaneImpl = {
     val newVehicleOption: Option[PilotedVehicleImpl] = lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
     val newVehicleList: List[PilotedVehicleImpl] =
       newVehicleOption match {
-          // This could be tweaked so it's always reducing to MAX_VEHICLES_PER_LANE, rather than only dropping 1
+        // This could be tweaked so it's always reducing to MAX_VEHICLES_PER_LANE, rather than only dropping 1
         case Some(newVehicle) if (lane.vehicles.size > MAX_VEHICLES_PER_LANE) => lane.vehicles.drop(lane.vehicles.size - MAX_VEHICLES_PER_LANE) :+ newVehicle
         case Some(newVehicle) => lane.vehicles :+ newVehicle
         case None => lane.vehicles
       }
 
     val laneWithNewVehicle = lane.copy(vehicles = newVehicleList)
-    val dMomentumList = responsesInOneLanePrep(laneWithNewVehicle, speedLimit)
+    val dMomentumList = responsesInOneLanePrep(laneWithNewVehicle)
     val newVehicles: List[PilotedVehicleImpl] =
       newVehicleList.zip(dMomentumList) map {
         case (vehicle, dMomentum) => vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
@@ -143,10 +145,10 @@ object Lane extends LaneFunctions {
     laneWithNewVehicle.copy(vehicles = newVehicles)
   }
 
-  def responsesInOneLanePrep(lane: Lane, speedLimit: Velocity): List[Acceleration] = {
+  def responsesInOneLanePrep(lane: Lane): List[Acceleration] = {
     lane.vehicles match {
       case Nil => Nil
-      case head :: _ => responsesInOneLane(NonEmptyList(lane.vehicleAtInfinityForward, lane.vehicles), speedLimit).toList
+      case head :: _ => responsesInOneLane(NonEmptyList(lane.vehicleAtInfinityForward, lane.vehicles), lane.speedLimit).toList
     }
   }
 
