@@ -23,6 +23,7 @@ trait Scene {
     SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
   }
 
+  def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl
   // TODO Include Map[Idx, Vehicle]
 }
 
@@ -32,7 +33,16 @@ case class SceneImpl(
                       dt: Time,
                       speedLimit: Velocity,
                       canvasDimensions: (Length, Length)
-) extends Scene
+) extends Scene {
+
+  def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl = {
+    val newStreets = streets.map { street: StreetImpl =>
+      val newLanes: List[LaneImpl] = street.lanes.map(func)
+      street.copy(lanes = newLanes)
+    }
+    this.copy(streets=newStreets)
+  }
+}
 
 
 trait ErrorMsg {

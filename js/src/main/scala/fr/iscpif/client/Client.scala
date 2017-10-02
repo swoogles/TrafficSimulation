@@ -3,12 +3,13 @@ package fr.iscpif.client
 
 import com.billding.physics.Spatial
 import com.billding.traffic._
+import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 import org.scalajs.dom.Element
-import squants.motion.KilometersPerHour
+import squants.motion.{KilometersPerHour, Velocity}
 
 import scala.concurrent.Future
-import squants.{Length, Time}
+import squants.Length
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
@@ -18,14 +19,12 @@ import rx._
 
 import scaladget.tools.JsRxTags._
 import scalatags.JsDom.all._
-
 import scalatags.generic
 
 @JSExportTopLevel("Client")
 object Client {
-  val GLOBAL_T: Var[Time] = Var(Seconds(0))
 
-  val speedLimit = KilometersPerHour(65)
+  val speedLimit: Velocity = KilometersPerHour(65)
 
   val originSpatial = Spatial((0, 0, 0, Kilometers))
   val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
@@ -38,90 +37,35 @@ object Client {
   implicit val DT = Milliseconds(20)
   val originalScene: SceneImpl = SceneImpl(
     List(street),
-    GLOBAL_T.now,
+    Seconds(0),
     DT,
     speedLimit,
     canvasDimensions
   )
-  val model = Model(originalScene)
+  val model: Model = Model(originalScene)
   val buttonBehaviors = ButtonBehaviors(model)
-  val controlElements = CreateControlElements(buttonBehaviors)
+  val controlElements = ControlElements(buttonBehaviors)
 
+  val GLOBAL_T = Rx {
+    model.sceneVar().t
+  }
 
   // Just a snippet to remind me how to pass html parameters around
   val startingColor: generic.Modifier[Element] = modifier(
     color := "blue"
   )
 
-  val car: PilotedVehicleImpl =
-    PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl)
-
-  def disruptLane(lane: LaneImpl, model: Model): LaneImpl =
-    if (model.disruptLane.now == true) {
-      model.disruptLane() = false
-      lane.addDisruptiveVehicle(car)
-    } else {
-      lane
-    }
-
-  def disruptLaneExisting(lane: LaneImpl, model: Model): LaneImpl =
-    if (model.disruptLaneExisting.now == true) {
-      model.disruptLaneExisting() = false
-      lane.disruptVehicles()
-    } else {
-      lane
-    }
-
-  def updateLane(lane: LaneImpl, model: Model): LaneImpl = {
-    // TODO Move this to match other UI response conditionals above.
-
-    val laneAfterDisruption = disruptLane(lane, model)
-    val laneAfterDisruptionExisting = disruptLaneExisting(laneAfterDisruption, model)
-
-    val newSource =
-      laneAfterDisruptionExisting.vehicleSource
-        .copy(spacingInTime = model.carTiming.now)
-        .updateSpeed(model.speed.now)
-    laneAfterDisruptionExisting.copy(vehicleSource = newSource)
-  }
-
   @JSExport
   def run() {
-    controlElements.createLayout(dom.document.body)
+    dom.document.body.appendChild(controlElements.createLayout())
 
-    // TODO figure out how to simply pass model.sceneVar here
-    val window: Var[Window] = Var(new Window(model.sceneVar.now))
+    val window: Rx[Window] = Rx{
+      new Window(model.sceneVar())
+    }
     dom.window.setInterval(() => {
-      window() = resetIfNecessary(model, window)
-      if (model.paused.now == false) {
-        // Figure out more direct way of making this connection between t's
-        GLOBAL_T() = model.sceneVar.now.t
-
-        val newStreets = model.sceneVar.now.streets.map { street: StreetImpl =>
-          val newLanes: List[LaneImpl] = street.lanes.map(updateLane(_, model))
-          street.copy(lanes = newLanes)
-        }
-        model.updateSceneWithStreets(newStreets)
-        model.updateScene(speedLimit)
-
-        window() = new Window(model.sceneVar.now)
-        window.now.svgNode.forceRedraw()
-      }
-      serialization.serializeIfNecessary(model)
-      serialization.deserializeIfNecessary(model, window)
-
+      model.respondToAllInput()
     }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
   }
-
-  def resetIfNecessary(model: Model, window: Var[Window]): Window =
-    if (model.resetScene.now == true) {
-      model.reset
-      val newWindow = new Window(model.sceneVar.now)
-      newWindow.svgNode.forceRedraw()
-      newWindow
-    } else {
-      window.now
-    }
 
 }
 

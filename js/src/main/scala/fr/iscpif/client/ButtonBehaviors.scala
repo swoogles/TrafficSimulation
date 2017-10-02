@@ -1,5 +1,6 @@
 package fr.iscpif.client
 
+import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input

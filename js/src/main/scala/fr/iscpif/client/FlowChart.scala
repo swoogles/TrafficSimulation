@@ -40,6 +40,7 @@ class Window(scene: Scene) {
 
   import com.billding.rendering.SpatialCanvasImpl
 
+  // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
   val canvasHeight = 800
   val canvasWidth = 1500
   val spatialCanvas = SpatialCanvasImpl(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
@@ -62,6 +63,8 @@ class Window(scene: Scene) {
     scene,
     spatialCanvas
   )
+
+  svgNode.forceRedraw()
 }
 
 class GraphCreator(svg: SVGElement, _scene: Scene, _spatialCanvas: SpatialCanvas) {
@@ -82,6 +85,7 @@ class GraphCreator(svg: SVGElement, _scene: Scene, _spatialCanvas: SpatialCanvas
   svg.appendChild(svgG)
   svg.appendChild(defs)
 
+  // TODO I dunno, maybe make this less terrible?
   def carReal(vehicle: PilotedVehicle) = {
     import com.billding.physics.SpatialForDefaults
     import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle

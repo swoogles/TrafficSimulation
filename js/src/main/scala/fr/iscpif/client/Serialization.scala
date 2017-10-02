@@ -1,8 +1,9 @@
 package fr.iscpif.client
 
+import fr.iscpif.client.uimodules.Model
+
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 import rx._
-
 import org.scalajs.dom.ext.Ajax
 import play.api.libs.json.Json
 
@@ -12,7 +13,7 @@ package object serialization {
   /**
     * TODO: Deserialization is killing the vehicle source now. Not sure when that was introduced.
     */
-  def deserializeIfNecessary(model: Model, window: Var[Window]): Unit = {
+  def deserializeIfNecessary(model: Model): Unit = {
     if (model.deserializeScene.now == true) {
       val f = Ajax.get("http://localhost:8080/loadScene")
       f.onComplete {
@@ -22,8 +23,6 @@ package object serialization {
             Json.parse(xhr.responseText)
           ).get
           model.sceneVar() = res
-          window() = new Window(model.sceneVar.now)
-          window.now.svgNode.forceRedraw()
           model.paused() = true
         }
 
