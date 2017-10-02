@@ -21,23 +21,20 @@ import com.billding.rendering.SpatialCanvas
 import com.billding.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
 
-import scala.scalajs.js
-import rx._
+import rx.{Ctx, Rx, Var}
 
-import scalatags.JsDom.all._
 import scalatags.JsDom.svgAttrs
 import scalatags.JsDom.svgTags
-import scaladget.stylesheet.all._
-import scaladget.api.svg._
+import scaladget.stylesheet.all.ms
 import scaladget.tools.JsRxTags._
 import org.scalajs.dom.raw._
+import scalatags.JsDom.all._
 
 trait Selectable {
   val selected: Var[Boolean] = Var(false)
 }
 
-class Window(scene: Scene) {
-
+class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
   import com.billding.rendering.SpatialCanvasImpl
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
@@ -59,82 +56,79 @@ class Window(scene: Scene) {
     child
   }
 
-  new GraphCreator(svgNode,
+  new GraphCreator(
+    svgNode,
     scene,
     spatialCanvas
-  )
+  ).drawItems()
 
   svgNode.forceRedraw()
 }
 
-class GraphCreator(svg: SVGElement, _scene: Scene, _spatialCanvas: SpatialCanvas) {
-
-  implicit val ctx: Ctx.Owner = Ctx.Owner.safe()
-
+class GraphCreator(
+  svg: SVGElement,
+  scene: Scene,
+  spatialCanvas: SpatialCanvas
+)(implicit ctx: Ctx.Owner) {
   val CIRCLE: String = "conceptG"
   val DELETE_KEY = 46
 
-  implicit def dynamicToString(d: js.Dynamic): String = d.asInstanceOf[String]
-
-  implicit def dynamicToBoolean(d: js.Dynamic): Boolean = d.asInstanceOf[Boolean]
-
   // SVG DEFINITIONS
   val svgG = svgTags.g.render
-  val defs = svgTags.defs.render
 
   svg.appendChild(svgG)
-  svg.appendChild(defs)
 
   // TODO I dunno, maybe make this less terrible?
-  def carReal(vehicle: PilotedVehicle) = {
+  private def carReal(vehicle: PilotedVehicle) = {
     import com.billding.physics.SpatialForDefaults
     import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
     val spatial = SpatialForDefaults.disect(vehicle)
-    val x = spatial.r.coordinates.head / _spatialCanvas.widthDistancePerPixel
-    val y = spatial.r.coordinates.tail.head / _spatialCanvas.heightDistancePerPixel
-    val xV = spatial.v.coordinates.head
-    val renderedWidth = vehicle.spatial.dimensions.coordinates(0) / _spatialCanvas.widthDistancePerPixel
-    val renderedHeight = vehicle.spatial.dimensions.coordinates(1) / _spatialCanvas.heightDistancePerPixel
+    val x = spatial.x / spatialCanvas.widthDistancePerPixel
+    val y = spatial.y / spatialCanvas.heightDistancePerPixel
+    val renderedWidth = vehicle.width / spatialCanvas.widthDistancePerPixel
+    val renderedHeight = vehicle.height / spatialCanvas.heightDistancePerPixel
 
-    val element: SVGElement = Rx {
-      svgTags.g(
-        ms(CIRCLE)
-      )(
-        svgAttrs.transform := s"translate($x, $y)")(
-          svgTags.image(href := "images/sedan.svg", width := renderedWidth.px, height := renderedHeight.px).render
-      )
-    }
-    val gCircle = svgTags.g(element).render
-
-    gCircle
+    val element: SVGElement =
+      Rx {
+        svgTags.g(
+          ms(CIRCLE)
+        )(
+          svgAttrs.transform := s"translate($x, $y)"
+        )(
+          svgTags.image(
+            href := "images/sedan.svg",
+            width := renderedWidth.px,
+            height := renderedHeight.px
+          )
+        )
+      }
+    svgTags.g(element).render
   }
 
-  // TODO Process Scene.lanes & Scene.lanes.vehicles
-  lazy val vehicles: Var[Seq[Var[PilotedVehicle]]] = Var(Seq())
-  val vehiclesImmutable: Seq[PilotedVehicle] = _scene.streets.flatMap(_.lanes.flatMap(_.vehicles))
-  _scene.streets.flatMap(_.lanes.flatMap(_.vehicles).map { vehicle =>
-    addVehicle(vehicle)
-  })
-
+  val vehiclesImmutable: Seq[PilotedVehicle] =
+    scene.streets.flatMap(
+      _.lanes.flatMap(_.vehicles)
+    )
 
   // ADD ALL vehicles ON THE SCENE. THE RX SEQUENCE IS AUTOMATICALLY RUN IN CASE OF vehicles ALTERATION
-  def addToScene[T](s: Var[Seq[Var[T]]], draw: T => SVGElement) = {
-    val element: SVGElement = Rx {
+  def createSvgReps[T](drawables: Seq[T], draw: T => SVGElement): SVGElement = {
+    Rx {
       svgTags.g(
         for {
-          t <- s()
+          t <- drawables
         } yield {
-          draw(t.now)
+          draw(t)
         }
       )
     }
-    svgG.appendChild(svgTags.g(element).render).render
   }
 
-  addToScene(vehicles, carReal)
-
-  // ADD, SELECT AND REMOVE ITEMS
-  def addVehicle(pilotedVehicle: PilotedVehicle): Unit = {
-    vehicles() = vehicles.now :+ Var(pilotedVehicle)
+  def drawItems() = {
+    svgG.appendChild(
+      svgTags.g(
+        createSvgReps(vehiclesImmutable, carReal)
+      ).render
+    ).render
   }
+
 }

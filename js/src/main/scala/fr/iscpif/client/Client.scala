@@ -23,7 +23,6 @@ import scalatags.generic
 
 @JSExportTopLevel("Client")
 object Client {
-
   val speedLimit: Velocity = KilometersPerHour(65)
 
   val originSpatial = Spatial((0, 0, 0, Kilometers))

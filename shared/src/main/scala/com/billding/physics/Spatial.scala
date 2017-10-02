@@ -26,6 +26,9 @@ trait Spatial {
     z.apply(obstacle)
   }
   def move(orientation: Orientation, distance: Distance): Spatial
+
+  val x: Distance = r.coordinates.head
+  val y: Distance = r.coordinates.tail.head
 }
 
 

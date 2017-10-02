@@ -1,6 +1,6 @@
 package com.billding.traffic
 
-import squants.motion.{Acceleration, DistanceUnit, KilometersPerHour, VelocityUnit}
+import squants.motion.{Acceleration, Distance, DistanceUnit, KilometersPerHour, VelocityUnit}
 import com.billding.physics.{Spatial, SpatialForDefaults, SpatialImpl}
 import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
 import squants.space.LengthUnit
@@ -12,6 +12,8 @@ sealed trait PilotedVehicle {
   def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicleImpl
   def spatial: SpatialImpl
   def tooClose(pilotedVehicle: PilotedVehicle): Boolean
+  val width: Distance
+  val height: Distance
 }
 
 object PilotedVehicle {
@@ -77,4 +79,7 @@ case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destinat
     val bumperToBumperOffset = this.spatial.dimensions.coordinates.head + pilotedVehicle.spatial.dimensions.coordinates.head
     (this.spatial.distanceTo(pilotedVehicle.spatial) - bumperToBumperOffset) < this.driver.minimumDistance
   }
+
+  val width: Distance = vehicle.spatial.dimensions.coordinates(0)
+  val height: Distance = vehicle.spatial.dimensions.coordinates(1)
 }

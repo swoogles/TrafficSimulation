@@ -38,7 +38,7 @@ case class ButtonBehaviors(val model: Model) {
     model.speed() = KilometersPerHour(newTiming)
   }
 
-  val updateSlider = (e: Event) => {
+  val updateSlider: (Event) => Unit = (e: Event) => {
     val value = e.target match {
       case inputElement: Input  => inputElement.value.toInt
       case _ => 3 // TODO de-magick this
@@ -46,7 +46,7 @@ case class ButtonBehaviors(val model: Model) {
     updateTimingSlider(value)
   }
 
-  val speedSliderUpdate = (e: Event) => {
+  val speedSliderUpdate: (Event) => Unit = (e: Event) => {
     val value = e.target match {
       case inputElement: Input  => inputElement.value.toInt
       case _ => 65 // TODO de-magick this
