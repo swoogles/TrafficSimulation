@@ -1,4 +1,4 @@
-package client
+package fr.iscpif.client
 
 /*
  * Copyright (C) 22/09/14 // mathieu.leclaire@openmole.org
