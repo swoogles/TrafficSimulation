@@ -4,47 +4,41 @@ package fr.iscpif.client
 import com.billding.physics.Spatial
 import com.billding.traffic._
 import org.scalajs.dom
+import org.scalajs.dom.Element
+import squants.motion.KilometersPerHour
 
 import scala.concurrent.Future
 import squants.{Length, Time}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
-import squants.motion._
-import squants.space.{Kilometers, LengthUnit, Meters}
+import squants.space.Kilometers
 import squants.time.{Milliseconds, Seconds}
 import rx._
 
 import scaladget.tools.JsRxTags._
 import scalatags.JsDom.all._
-import org.scalajs.dom.ext.Ajax
-import play.api.libs.json.Json
 
-import scala.util.{Failure, Success}
+import scalatags.generic
 
 @JSExportTopLevel("Client")
 object Client {
-  var GLOBAL_T: Time = Seconds(0)
+  val GLOBAL_T: Var[Time] = Var(Seconds(0))
 
-  val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(65)
 
-  val zeroDimensions: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val originSpatial = Spatial((0, 0, 0, Meters))
+  val originSpatial = Spatial((0, 0, 0, Kilometers))
   val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
-
-  val herdSpeed = 65
 
   val speed = Var(KilometersPerHour(50))
 
   val street = Street(Seconds(2), originSpatial, endingSpatial, speed.now, 1)
 
-  val t = Seconds(0)
   val canvasDimensions: (Length, Length) = (Kilometers(.25), Kilometers(.5))
   implicit val DT = Milliseconds(20)
   val originalScene: SceneImpl = SceneImpl(
     List(street),
-    t,
+    GLOBAL_T.now,
     DT,
     speedLimit,
     canvasDimensions
@@ -55,14 +49,14 @@ object Client {
 
 
   // Just a snippet to remind me how to pass html parameters around
-  val startingColor = modifier(
+  val startingColor: generic.Modifier[Element] = modifier(
     color := "blue"
   )
 
-  val car =
-    PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
+  val car: PilotedVehicleImpl =
+    PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl)
 
-  def disruptLane(lane: LaneImpl, model: Model) =
+  def disruptLane(lane: LaneImpl, model: Model): LaneImpl =
     if (model.disruptLane.now == true) {
       model.disruptLane() = false
       lane.addDisruptiveVehicle(car)
@@ -70,7 +64,7 @@ object Client {
       lane
     }
 
-  def disruptLaneExisting(lane: LaneImpl, model: Model) =
+  def disruptLaneExisting(lane: LaneImpl, model: Model): LaneImpl =
     if (model.disruptLaneExisting.now == true) {
       model.disruptLaneExisting() = false
       lane.disruptVehicles()
@@ -78,7 +72,7 @@ object Client {
       lane
     }
 
-  def updateLane(lane: LaneImpl) = {
+  def updateLane(lane: LaneImpl, model: Model): LaneImpl = {
     // TODO Move this to match other UI response conditionals above.
 
     val laneAfterDisruption = disruptLane(lane, model)
@@ -95,14 +89,16 @@ object Client {
   def run() {
     controlElements.createLayout(dom.document.body)
 
+    // TODO figure out how to simply pass model.sceneVar here
     val window: Var[Window] = Var(new Window(model.sceneVar.now))
     dom.window.setInterval(() => {
-      resetIfNecessary(model, window)
+      window() = resetIfNecessary(model, window)
       if (model.paused.now == false) {
-        GLOBAL_T = model.sceneVar.now.t
+        // Figure out more direct way of making this connection between t's
+        GLOBAL_T() = model.sceneVar.now.t
 
         val newStreets = model.sceneVar.now.streets.map { street: StreetImpl =>
-          val newLanes: List[LaneImpl] = street.lanes.map(updateLane)
+          val newLanes: List[LaneImpl] = street.lanes.map(updateLane(_, model))
           street.copy(lanes = newLanes)
         }
         model.updateSceneWithStreets(newStreets)
@@ -111,58 +107,22 @@ object Client {
         window() = new Window(model.sceneVar.now)
         window.now.svgNode.forceRedraw()
       }
-      serializeIfNecessary(model)
-      deserializeIfNecessary(model, window)
+      serialization.serializeIfNecessary(model)
+      serialization.deserializeIfNecessary(model, window)
 
     }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
   }
 
-  def resetIfNecessary(model: Model, window: Var[Window]): Unit =
+  def resetIfNecessary(model: Model, window: Var[Window]): Window =
     if (model.resetScene.now == true) {
-        model.sceneVar() = model.originalScene
-        model.resetScene() = false
-        window() = new Window(model.sceneVar.now)
-        window.now.svgNode.forceRedraw()
-      }
-
-  /**
-    * TODO: Deserialization is killing the vehicle source now. Not sure when that was introduced.
-    */
-  def deserializeIfNecessary(model: Model, window: Var[Window]): Unit = {
-    if (model.deserializeScene.now == true) {
-      val f = Ajax.get("http://localhost:8080/loadScene")
-      f.onComplete {
-        case Success(xhr) => {
-          import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
-          val res = Json.fromJson(
-            Json.parse(xhr.responseText  )
-          ).get
-          model.sceneVar() = res
-          window() = new Window(model.sceneVar.now)
-          window.now.svgNode.forceRedraw()
-          model.paused() = true
-        }
-
-        case Failure(cause) => println("failed: " + cause)
-      }
-      model.deserializeScene() = false
+      model.reset
+      val newWindow = new Window(model.sceneVar.now)
+      newWindow.svgNode.forceRedraw()
+      newWindow
+    } else {
+      window.now
     }
-  }
 
-
-  def serializeIfNecessary(model: Model): Unit = {
-    if (model.serializeScene.now == true) {
-      model.savedScene() = model.sceneVar.now
-      import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
-
-      val f = Ajax.post("http://localhost:8080/writeScene", data = Json.toJson(model.sceneVar.now).toString)
-      f.onComplete {
-        case Success(xhr) => println("serialized some stuff and sent it off")
-        case Failure(cause) => println("failed: " + cause)
-      }
-      model.serializeScene() = false
-    }
-  }
 }
 
 object Post extends autowire.Client[String, upickle.default.Reader, upickle.default.Writer] {
@@ -177,7 +137,7 @@ object Post extends autowire.Client[String, upickle.default.Reader, upickle.defa
     }
   }
 
-  def read[Result: upickle.default.Reader](p: String) = upickle.default.read[Result](p)
+  def read[Result: upickle.default.Reader](p: String): Result = upickle.default.read[Result](p)
 
-  def write[Result: upickle.default.Writer](r: Result) = upickle.default.write(r)
+  def write[Result: upickle.default.Writer](r: Result): String = upickle.default.write(r)
 }

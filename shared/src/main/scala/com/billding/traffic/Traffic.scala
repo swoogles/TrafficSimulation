@@ -22,6 +22,8 @@ trait Scene {
     }
     SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
   }
+
+  // TODO Include Map[Idx, Vehicle]
 }
 
 case class SceneImpl(

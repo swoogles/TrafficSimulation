@@ -1,6 +1,7 @@
 package fr.iscpif.client
 
 import org.scalajs.dom
+import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.HTMLInputElement
 import squants.motion.KilometersPerHour
@@ -14,19 +15,19 @@ case class ButtonBehaviors(val model: Model) {
   }
 
   val toggleDisrupt =
-    (_: dom.Event) => model.disruptLane() = true
+    (_: Event) => model.disruptLane() = true
 
   val toggleDisruptExisting =
-    (_: dom.Event) => model.disruptLaneExisting() = true
+    (_: Event) => model.disruptLaneExisting() = true
 
   val initiateSceneReset =
-    (_: dom.Event) => model.resetScene() = true
+    (_: Event) => model.resetScene() = true
 
   val initiateSceneSerialization =
-    (_: dom.Event) => model.serializeScene() = true
+    (_: Event) => model.serializeScene() = true
 
   val initiateSceneDeserialization =
-    (_: dom.Event) => model.deserializeScene() = true
+    (_: Event) => model.deserializeScene() = true
 
   def updateTimingSlider(newTiming: Int): Unit = {
     model.carTiming() = Seconds(newTiming)
@@ -36,7 +37,7 @@ case class ButtonBehaviors(val model: Model) {
     model.speed() = KilometersPerHour(newTiming)
   }
 
-  val updateSlider = (e: dom.Event) => {
+  val updateSlider = (e: Event) => {
     val value = e.target match {
       case inputElement: Input  => inputElement.value.toInt
       case _ => 3 // TODO de-magick this
@@ -44,7 +45,7 @@ case class ButtonBehaviors(val model: Model) {
     updateTimingSlider(value)
   }
 
-  val speedSliderUpdate = (e: dom.Event) => {
+  val speedSliderUpdate = (e: Event) => {
     val value = e.target match {
       case inputElement: Input  => inputElement.value.toInt
       case _ => 65 // TODO de-magick this

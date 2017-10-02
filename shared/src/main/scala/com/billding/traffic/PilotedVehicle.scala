@@ -37,7 +37,7 @@ object PilotedVehicle {
   def commuter(
               spatial: SpatialImpl,
               idm: IntelligentDriverModelImpl,
-              destination: SpatialImpl
+              destination: SpatialImpl = Spatial.BLANK
               ): PilotedVehicleImpl = {
     new PilotedVehicleImpl( Driver.commuter(spatial, idm), VehicleImpl.simpleCar(spatial.r, spatial.v), destination)
   }
