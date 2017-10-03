@@ -56,6 +56,13 @@ case class Model (
   val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
+  val pauseText = Rx {
+    if (paused())
+      "Unpause"
+    else
+      "Pause"
+  }
+
   def updateScene(speedLimit: Velocity) =
     sceneVar() = sceneVar.now.update(speedLimit)
 

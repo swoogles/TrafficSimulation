@@ -4,24 +4,24 @@ import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
-import org.scalajs.dom.raw.HTMLInputElement
-import rx.Var
+import org.scalajs.dom.raw.{HTMLInputElement, MouseEvent, WheelEvent}
+import rx.{Ctx, Obs, Var}
 import squants.motion.KilometersPerHour
 import squants.time.Seconds
 
-case class ButtonBehaviors(val model: Model) {
-  val togglePause = (e: dom.Event) => {
+case class ButtonBehaviors(val model: Model)(implicit ctx: Ctx.Owner) {
+  val togglePause: (Event) => Unit = (e: dom.Event) => {
     val elementClicked =
       e.target.asInstanceOf[HTMLInputElement]
 
-    elementClicked.value =
-      if (model.paused.now == true)
-        "Pause"
-      else
-        "Unpause"
-
     model.paused() = !model.paused.now
+    model.pauseText.trigger(elementClicked.value = model.pauseText.now)
   }
+
+
+  // TODO make mousewheel behavior
+  private val onMouseWheelUp: (WheelEvent) => Unit =
+    (e) => println("mouse event! we should zoom in/out now!")
 
   private val resetToTrue: Var[Boolean] => Event => Unit =
     (theBool: Var[Boolean]) =>
