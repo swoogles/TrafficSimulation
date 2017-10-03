@@ -31,7 +31,7 @@ case class ButtonBehaviors(val model: Model) {
     (_: Event) => model.deserializeScene() = true
 
   def updateTimingSlider(newTiming: Int): Unit = {
-    model.carTiming() = Seconds(newTiming)
+    model.carTiming() = Seconds(newTiming) / 10
   }
 
   def updateSpeedSlider(newTiming: Int): Unit = {

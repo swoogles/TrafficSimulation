@@ -47,9 +47,9 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
       input(
         tpe := "range",
-        min := 1,
-        max := 5,
-        value := 3,
+        min := 10,
+        max := 50,
+        value := 30,
         oninput := buttonBehaviors.updateSlider
       ),
 
