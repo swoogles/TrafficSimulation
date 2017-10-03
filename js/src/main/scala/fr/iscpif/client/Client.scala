@@ -30,7 +30,7 @@ object Client {
 
   val speed = Var(KilometersPerHour(50))
 
-  val street = Street(Seconds(2), originSpatial, endingSpatial, speed.now, 1)
+  val street = Street(Seconds(2), originSpatial, endingSpatial, speed.now, numLanes=1)
 
   val canvasDimensions: (Length, Length) = (Kilometers(.25), Kilometers(.5))
   implicit val DT = Milliseconds(20)

@@ -49,16 +49,12 @@ case class Model (
   extends Serialization
   with ModelTrait
 {
-  implicit val DT = originalScene.dt
+  private implicit val DT = originalScene.dt
   val savedScene: Var[Scene] = Var(originalScene)
   // TODO Make this private
   var sceneVar: Var[SceneImpl] = Var(originalScene)
   val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
-
-  val disruptLane: Var[Boolean] = disruptions.disruptLane
-  val disruptLaneExisting: Var[Boolean] = disruptions.disruptLaneExisting
-
 
   def updateScene(speedLimit: Velocity) =
     sceneVar() = sceneVar.now.update(speedLimit)
@@ -80,7 +76,7 @@ case class Model (
     PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl)
 
   def disruptLane(lane: LaneImpl, model: Model): LaneImpl =
-    if (this.disruptLane.now == true) {
+    if (this.disruptions.disruptLane.now == true) {
       this.disruptions .disruptLane() = false
       lane.addDisruptiveVehicle(car)
     } else {
@@ -88,7 +84,7 @@ case class Model (
     }
 
   def disruptLaneExisting(lane: LaneImpl): LaneImpl =
-    if (this.disruptLaneExisting.now == true) {
+    if (this.disruptions.disruptLaneExisting.now == true) {
       this.disruptions.disruptLaneExisting() = false
       lane.disruptVehicles()
     } else {
@@ -96,8 +92,6 @@ case class Model (
     }
 
   def updateLane(lane: LaneImpl): LaneImpl = {
-    // TODO Move this to match other UI response conditionals above.
-
     val laneAfterDisruption = disruptLane(lane, this)
     val laneAfterDisruptionExisting = disruptLaneExisting(laneAfterDisruption)
 

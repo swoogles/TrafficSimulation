@@ -5,7 +5,6 @@ import squants.motion._
 import squants.{Length, Time, Velocity}
 
 trait Scene {
-//  val lanes: List[LaneImpl]
   val streets: List[StreetImpl]
   val t: Time
   implicit val dt: Time
@@ -25,6 +24,8 @@ trait Scene {
 
   def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl
   // TODO Include Map[Idx, Vehicle]
+
+  val allVehicles: List[PilotedVehicleImpl]
 }
 
 case class SceneImpl(
@@ -42,6 +43,10 @@ case class SceneImpl(
     }
     this.copy(streets=newStreets)
   }
+
+  val allVehicles: List[PilotedVehicleImpl] = streets.flatMap(
+    _.lanes.flatMap(_.vehicles)
+  )
 }
 
 

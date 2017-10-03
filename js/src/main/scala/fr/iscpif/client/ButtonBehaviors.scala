@@ -16,10 +16,10 @@ case class ButtonBehaviors(val model: Model) {
   }
 
   val toggleDisrupt =
-    (_: Event) => model.disruptLane() = true
+    (_: Event) => model.disruptions.disruptLane() = true
 
   val toggleDisruptExisting =
-    (_: Event) => model.disruptLaneExisting() = true
+    (_: Event) => model.disruptions.disruptLaneExisting() = true
 
   val initiateSceneReset =
     (_: Event) => model.resetScene() = true
