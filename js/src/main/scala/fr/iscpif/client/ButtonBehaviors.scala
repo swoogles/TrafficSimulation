@@ -11,8 +11,15 @@ import squants.time.Seconds
 
 case class ButtonBehaviors(val model: Model) {
   val togglePause = (e: dom.Event) => {
-    val elementClicked = e.target.asInstanceOf[HTMLInputElement]
-    elementClicked.value = if (model.paused.now == true) "Pause" else "Unpause"
+    val elementClicked =
+      e.target.asInstanceOf[HTMLInputElement]
+
+    elementClicked.value =
+      if (model.paused.now == true)
+        "Pause"
+      else
+        "Unpause"
+
     model.paused() = !model.paused.now
   }
 
