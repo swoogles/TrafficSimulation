@@ -5,6 +5,7 @@ import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.HTMLInputElement
+import rx.Var
 import squants.motion.KilometersPerHour
 import squants.time.Seconds
 
@@ -15,20 +16,25 @@ case class ButtonBehaviors(val model: Model) {
     model.paused() = !model.paused.now
   }
 
+  val resetToTrue =
+    (theBool: Var[Boolean]) =>
+      (_: Event) =>
+        theBool() = true
+
   val toggleDisrupt =
-    (_: Event) => model.disruptions.disruptLane() = true
+    resetToTrue(model.disruptions.disruptLane)
 
   val toggleDisruptExisting =
-    (_: Event) => model.disruptions.disruptLaneExisting() = true
+    resetToTrue(model.disruptions.disruptLaneExisting)
 
   val initiateSceneReset =
-    (_: Event) => model.resetScene() = true
+    resetToTrue(model.resetScene)
 
   val initiateSceneSerialization =
-    (_: Event) => model.serializeScene() = true
+    resetToTrue(model.serializeScene)
 
   val initiateSceneDeserialization =
-    (_: Event) => model.deserializeScene() = true
+    resetToTrue(model.deserializeScene)
 
   def updateTimingSlider(newTiming: Int): Unit = {
     model.carTiming() = Seconds(newTiming) / 10
@@ -38,19 +44,18 @@ case class ButtonBehaviors(val model: Model) {
     model.speed() = KilometersPerHour(newTiming)
   }
 
-  val updateSlider: (Event) => Unit = (e: Event) => {
-    val value = e.target match {
-      case inputElement: Input  => inputElement.value.toInt
-      case _ => 3 // TODO de-magick this
-    }
-    updateTimingSlider(value)
-  }
+  def genericSlider:
+  (Int => Unit) =>
+    (Event) => Unit =
+    (theBehavior) =>
+      (e: Event) => {
+        val value = e.target match {
+          case inputElement: Input  => inputElement.value.toInt
+        }
+        theBehavior(value)
+      }
 
-  val speedSliderUpdate: (Event) => Unit = (e: Event) => {
-    val value = e.target match {
-      case inputElement: Input  => inputElement.value.toInt
-      case _ => 65 // TODO de-magick this
-    }
-    updateSpeedSlider(value)
-  }
+  val updateSlider: (Event) => Unit = genericSlider(updateTimingSlider)
+  val speedSliderUpdate: (Event) => Unit = genericSlider(updateSpeedSlider)
+
 }
