@@ -16,7 +16,7 @@ case class ButtonBehaviors(val model: Model) {
     model.paused() = !model.paused.now
   }
 
-  val resetToTrue =
+  private val resetToTrue: Var[Boolean] => Event => Unit =
     (theBool: Var[Boolean]) =>
       (_: Event) =>
         theBool() = true
@@ -36,17 +36,7 @@ case class ButtonBehaviors(val model: Model) {
   val initiateSceneDeserialization =
     resetToTrue(model.deserializeScene)
 
-  def updateTimingSlider(newTiming: Int): Unit = {
-    model.carTiming() = Seconds(newTiming) / 10
-  }
-
-  def updateSpeedSlider(newTiming: Int): Unit = {
-    model.speed() = KilometersPerHour(newTiming)
-  }
-
-  def genericSlider:
-  (Int => Unit) =>
-    (Event) => Unit =
+  private def genericSlider: (Int => Unit) => Event => Unit =
     (theBehavior) =>
       (e: Event) => {
         val value = e.target match {
@@ -55,7 +45,16 @@ case class ButtonBehaviors(val model: Model) {
         theBehavior(value)
       }
 
-  val updateSlider: (Event) => Unit = genericSlider(updateTimingSlider)
-  val speedSliderUpdate: (Event) => Unit = genericSlider(updateSpeedSlider)
+  val updateSlider: (Event) => Unit =
+    genericSlider(
+      (newTiming: Int) =>
+        model.carTiming() = Seconds(newTiming) / 10
+    )
+
+  val speedSliderUpdate: (Event) => Unit =
+    genericSlider(
+      (newSpeed: Int) =>
+        model.speed() = KilometersPerHour(newSpeed)
+    )
 
 }
