@@ -15,9 +15,9 @@ trait Scene {
   def update(speedLimit: Velocity)(implicit dt: Time): SceneImpl = {
     val nextT =  this.t + this.dt
     val res: List[StreetImpl] = {
-      streets.map(street=>{
-        street.copy(lanes = street.lanes map updateLane)
-      })
+      streets.map(street=>
+        street.updateLanes(updateLane)
+      )
     }
     SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
   }
@@ -38,8 +38,7 @@ case class SceneImpl(
 
   def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl = {
     val newStreets = streets.map { street: StreetImpl =>
-      val newLanes: List[LaneImpl] = street.lanes.map(func)
-      street.copy(lanes = newLanes)
+      street.updateLanes(func)
     }
     this.copy(streets=newStreets)
   }
@@ -58,12 +57,12 @@ trait ErrorMsg {
 trait Universe {
   // NOTE: Assumes vehicles travelling in same direction
   val speedLimit: Velocity
-//  val idm: IntelligentDriverModel
+  //  val idm: IntelligentDriverModel
   def calculateDriverResponse(vehicle: PilotedVehicle, scene: Scene): Acceleration
   // TODO Work on this after Lane processing functions.
   def getAllActions(scene: Scene): List[(PilotedVehicle, Acceleration)]
   def update(scene: Scene, dt: Time): Validated[NonEmptyList[ErrorMsg], Scene]
-//  def createScene(roads: Road): Scene
+  //  def createScene(roads: Road): Scene
   // Get vehicles that haven't taken a recent action.
   def reactiveVehicles(scene: Scene): List[PilotedVehicle]
 }

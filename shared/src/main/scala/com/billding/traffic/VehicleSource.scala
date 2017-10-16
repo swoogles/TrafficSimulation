@@ -11,7 +11,12 @@ trait VehicleSource {
   val startingVelocitySpacial: SpatialImpl
 }
 
-case class VehicleSourceImpl(spacingInTime: Time, spatial: SpatialImpl, startingVelocitySpacial: SpatialImpl) extends  VehicleSource {
+case class VehicleSourceImpl(
+  spacingInTime: Time,
+  spatial: SpatialImpl,
+  startingVelocitySpacial: SpatialImpl
+) extends  VehicleSource {
+
   override def produceVehicle(t: Time, dt: Time, destination: SpatialImpl): Option[PilotedVehicleImpl] = {
     val res = t % spacingInTime
     if (res.abs < dt.toSeconds) {

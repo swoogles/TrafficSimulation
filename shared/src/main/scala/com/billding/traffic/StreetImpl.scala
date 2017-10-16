@@ -1,11 +1,15 @@
 package com.billding.traffic
 
-import com.billding.physics.{Spatial, SpatialImpl}
+import com.billding.physics.{SpatialImpl}
 import shared.Orientation
 import squants.{Time, Velocity}
-import squants.space.{Length, Meters}
+import squants.space.Meters
 
-case class StreetImpl(lanes: List[LaneImpl], beginning: SpatialImpl, end: SpatialImpl, sourceTiming: Time)
+case class StreetImpl(lanes: List[LaneImpl], beginning: SpatialImpl, end: SpatialImpl, sourceTiming: Time) {
+
+  def updateLanes(f: LaneImpl => LaneImpl) =
+    copy(lanes = lanes map f)
+}
 
 object Street {
   def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speed: Velocity, numLanes: Integer): StreetImpl = {
