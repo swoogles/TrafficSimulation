@@ -16,6 +16,8 @@ sealed trait PilotedVehicle {
   val height: Distance
   def stop(): PilotedVehicleImpl
   def move(betterVec: QuantityVector[Distance]): PilotedVehicleImpl
+  def distanceTo(target: Spatial): Distance
+  def distanceTo(target: PilotedVehicle): Distance
 }
 
 object PilotedVehicle {
@@ -97,4 +99,10 @@ case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destinat
 
     copy(driver = newDriver, vehicle = newVehicle)
   }
+
+  def distanceTo(target: Spatial): Distance =
+    spatial.distanceTo(target)
+
+  def distanceTo(target: PilotedVehicle): Distance =
+    distanceTo(target.spatial)
 }
