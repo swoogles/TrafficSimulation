@@ -23,6 +23,7 @@ trait Lane {
   val infinitySpatial: SpatialImpl
   val speedLimit: Velocity
   def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean
+  val length = beginning.distanceTo(end)
 }
 
 case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: SpatialImpl, end: SpatialImpl, speedLimit: Velocity) extends Lane {
@@ -57,7 +58,8 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
 
     val newPilotedVehicle = pilotedVehicle.move(betterVec)
     val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
-    val vehicleList: List[PilotedVehicleImpl] = (pastVehicles :+ newPilotedVehicle.copy(destination = end) ) ::: approachingVehicles
+    val vehicleList: List[PilotedVehicleImpl] =
+      (pastVehicles :+ newPilotedVehicle.copy(destination = end) ) ::: approachingVehicles
     this.copy(vehicles = vehicleList )
   }
 
@@ -65,13 +67,14 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
     * TODO: Also check lane start/end points OR that fraction is between 0 and 1. I think Option B.
     */
   def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean = {
-    val disruptionPoint: QuantityVector[Distance] = beginning.vectorTo(end).times(fractionCompleted)
+    val disruptionPoint: QuantityVector[Distance] =
+      beginning.vectorTo(end).times(fractionCompleted)
 
-    val vehiclePlacementInLane: SpatialImpl = pilotedVehicle.spatial.copy(r=disruptionPoint)
+    val vehicleInLane = pilotedVehicle.move(disruptionPoint)
     // TODO Use actual vehicle sizes instead of set meters distance
     val interferes: Boolean =
       this.vehicles.exists(
-        curVehicle => curVehicle.spatial.distanceTo(vehiclePlacementInLane) < Meters(3)
+        curVehicle => curVehicle.distanceTo(vehicleInLane) < Meters(3)
       )
 
     ! interferes
@@ -81,8 +84,8 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
     val (pastVehicles, approachingVehicles) = this.vehicles.splitAt(this.vehicles.length-5)
 
     val ( disruptedVehicle :: restOfApproachingVehicles) = approachingVehicles
-    val newlyDisruptedVehicle = disruptedVehicle.stop()
-    val vehicleList: List[PilotedVehicleImpl] = (pastVehicles :+ newlyDisruptedVehicle ) ::: restOfApproachingVehicles
+    val vehicleList: List[PilotedVehicleImpl] =
+      (pastVehicles :+ disruptedVehicle.stop() ) ::: restOfApproachingVehicles
     this.copy(vehicles = vehicleList)
   }
 
@@ -90,21 +93,32 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
 
 object Lane extends LaneFunctions {
 
-  def apply(sourceTiming: Time, beginning: SpatialImpl, end: SpatialImpl, speedLimit: Velocity, vehicles: List[PilotedVehicleImpl] = Nil): LaneImpl = {
+  def apply(
+    sourceTiming: Time,
+    beginning: SpatialImpl,
+    end: SpatialImpl,
+    speedLimit: Velocity,
+    vehicles: List[PilotedVehicleImpl] = Nil
+  ): LaneImpl = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
-    val startingV: QuantityVector[Velocity] = directionForSource.normalize.map{ x: Distance => x.value * speedLimit}
+
+    val startingV: QuantityVector[Velocity] =
+      directionForSource.normalize.map{ x: Distance => x.value * speedLimit}
 
     val velocitySpatial = SpatialImpl(beginning.r, startingV, beginning.dimensions)
     val source = VehicleSourceImpl(sourceTiming, beginning, velocitySpatial)
     LaneImpl(vehicles, source, beginning, end, speedLimit)
   }
 
-  private def responsesInOneLane(vehicles: NonEmptyList[PilotedVehicle], speedLimit: Velocity): NonEmptyList[Acceleration] = {
+  private def responsesInOneLane(
+    vehicles: NonEmptyList[PilotedVehicle],
+    speedLimit: Velocity
+  ): NonEmptyList[Acceleration] = {
     val target = vehicles.head
     vehicles.tail match {
       case Nil => throw new RuntimeException("shit!!")
-      case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil) // :: responsesInOneLane(follower :: rest)
+      case follower :: Nil => NonEmptyList(follower.reactTo(target, speedLimit), Nil)
       case follower :: rest => {
         follower.reactTo(target, speedLimit) :: responsesInOneLane(NonEmptyList(follower, rest), speedLimit)
       }
@@ -115,7 +129,9 @@ object Lane extends LaneFunctions {
 
   // TODO Make speedLimit part of the lane. It never should have gone here.
   def update(lane: LaneImpl, t: Time, dt: Time): LaneImpl = {
-    val newVehicleOption: Option[PilotedVehicleImpl] = lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
+    val newVehicleOption: Option[PilotedVehicleImpl] =
+      lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
+
     val newVehicleList: List[PilotedVehicleImpl] =
       newVehicleOption match {
         // This could be tweaked so it's always reducing to MAX_VEHICLES_PER_LANE, rather than only dropping 1
@@ -142,9 +158,6 @@ object Lane extends LaneFunctions {
     }
   }
 
-  /*
-    TODO: Make this safe
-   */
   def attemptVehicleBeforeAndAfter(pilotedVehicleImpl: PilotedVehicleImpl, lane: LaneImpl): Option[(PilotedVehicleImpl, PilotedVehicleImpl)] = {
     for (
       before <- getVehicleBefore(pilotedVehicleImpl, lane);
@@ -153,7 +166,6 @@ object Lane extends LaneFunctions {
       (before, after)
     }
   }
-
 
   def getVehicleIndex(pilotedVehicleImpl: PilotedVehicleImpl, lane: LaneImpl): Option[Integer] = {
     val index: Int = lane.vehicles.indexWhere(_.equals(pilotedVehicleImpl))
@@ -184,9 +196,8 @@ object Lane extends LaneFunctions {
     *         getFractionalPoint(lane: LaneImpl): Spatial
     */
   def fractionCompleted(pilotedVehicleImpl: PilotedVehicleImpl, lane: LaneImpl): Double = {
-    val laneDistance = lane.beginning.distanceTo(lane.end)
-    val vehicleDistance: Distance = pilotedVehicleImpl.spatial.distanceTo(lane.end)
-    (1.0 - vehicleDistance / laneDistance)
+    val vehicleDistance: Distance = pilotedVehicleImpl.distanceTo(lane.end)
+    (1.0 - vehicleDistance / lane.length)
   }
 
   def moveToNeighboringLane(pilotedVehicleImpl: PilotedVehicleImpl, lane: LaneImpl, desiredLane: LaneImpl): LaneImpl = {

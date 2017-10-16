@@ -22,15 +22,13 @@ trait Spatial {
   def vectorTo(obstacle: Spatial): QuantityVector[Distance] = (obstacle.r - this.r)
   def vectorToMag(vectorTo: QuantityVector[Distance]): Distance = vectorTo.magnitude
   def distanceTo(obstacle: Spatial): Distance = {
-    val z= (vectorTo _) andThen (_.magnitude)
-    z.apply(obstacle)
+    (vectorTo _) andThen (_.magnitude) apply obstacle
   }
   def move(orientation: Orientation, distance: Distance): Spatial
 
   val x: Distance = r.coordinates.head
   val y: Distance = r.coordinates.tail.head
 }
-
 
 case class SpatialImpl (
                          r: QuantityVector[Distance],
@@ -44,7 +42,7 @@ case class SpatialImpl (
 
   def move(orientation: Orientation, distance: Distance) = {
 //    val displacement = orientation.vec.times(x:Double=>x*distance)
-    val displacement = orientation.vec.map{x:Double=> distance*x}
+    val displacement = orientation.vec.map{x:Double => distance * x}
     this.copy(r = r + displacement)
   }
 }
@@ -56,7 +54,9 @@ object Spatial {
   val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
   val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = convertToSVector(ZERO_DIMENSIONS)
 
-  def convertToSVector[T <: squants.Quantity[T]](input: (Double, Double, Double, UnitOfMeasure[T]) ): QuantityVector[T] = {
+  def convertToSVector[T <: squants.Quantity[T]](
+    input: (Double, Double, Double, UnitOfMeasure[T])
+  ): QuantityVector[T] = {
     val (x, y, z, measurementUnit) = input
     QuantityVector[T](measurementUnit(x), measurementUnit(y), measurementUnit(z))
   }
@@ -89,10 +89,9 @@ object Spatial {
 
     val accelerationAlongDirectionOfTravel: QuantityVector[Acceleration] =
       unitVec.map{ unitVecComponent => dV * unitVecComponent}
+
     val changeInVelocity: QuantityVector[Velocity] =
-      accelerationAlongDirectionOfTravel.map{
-        accelerationComponent: Acceleration =>accelerationComponent*dt
-      }
+      accelerationAlongDirectionOfTravel.map(_*dt)
 
     val newV: QuantityVector[Velocity] = spatial.v.plus(changeInVelocity)
     val newVNoReverse: QuantityVector[Velocity] =
@@ -101,74 +100,52 @@ object Spatial {
       else
         newV
 
-    val changeInPositionViaVelocity: QuantityVector[Length] = if (spatial.v.normalize.dotProduct(unitVec).value == -1 )
-      ZERO_DIMENSIONS_VECTOR
-    else
-      spatial.v.map{ v: Velocity => v * dt }
+    val changeInPositionViaVelocity: QuantityVector[Length] =
+      if (spatial.v.normalize.dotProduct(unitVec).value == -1 )
+        ZERO_DIMENSIONS_VECTOR
+      else
+        spatial.v.map{ v: Velocity => v * dt }
 
     val changeInPositionViaAcceleration: QuantityVector[Distance] =
       accelerationAlongDirectionOfTravel.map{ p: Acceleration => .5 * p * dt.squared}
+
     val newP = spatial.r + changeInPositionViaVelocity // + changeInPositionViaAcceleration
     SpatialImpl(newP, newVNoReverse, spatial.dimensions)
   }
 
   def apply(
-             pIn: (Double, Double, Double, DistanceUnit),
-             vIn: (Double, Double, Double, VelocityUnit),
-             dIn:((Double, Double, Double, LengthUnit))
-           ): SpatialImpl = {
+    pIn: (Double, Double, Double, DistanceUnit),
+    vIn: (Double, Double, Double, VelocityUnit),
+    dIn:((Double, Double, Double, LengthUnit))
+  ): SpatialImpl =
+    SpatialImpl(
+      convertToSVector(pIn),
+      convertToSVector(vIn),
+      convertToSVector(dIn)
+    )
 
-    val p: QuantityVector[Distance] = convertToSVector(pIn)
-    val v: QuantityVector[Velocity] = convertToSVector(vIn)
-    val d: QuantityVector[Length] = convertToSVector(dIn)
-    new SpatialImpl(p, v, d)
-
-  }
   def apply(
-             pIn: (Double, Double, Double, DistanceUnit),
-             vIn: (Double, Double, Double, VelocityUnit)
-           ): SpatialImpl = {
+    pIn: (Double, Double, Double, DistanceUnit),
+    vIn: (Double, Double, Double, VelocityUnit)
+  ): SpatialImpl = {
     apply(pIn, vIn, ZERO_DIMENSIONS)
   }
 
   def apply(
-             pIn: (Double, Double, Double, DistanceUnit)
-           ): SpatialImpl = {
+    pIn: (Double, Double, Double, DistanceUnit)
+  ): SpatialImpl = {
     apply(pIn, ZERO_VELOCITY, ZERO_DIMENSIONS)
   }
 
   val BLANK = Spatial.apply((0, 0, 0, Meters))
 
   def withVecs(
-           p: QuantityVector[Distance],
-            v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
-            d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
-           ): SpatialImpl = {
+    p: QuantityVector[Distance],
+    v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
+    d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
+  ): SpatialImpl =
+    SpatialImpl(p, v, d)
 
-    new SpatialImpl(p, v, d)
-  }
-
-//  def jsonDistance(distance: Distance) = {
-//    implicit val fooEncoder: Encoder[Distance] = deriveEncoder[Distance]
-//    fooEncoder.apply(distance)
-//  }
-
-//  import argonaut._, Argonaut._, ArgonautShapeless._
-
-  import play.api.libs.json._
-  import play.api.libs.functional.syntax._
-
-
-
-  def jsonRepresentation(spatial: SpatialImpl) = {
-    implicit val locationWrites = new Writes[Length] {
-      def writes(location: Length) = Json.obj(
-        "value" -> location.value,
-        "unit" -> location.unit.toString
-      )
-    }
-
-    }
 }
 
 /*

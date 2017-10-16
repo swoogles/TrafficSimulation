@@ -67,7 +67,7 @@ case class Model (
     sceneVar() = sceneVar.now.update(speedLimit)
 
   def pause: ModelTrait = this.copy(paused = Var(true))
-  def unpause: ModelTrait =   this.copy(paused = Var(false))
+  def unpause: ModelTrait = this.copy(paused = Var(false))
   def reset: ModelTrait = {
     sceneVar() = originalScene
     resetScene() = false
@@ -86,17 +86,15 @@ case class Model (
     if (this.disruptions.disruptLane.now == true) {
       this.disruptions .disruptLane() = false
       lane.addDisruptiveVehicle(car)
-    } else {
-      lane
-    }
+    } else
+        lane
 
   def disruptLaneExisting(lane: LaneImpl): LaneImpl =
     if (this.disruptions.disruptLaneExisting.now == true) {
       this.disruptions.disruptLaneExisting() = false
       lane.disruptVehicles()
-    } else {
-      lane
-    }
+    } else
+        lane
 
   def updateLane(lane: LaneImpl): LaneImpl = {
     val laneAfterDisruption = disruptLane(lane, this)
@@ -111,7 +109,7 @@ case class Model (
 
   def updateLanesAndScene() = {
     if (this.paused.now == false) {
-      val newScene = this.sceneVar.now.updateAllStreets(this.updateLane(_))
+      val newScene = this.sceneVar.now.updateAllStreets(this.updateLane)
       this.sceneVar() = newScene
       this.updateScene(this.sceneVar.now.speedLimit)
     }

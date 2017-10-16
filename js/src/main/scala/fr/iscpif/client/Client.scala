@@ -15,7 +15,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 import squants.space.Kilometers
 import squants.time.{Milliseconds, Seconds}
-import rx._
+import rx.{Rx, Var}
 
 import scaladget.tools.JsRxTags._
 import scalatags.JsDom.all._
