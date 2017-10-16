@@ -4,7 +4,7 @@ import squants.motion.{Acceleration, Distance, DistanceUnit, KilometersPerHour, 
 import com.billding.physics.{Spatial, SpatialForDefaults, SpatialImpl}
 import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
 import squants.space.LengthUnit
-import squants.{Time, Velocity}
+import squants.{QuantityVector, Time, Velocity}
 
 sealed trait PilotedVehicle {
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
@@ -14,6 +14,8 @@ sealed trait PilotedVehicle {
   def tooClose(pilotedVehicle: PilotedVehicle): Boolean
   val width: Distance
   val height: Distance
+  def stop(): PilotedVehicleImpl
+  def move(betterVec: QuantityVector[Distance]): PilotedVehicleImpl
 }
 
 object PilotedVehicle {
@@ -82,4 +84,17 @@ case class PilotedVehicleImpl(driver: DriverImpl, vehicle: VehicleImpl, destinat
 
   val width: Distance = vehicle.spatial.dimensions.coordinates(0)
   val height: Distance = vehicle.spatial.dimensions.coordinates(1)
+
+
+  def stop(): PilotedVehicleImpl = {
+    val newV = this.vehicle.spatial.copy(v = Spatial.ZERO_VELOCITY_VECTOR)
+    this.copy(vehicle = this.vehicle.copy(spatial = newV))
+  }
+
+  def move(betterVec: QuantityVector[Distance]): PilotedVehicleImpl = {
+    val newDriver = driver.move(betterVec)
+    val newVehicle = vehicle.move(betterVec)
+
+    copy(driver = newDriver, vehicle = newVehicle)
+  }
 }

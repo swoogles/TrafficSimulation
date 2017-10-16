@@ -9,6 +9,7 @@ sealed trait Vehicle {
   val weight: Mass
   val accelerationAbility: Acceleration
   val brakingAbility: Acceleration
+  def move(betterVec: QuantityVector[Distance]): VehicleImpl
 }
 
 case class VehicleImpl(
@@ -16,7 +17,13 @@ case class VehicleImpl(
                         accelerationAbility: Acceleration,
                         brakingAbility: Acceleration,
                         weight: Mass
-                      ) extends Vehicle
+                      ) extends Vehicle {
+  def move(betterVec: QuantityVector[Distance]): VehicleImpl = {
+    copy(spatial =
+      spatial.copy(r=betterVec)
+    )
+  }
+}
 
 object VehicleImpl {
 

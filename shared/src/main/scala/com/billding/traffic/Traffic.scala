@@ -25,7 +25,7 @@ trait Scene {
   def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl
   // TODO Include Map[Idx, Vehicle]
 
-  val allVehicles: List[PilotedVehicleImpl]
+  val allVehicles: List[PilotedVehicle]
 }
 
 case class SceneImpl(
@@ -44,7 +44,7 @@ case class SceneImpl(
     this.copy(streets=newStreets)
   }
 
-  val allVehicles: List[PilotedVehicleImpl] = streets.flatMap(
+  val allVehicles: List[PilotedVehicle] = streets.flatMap(
     _.lanes.flatMap(_.vehicles)
   )
 }

@@ -4,7 +4,7 @@ import com.billding.physics.{Spatial, SpatialImpl}
 import squants.motion.Distance
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
-import squants.{Time, Velocity}
+import squants.{QuantityVector, Time, Velocity}
 
 trait Driver {
   val spatial: SpatialImpl
@@ -13,6 +13,7 @@ trait Driver {
   val minimumDistance: Distance
   val desiredSpeed: Velocity
   val idm: IntelligentDriverModelImpl
+  def move(betterVec: QuantityVector[Distance]): DriverImpl
 }
 
 object Driver {
@@ -45,4 +46,12 @@ case class DriverImpl(
                      preferredDynamicSpacing: Time,
                      minimumDistance: Distance,
                      desiredSpeed: Velocity
-                   ) extends Driver
+                   ) extends Driver {
+
+  def move(betterVec: QuantityVector[Distance]): DriverImpl = {
+    copy(spatial =
+      spatial.copy(r=betterVec)
+    )
+  }
+
+}

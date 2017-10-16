@@ -141,8 +141,8 @@ object Spatial {
 
   def withVecs(
            p: QuantityVector[Distance],
-            v: QuantityVector[Velocity],
-            d: QuantityVector[Length]
+            v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
+            d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
            ): SpatialImpl = {
 
     new SpatialImpl(p, v, d)

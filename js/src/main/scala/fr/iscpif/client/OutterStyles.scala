@@ -1,19 +1,12 @@
 package fr.iscpif.client
 
+import scalacss.DevDefaults._
 import scalacss.internal.Macros.Color
 import scalacss.internal.mutable.StyleSheet
-
-
-import scalacss.ScalatagsCss._
 
 package object client {
   val CssSettings = scalacss.devOrProdDefaults
 }
-
-import fr.iscpif.client._
-
-import scalacss.DevDefaults._
-
 
 object OutterStyles {
 
