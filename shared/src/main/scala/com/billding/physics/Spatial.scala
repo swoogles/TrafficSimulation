@@ -12,19 +12,13 @@ trait Spatial {
   val r: QuantityVector[Distance]
   val v: QuantityVector[Velocity]
   val dimensions: QuantityVector[Distance]
-  def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] = {
-    (this.v - obstacle.v)
-  }
-  def relativeVelocityMag(obstacle: Spatial): Velocity = {
-    val z= (relativeVelocity _) andThen (_.magnitude)
-    z.apply(obstacle)
-  }
-  def vectorTo(obstacle: Spatial): QuantityVector[Distance] = (obstacle.r - this.r)
-  def vectorToMag(vectorTo: QuantityVector[Distance]): Distance = vectorTo.magnitude
-  def distanceTo(obstacle: Spatial): Distance = {
-    (vectorTo _) andThen (_.magnitude) apply obstacle
-  }
   def move(orientation: Orientation, distance: Distance): Spatial
+  def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity]
+  def relativeVelocityMag(obstacle: Spatial): Velocity
+  def vectorTo(obstacle: Spatial): QuantityVector[Distance]
+
+  def vectorToMag(vectorTo: QuantityVector[Distance]): Distance
+  def distanceTo(obstacle: Spatial): Distance
 
   val x: Distance = r.coordinates.head
   val y: Distance = r.coordinates.tail.head
@@ -40,8 +34,23 @@ case class SpatialImpl (
     assert(aspect.coordinates.length == numberOfDimensions)
   }
 
+  override def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] =
+    (this.v - obstacle.v)
+
+  override def relativeVelocityMag(obstacle: Spatial): Velocity = {
+    (relativeVelocity _) andThen (_.magnitude) apply obstacle
+  }
+
+  override def vectorTo(obstacle: Spatial): QuantityVector[Distance] =
+    (obstacle.r - this.r)
+
+  override def vectorToMag(vectorTo: QuantityVector[Distance]): Distance =
+    vectorTo.magnitude
+
+  override def distanceTo(obstacle: Spatial): Distance =
+    (vectorTo _) andThen (_.magnitude) apply obstacle
+
   def move(orientation: Orientation, distance: Distance) = {
-//    val displacement = orientation.vec.times(x:Double=>x*distance)
     val displacement = orientation.vec.map{x:Double => distance * x}
     this.copy(r = r + displacement)
   }
