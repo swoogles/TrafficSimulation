@@ -1,6 +1,8 @@
 package com.billding.traffic
 
 import com.billding.physics.{Spatial, SpatialImpl}
+import com.billding.serialization.BillSquants
+import play.api.libs.json.{Format, Json}
 import squants.motion.KilometersPerHour
 import squants.{Time, Velocity}
 
@@ -9,6 +11,10 @@ trait VehicleSource {
   val spacingInTime: Time
   val spatial: SpatialImpl // TODO This will include starting velocity. Might not belong here.
   val startingVelocitySpacial: SpatialImpl
+}
+
+object VehicleSource {
+  def withTimeSpacing(averageDt: Time): VehicleSource = ???
 }
 
 case class VehicleSourceImpl(
@@ -33,6 +39,8 @@ case class VehicleSourceImpl(
   }
 }
 
-object VehicleSource {
-  def withTimeSpacing(averageDt: Time): VehicleSource = ???
+object VehicleSourceImpl {
+  implicit val tf = BillSquants.time.format
+  implicit val vehicleSourceFormat: Format[VehicleSourceImpl] = Json.format[VehicleSourceImpl]
 }
+

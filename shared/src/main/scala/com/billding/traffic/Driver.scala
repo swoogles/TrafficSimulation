@@ -1,6 +1,8 @@
 package com.billding.traffic
 
 import com.billding.physics.{Spatial, SpatialImpl}
+import com.billding.serialization.BillSquants
+import play.api.libs.json.{Format, Json}
 import squants.motion.Distance
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
@@ -14,6 +16,7 @@ trait Driver {
   val desiredSpeed: Velocity
   val idm: IntelligentDriverModelImpl
   def move(betterVec: QuantityVector[Distance]): DriverImpl
+  def updateSpatial(spatial: SpatialImpl): DriverImpl
 }
 
 object Driver {
@@ -54,4 +57,13 @@ case class DriverImpl(
     )
   }
 
+  override def updateSpatial(spatial: SpatialImpl) = this.copy(spatial = spatial)
+
+}
+object DriverImpl {
+  implicit val df = BillSquants.distance.format
+  implicit val tf = BillSquants.time.format
+  implicit val vf = BillSquants.velocity.format
+
+  implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
 }

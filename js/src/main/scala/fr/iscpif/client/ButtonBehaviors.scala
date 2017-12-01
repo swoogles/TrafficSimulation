@@ -9,7 +9,7 @@ import rx.{Ctx, Obs, Var}
 import squants.motion.KilometersPerHour
 import squants.time.Seconds
 
-case class ButtonBehaviors(val model: Model)(implicit ctx: Ctx.Owner) {
+case class ButtonBehaviors(model: Model)(implicit ctx: Ctx.Owner) {
   val togglePause: (Event) => Unit = (e: dom.Event) => {
     val elementClicked =
       e.target.asInstanceOf[HTMLInputElement]

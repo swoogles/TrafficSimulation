@@ -1,6 +1,8 @@
 package com.billding.traffic
 
 import com.billding.physics.{Spatial, SpatialImpl}
+import com.billding.serialization.BillSquants
+import play.api.libs.json.{Format, Json}
 import squants.motion.{Acceleration, Distance, DistanceUnit, VelocityUnit}
 import squants.{Length, Mass, QuantityVector, Velocity}
 
@@ -10,6 +12,10 @@ sealed trait Vehicle {
   val accelerationAbility: Acceleration
   val brakingAbility: Acceleration
   def move(betterVec: QuantityVector[Distance]): VehicleImpl
+  def updateSpatial(spatial: SpatialImpl): VehicleImpl
+  val width: Distance
+  val height: Distance
+  def updateVelocity(newV: QuantityVector[Velocity]): VehicleImpl
 }
 
 case class VehicleImpl(
@@ -23,6 +29,16 @@ case class VehicleImpl(
       spatial.copy(r=betterVec)
     )
   }
+
+  val width: Distance = spatial.dimensions.coordinates(0)
+  val height: Distance = spatial.dimensions.coordinates(1)
+
+  override def updateSpatial(spatial: SpatialImpl) = this.copy(spatial = spatial)
+
+  def updateVelocity(newV: QuantityVector[Velocity]): VehicleImpl =
+    this.copy(spatial =
+      this.spatial.updateVelocity(newV)
+    )
 }
 
 object VehicleImpl {
@@ -45,6 +61,11 @@ object VehicleImpl {
     simpleCar(p, v)
   }
 
+
+  implicit val mf = BillSquants.mass.format
+  implicit val af = BillSquants.acceleration.format
+
+  implicit val vehicleFormat: Format[VehicleImpl] = Json.format[VehicleImpl]
 }
 
 

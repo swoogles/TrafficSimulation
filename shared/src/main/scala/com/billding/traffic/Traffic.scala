@@ -1,6 +1,8 @@
 package com.billding.traffic
 
 import cats.data.{NonEmptyList, Validated}
+import com.billding.serialization.BillSquants
+import play.api.libs.json.{Format, Json}
 import squants.motion._
 import squants.{Length, Time, Velocity}
 
@@ -46,6 +48,14 @@ case class SceneImpl(
   val allVehicles: List[PilotedVehicle] = streets.flatMap(
     _.lanes.flatMap(_.vehicles)
   )
+}
+
+object SceneImpl {
+  implicit val df = BillSquants.distance.format
+  implicit val tf = BillSquants.time.format
+  implicit val vf = BillSquants.velocity.format
+
+  implicit val sceneFormats: Format[SceneImpl] = Json.format[SceneImpl]
 }
 
 

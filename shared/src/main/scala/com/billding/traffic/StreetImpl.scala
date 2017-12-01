@@ -1,6 +1,8 @@
 package com.billding.traffic
 
-import com.billding.physics.{SpatialImpl}
+import com.billding.physics.SpatialImpl
+import com.billding.serialization.BillSquants
+import play.api.libs.json.{Format, Json}
 import shared.Orientation
 import squants.{Time, Velocity}
 import squants.space.Meters
@@ -9,6 +11,11 @@ case class StreetImpl(lanes: List[LaneImpl], beginning: SpatialImpl, end: Spatia
 
   def updateLanes(f: LaneImpl => LaneImpl) =
     copy(lanes = lanes map f)
+}
+
+object StreetImpl {
+  implicit val tf = BillSquants.time.format
+  implicit val streetFormat: Format[StreetImpl] = Json.format[StreetImpl]
 }
 
 object Street {

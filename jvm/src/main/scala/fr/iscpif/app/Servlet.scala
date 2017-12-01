@@ -47,10 +47,6 @@ object ExternalResources {
     bootstrapMin,
     bttn
   )
-  val blah = allResources
-  //  "css/bootstrap.min.css.map"
-  //  "css/bootstrap.css.map"
-  //}
 
   val mkStyleSheet =
     (ref: String) => tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := ref)
@@ -70,9 +66,6 @@ class Servlet extends ScalatraServlet {
 
   val currentDirectory = new java.io.File(".").getCanonicalPath
 
-//  new java.io.File("./server/target/webapp/js/client-opt.js").getCanonicalPath
-//  Paths.get("./server/target/webapp/js/client-opt.js")
-
   val jsFolder = "./jvm/target/webapp/js/"
   val clientJsFull = "foo-opt.js"
   val clientJsFast = "foo-fastopt.js"
@@ -81,17 +74,15 @@ class Servlet extends ScalatraServlet {
   val fastDev = Files.exists(Paths.get(jsFolder + clientJsFast))
   val clientJs = if (fastDev) clientJsFast else clientJsFull
   val jsDeps = if (fastDev) jsDepsFast else jsDepsFull
-  println("opt.js exists: " + Files.exists(Paths.get("./jvm/target/webapp/js/foo-opt.js")))
 
-  println("fastopt.js exists: " + Files.exists(Paths.get("./jvm/target/webapp/js/foo-fastopt.js")))
+  println("opt.js exists: " + Files.exists(Paths.get(jsFolder + "foo-opt.js")))
+  println("fastopt.js exists: " + Files.exists(Paths.get(jsFolder + "foo-fastopt.js")))
 
   val basePath = "shared"
 
   get("/") {
     contentType = "text/html"
-
     tags.html(
-
       tags.head(
         ExternalResources.localResources,
 //        ExternalResources.externalResources,
@@ -99,30 +90,7 @@ class Servlet extends ScalatraServlet {
         tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/styleWUI.css"),
 
         tags.script(tags.`type` := "text/javascript", tags.src := "js/" + clientJs),
-//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-jsdeps.min.js"),
-
-        // TODO Get this working for MUCH quicker edit/refresh cycles
-//        tags.script(tags.`type` := "text/javascript", tags.src := "js/client-fastopt.js"),
-          tags.script(tags.`type` := "text/javascript", tags.src := "js/" + jsDeps)
-
-        /*
-        <!-- Latest compiled and minified CSS -->
-<link rel="stylesheet"
-href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-crossorigin="anonymous">
-
-<!-- Optional theme -->
-<link rel="stylesheet"
-href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
-integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
-crossorigin="anonymous">
-
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-crossorigin="anonymous"></script>
-         */
+        tags.script(tags.`type` := "text/javascript", tags.src := "js/" + jsDeps)
       ),
       tags.body(tags.onload := "Client.run();")
     )
@@ -132,25 +100,12 @@ crossorigin="anonymous"></script>
 
     val oos = new ObjectOutputStream(new FileOutputStream("/tmp/nflx"))
     oos.writeObject(request.body)
-    oos.close
-
-    val ois = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
-    val newString = ois.readObject.asInstanceOf[String]
-    println("newString: "+ newString)
-
-    newString
-
+    oos.close()
   }
 
   get("/loadScene") {
     val ois = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
     val newString = ois.readObject.asInstanceOf[String]
-    newString
-    import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
-    val res: JsResult[SceneImpl] = Json.fromJson(
-      Json.parse(newString)
-    )
-    pprint.pprintln(res)
     Json.parse(newString)
   }
   post(s"/$basePath/*") {

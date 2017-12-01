@@ -30,7 +30,10 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
     val child =
       svgTags.svg(
         width := canvasWidth,
-        height := canvasHeight
+        height := canvasHeight,
+//        onclick := { (e: dom.MouseEvent) =>
+//          println(e)
+//        }
       ).render
     dom.document.body.appendChild(child.render)
     child
@@ -80,7 +83,10 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
           svgTags.image(
             href := "images/sedan.svg",
             width := renderedWidth.px,
-            height := renderedHeight.px
+            height := renderedHeight.px,
+              onclick := { (e: dom.MouseEvent) =>
+              println(vehicle.uuid)
+            }
           )
         )
       }

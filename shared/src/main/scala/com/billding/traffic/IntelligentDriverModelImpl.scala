@@ -1,5 +1,7 @@
 package com.billding.traffic
 
+import com.billding.serialization.BillSquants
+import play.api.libs.json.{Format, Json}
 import squants.Time
 import squants.motion.{Acceleration, Distance, Velocity}
 import squants.space.Meters
@@ -70,4 +72,15 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends Intell
     Meters(s0.toMeters + max(0.0, desiredDistance)) // This prevents reversing.
   }
 
+}
+
+object IntelligentDriverModelImpl {
+  implicit val df = BillSquants.distance.format
+  implicit val dQvf = BillSquants.distance.formatQv
+  implicit val tf = BillSquants.time.format
+  implicit val af = BillSquants.acceleration.format
+  implicit val vf = BillSquants.velocity.format
+  implicit val vQvf = BillSquants.velocity.formatQv
+
+  implicit val idmFormat: Format[IntelligentDriverModelImpl] = Json.format[IntelligentDriverModelImpl]
 }

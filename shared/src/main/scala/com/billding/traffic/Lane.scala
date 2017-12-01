@@ -2,7 +2,9 @@ package com.billding.traffic
 
 import cats.data.NonEmptyList
 import com.billding.physics.{Spatial, SpatialImpl}
+import com.billding.serialization.BillSquants
 import com.billding.{traffic, _}
+import play.api.libs.json.{Format, Json}
 import squants.motion._
 import squants.space.Meters
 import squants.time.Seconds
@@ -26,7 +28,13 @@ trait Lane {
   val length = beginning.distanceTo(end)
 }
 
-case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSourceImpl, beginning: SpatialImpl, end: SpatialImpl, speedLimit: Velocity) extends Lane {
+case class LaneImpl(
+  vehicles: List[PilotedVehicleImpl],
+  vehicleSource: VehicleSourceImpl,
+  beginning: SpatialImpl,
+  end: SpatialImpl,
+  speedLimit: Velocity
+) extends Lane {
 
   val infinityPointForward: QuantityVector[Distance] =
     beginning.vectorTo(end).normalize.map( _ * 10000)
@@ -59,7 +67,7 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
     val newPilotedVehicle = pilotedVehicle.move(betterVec)
     val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
     val vehicleList: List[PilotedVehicleImpl] =
-      (pastVehicles :+ newPilotedVehicle.copy(destination = end) ) ::: approachingVehicles
+      (pastVehicles :+ newPilotedVehicle.target(end) ) ::: approachingVehicles
     this.copy(vehicles = vehicleList )
   }
 
@@ -89,6 +97,11 @@ case class LaneImpl(vehicles: List[PilotedVehicleImpl], vehicleSource: VehicleSo
     this.copy(vehicles = vehicleList)
   }
 
+}
+
+object LaneImpl {
+  private implicit val vf: Format[Velocity] = BillSquants.velocity.format
+  implicit val laneFormat: Format[LaneImpl] = Json.format[LaneImpl]
 }
 
 object Lane extends LaneFunctions {

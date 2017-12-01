@@ -1,7 +1,9 @@
 package com.billding.physics
 
 import breeze.linalg.DenseVector
+import com.billding.serialization.BillSquants
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
+import play.api.libs.json.{Format, Json}
 import shared.Orientation
 import squants.motion._
 import squants.space.{LengthUnit, Meters}
@@ -22,6 +24,8 @@ trait Spatial {
 
   val x: Distance = r.coordinates.head
   val y: Distance = r.coordinates.tail.head
+
+  def updateVelocity(newV: QuantityVector[Velocity]): SpatialImpl
 }
 
 case class SpatialImpl (
@@ -54,6 +58,9 @@ case class SpatialImpl (
     val displacement = orientation.vec.map{x:Double => distance * x}
     this.copy(r = r + displacement)
   }
+
+  def updateVelocity(newV: QuantityVector[Velocity]): SpatialImpl =
+    this.copy(v = newV)
 }
 
 object Spatial {
@@ -155,6 +162,9 @@ object Spatial {
   ): SpatialImpl =
     SpatialImpl(p, v, d)
 
+  implicit val dQvf = BillSquants.distance.formatQv
+  implicit val vQvf = BillSquants.velocity.formatQv
+  implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
 }
 
 /*

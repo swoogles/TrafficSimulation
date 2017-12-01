@@ -1,9 +1,9 @@
 package fr.iscpif.client
 
+import com.billding.traffic.SceneImpl
 import fr.iscpif.client.uimodules.Model
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
-import rx._
 import org.scalajs.dom.ext.Ajax
 import play.api.libs.json.Json
 
@@ -18,10 +18,8 @@ package object serialization {
       val f = Ajax.get("http://localhost:8080/loadScene")
       f.onComplete {
         case Success(xhr) => {
-          import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
-          val res = Json.fromJson(
-            Json.parse(xhr.responseText)
-          ).get
+          val res =
+            Json.parse(xhr.responseText).as[SceneImpl] // Might want to use safer .asOpt
           model.sceneVar() = res
           model.paused() = true
         }
@@ -36,7 +34,6 @@ package object serialization {
   def serializeIfNecessary(model: Model): Unit = {
     if (model.serializeScene.now == true) {
       model.savedScene() = model.sceneVar.now
-      import com.billding.serialization.TrafficJson.defaultSerialization.sceneFormats
 
       val f = Ajax.post("http://localhost:8080/writeScene", data = Json.toJson(model.sceneVar.now).toString)
       f.onComplete {
