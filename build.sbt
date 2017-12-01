@@ -105,7 +105,9 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
       "org.scalatra" %% "scalatra" % scalatraVersion,
       "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided",
       "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
-      "org.eclipse.jetty" % "jetty-server" % jettyVersion
+      "org.eclipse.jetty" % "jetty-server" % jettyVersion,
+      "com.github.pathikrit" %% "better-files" % "3.3.1"
+
     )
   ).
   jsSettings(

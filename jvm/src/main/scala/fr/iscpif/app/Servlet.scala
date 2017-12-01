@@ -1,20 +1,13 @@
 package fr.iscpif.app
 
-import java.io.{FileInputStream, FileOutputStream, ObjectInputStream, ObjectOutputStream}
-
 import org.scalatra._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import upickle.default
-import autowire._
-import com.billding.traffic.SceneImpl
-import play.api.libs.json.{JsObject, JsResult, Json}
-import shared._
-import upickle._
+import better.files.File
+import play.api.libs.json.Json
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.Await
-import scalatags.Text
 import scalatags.Text.all._
 import scalatags.Text.{all => tags}
 
@@ -62,8 +55,6 @@ object ExternalResources {
 }
 
 class Servlet extends ScalatraServlet {
-  import java.nio.file.{Paths, Files}
-
   val currentDirectory = new java.io.File(".").getCanonicalPath
 
   val jsFolder = "./jvm/target/webapp/js/"
@@ -71,12 +62,12 @@ class Servlet extends ScalatraServlet {
   val clientJsFast = "foo-fastopt.js"
   val jsDepsFull = "foo-jsdeps.min.js"
   val jsDepsFast = "foo-jsdeps.js"
-  val fastDev = Files.exists(Paths.get(jsFolder + clientJsFast))
+  val fastDev = File(jsFolder + clientJsFast).exists
   val clientJs = if (fastDev) clientJsFast else clientJsFull
   val jsDeps = if (fastDev) jsDepsFast else jsDepsFull
 
-  println("opt.js exists: " + Files.exists(Paths.get(jsFolder + "foo-opt.js")))
-  println("fastopt.js exists: " + Files.exists(Paths.get(jsFolder + "foo-fastopt.js")))
+  println("opt.js exists: " + File(jsFolder + "foo-opt.js").exists)
+  println("fastopt.js exists: " + File(jsFolder + "foo-fastopt.js").exists)
 
   val basePath = "shared"
 
@@ -96,18 +87,16 @@ class Servlet extends ScalatraServlet {
     )
   }
 
+  val file = File("/tmp/nflx")
   post("/writeScene") {
-
-    val oos = new ObjectOutputStream(new FileOutputStream("/tmp/nflx"))
-    oos.writeObject(request.body)
-    oos.close()
+    file.path
+    file.write(request.body)
   }
 
   get("/loadScene") {
-    val ois = new ObjectInputStream(new FileInputStream("/tmp/nflx"))
-    val newString = ois.readObject.asInstanceOf[String]
-    Json.parse(newString)
+    Json.parse(file.contentAsString)
   }
+
   post(s"/$basePath/*") {
     Await.result(AutowireServer.route[shared.Api](ApiImpl)(
       autowire.Core.Request(Seq(basePath) ++ multiParams("splat").head.split("/"),
