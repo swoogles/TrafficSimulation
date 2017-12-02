@@ -2,20 +2,9 @@ package com.billding.traffic
 
 import cats.data.NonEmptyList
 import com.billding.physics.{Spatial, SpatialImpl}
-import com.billding.serialization.BillSquants
-import com.billding.{traffic, _}
-import play.api.libs.json.{Format, Json}
 import squants.motion._
-import squants.space.Meters
-import squants.time.Seconds
 import squants.{QuantityVector, Time, Velocity}
 
-trait Segment {
-  /*
-    Figure out where this belongs in the Road/Lane/Scene interplay.
-    I will need to consider arc lengths.
-   */
-}
 trait Lane {
   val vehicles: List[PilotedVehicleImpl]
   val vehicleSource: VehicleSource
@@ -28,83 +17,9 @@ trait Lane {
   val length = beginning.distanceTo(end)
 }
 
-case class LaneImpl(
-  vehicles: List[PilotedVehicleImpl],
-  vehicleSource: VehicleSourceImpl,
-  beginning: SpatialImpl,
-  end: SpatialImpl,
-  speedLimit: Velocity
-) extends Lane {
-
-  val infinityPointForward: QuantityVector[Distance] =
-    beginning.vectorTo(end).normalize.map( _ * 10000)
-  val infinityPointBackwards: QuantityVector[Distance] =
-    beginning.vectorTo(end).normalize.map( _ * -10000)
-
-  val vehicleAtInfinityForward: PilotedVehicleImpl = {
-    val spatial =  Spatial.withVecs(infinityPointForward)
-    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
-  }
-  val vehicleAtInfinityBackwards: PilotedVehicleImpl = {
-    val spatial =  Spatial.withVecs(infinityPointBackwards)
-    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
-  }
-  override val infinitySpatial: SpatialImpl = vehicleAtInfinityForward.spatial
-
-  /*
-    Look at reusing this for finding leading/following cars in neighboring lane.
-   */
-  def addDisruptiveVehicle(pilotedVehicle: PilotedVehicleImpl): LaneImpl = {
-    val disruptionPoint: QuantityVector[Distance] = end.vectorTo(beginning).times(.25)
-
-    val betterVec: QuantityVector[Distance] =
-      disruptionPoint.plus(end.r)
-
-    val isPastDisruption =
-      (v: PilotedVehicle) =>
-        v.spatial.vectorTo(end).magnitude < disruptionPoint.magnitude
-
-    val newPilotedVehicle = pilotedVehicle.move(betterVec)
-    val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
-    val vehicleList: List[PilotedVehicleImpl] =
-      (pastVehicles :+ newPilotedVehicle.target(end) ) ::: approachingVehicles
-    this.copy(vehicles = vehicleList )
-  }
-
-  /**
-    * TODO: Also check lane start/end points OR that fraction is between 0 and 1. I think Option B.
-    */
-  def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean = {
-    val disruptionPoint: QuantityVector[Distance] =
-      beginning.vectorTo(end).times(fractionCompleted)
-
-    val vehicleInLane = pilotedVehicle.move(disruptionPoint)
-    // TODO Use actual vehicle sizes instead of set meters distance
-    val interferes: Boolean =
-      this.vehicles.exists(
-        curVehicle => curVehicle.distanceTo(vehicleInLane) < Meters(3)
-      )
-
-    ! interferes
-  }
-
-  def disruptVehicles(): LaneImpl = {
-    val (pastVehicles, approachingVehicles) = this.vehicles.splitAt(this.vehicles.length-5)
-
-    val ( disruptedVehicle :: restOfApproachingVehicles) = approachingVehicles
-    val vehicleList: List[PilotedVehicleImpl] =
-      (pastVehicles :+ disruptedVehicle.stop() ) ::: restOfApproachingVehicles
-    this.copy(vehicles = vehicleList)
-  }
-
-}
-
-object LaneImpl {
-  private implicit val vf: Format[Velocity] = BillSquants.velocity.format
-  implicit val laneFormat: Format[LaneImpl] = Json.format[LaneImpl]
-}
-
 object Lane extends LaneFunctions {
+
+  val MAX_VEHICLES_PER_LANE = 60
 
   def apply(
     sourceTiming: Time,
@@ -138,9 +53,6 @@ object Lane extends LaneFunctions {
     }
   }
 
-  val MAX_VEHICLES_PER_LANE = 60
-
-  // TODO Make speedLimit part of the lane. It never should have gone here.
   def update(lane: LaneImpl, t: Time, dt: Time): LaneImpl = {
     val newVehicleOption: Option[PilotedVehicleImpl] =
       lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
@@ -221,3 +133,85 @@ object Lane extends LaneFunctions {
   }
 }
 
+import com.billding.physics.{Spatial, SpatialImpl}
+import com.billding.serialization.BillSquants
+import play.api.libs.json.{Format, Json}
+import squants.motion.Distance
+import squants.space.Meters
+import squants.{QuantityVector, Velocity}
+
+case class LaneImpl(
+  vehicles: List[PilotedVehicleImpl],
+  vehicleSource: VehicleSourceImpl,
+  beginning: SpatialImpl,
+  end: SpatialImpl,
+  speedLimit: Velocity
+) extends Lane {
+
+  val infinityPointForward: QuantityVector[Distance] =
+    beginning.vectorTo(end).normalize.map( _ * 10000)
+  val infinityPointBackwards: QuantityVector[Distance] =
+    beginning.vectorTo(end).normalize.map( _ * -10000)
+
+  val vehicleAtInfinityForward: PilotedVehicleImpl = {
+    val spatial =  Spatial.withVecs(infinityPointForward)
+    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
+  }
+  val vehicleAtInfinityBackwards: PilotedVehicleImpl = {
+    val spatial =  Spatial.withVecs(infinityPointBackwards)
+    PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
+  }
+  override val infinitySpatial: SpatialImpl = vehicleAtInfinityForward.spatial
+
+  /*
+    Look at reusing this for finding leading/following cars in neighboring lane.
+   */
+  def addDisruptiveVehicle(pilotedVehicle: PilotedVehicleImpl): LaneImpl = {
+    val disruptionPoint: QuantityVector[Distance] = end.vectorTo(beginning).times(.25)
+
+    val betterVec: QuantityVector[Distance] =
+      disruptionPoint.plus(end.r)
+
+    val isPastDisruption =
+      (v: PilotedVehicle) =>
+        v.spatial.vectorTo(end).magnitude < disruptionPoint.magnitude
+
+    val newPilotedVehicle = pilotedVehicle.move(betterVec)
+    val (pastVehicles, approachingVehicles) = this.vehicles.partition(isPastDisruption)
+    val vehicleList: List[PilotedVehicleImpl] =
+      (pastVehicles :+ newPilotedVehicle.target(end) ) ::: approachingVehicles
+    this.copy(vehicles = vehicleList )
+  }
+
+  /**
+    * TODO: Also check lane start/end points OR that fraction is between 0 and 1. I think Option B.
+    */
+  def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean = {
+    val disruptionPoint: QuantityVector[Distance] =
+      beginning.vectorTo(end).times(fractionCompleted)
+
+    val vehicleInLane = pilotedVehicle.move(disruptionPoint)
+    // TODO Use actual vehicle sizes instead of set meters distance
+    val interferes: Boolean =
+      this.vehicles.exists(
+        curVehicle => curVehicle.distanceTo(vehicleInLane) < Meters(3)
+      )
+
+    ! interferes
+  }
+
+  def disruptVehicles(): LaneImpl = {
+    val (pastVehicles, approachingVehicles) = this.vehicles.splitAt(this.vehicles.length-5)
+
+    val ( disruptedVehicle :: restOfApproachingVehicles) = approachingVehicles
+    val vehicleList: List[PilotedVehicleImpl] =
+      (pastVehicles :+ disruptedVehicle.stop() ) ::: restOfApproachingVehicles
+    this.copy(vehicles = vehicleList)
+  }
+
+}
+
+object LaneImpl {
+  private implicit val vf: Format[Velocity] = BillSquants.velocity.format
+  implicit val laneFormat: Format[LaneImpl] = Json.format[LaneImpl]
+}

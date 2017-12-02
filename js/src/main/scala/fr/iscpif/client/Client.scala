@@ -1,6 +1,5 @@
 package fr.iscpif.client
 
-
 import com.billding.physics.Spatial
 import com.billding.traffic._
 import fr.iscpif.client.uimodules.Model
@@ -8,11 +7,9 @@ import org.scalajs.dom
 import org.scalajs.dom.Element
 import squants.motion.{KilometersPerHour, Velocity}
 
-import scala.concurrent.Future
 import squants.Length
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 import squants.space.Kilometers
 import squants.time.{Milliseconds, Seconds}
 import rx.{Rx, Var}
@@ -66,21 +63,4 @@ object Client {
     }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
   }
 
-}
-
-object Post extends autowire.Client[String, upickle.default.Reader, upickle.default.Writer] {
-
-  override def doCall(req: Request): Future[String] = {
-    val url = req.path.mkString("/")
-    dom.ext.Ajax.post(
-      url = "http://localhost:8080/" + url,
-      data = upickle.default.write(req.args)
-    ).map {
-      _.responseText
-    }
-  }
-
-  def read[Result: upickle.default.Reader](p: String): Result = upickle.default.read[Result](p)
-
-  def write[Result: upickle.default.Writer](r: Result): String = upickle.default.write(r)
 }

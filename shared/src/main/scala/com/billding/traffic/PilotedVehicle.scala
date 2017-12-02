@@ -5,7 +5,6 @@ import java.util.UUID
 import squants.motion.{Acceleration, Distance, DistanceUnit, KilometersPerHour, VelocityUnit}
 import com.billding.physics.{Spatial, SpatialForDefaults, SpatialImpl}
 import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
-import com.billding.serialization.BillSquants
 import play.api.libs.json.{Format, Json}
 import squants.space.LengthUnit
 import squants.{QuantityVector, Time, Velocity}
