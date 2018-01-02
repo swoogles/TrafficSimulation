@@ -5,10 +5,8 @@ val Version = "0.1.0-SNAPSHOT"
 val ScalaVersion = "2.12.4"
 val scalatraVersion = "2.6.2"
 val jettyVersion = "9.4.8.v20171121"
-val json4sVersion = "3.6.0-M2"
 val scalatagsVersion = "0.6.7"
 val autowireVersion = "0.2.6"
-val upickleVersion = "0.4.4"
 val rxVersion = "0.3.2"
 val scaladgetVersion = "0.9.5"
 val scalajsDomVersion = "0.9.4"
@@ -83,12 +81,9 @@ lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).
 
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "autowire" % autowireVersion,
-      // Remove upickle after done upgrading other libs.
-      "com.lihaoyi" %%% "upickle" % upickleVersion,
       "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
       "com.lihaoyi" %%% "scalarx" % rxVersion,
       "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
-      "org.json4s" %% "json4s-jackson" % json4sVersion,
       "org.scalanlp" %% "breeze" % breezeVersion,
       "com.github.japgolly.scalacss" %%% "core" % scalaCssVersion,
       "com.github.japgolly.scalacss" %%% "ext-scalatags" % scalaCssVersion,
