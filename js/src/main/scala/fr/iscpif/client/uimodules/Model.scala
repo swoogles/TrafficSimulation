@@ -2,11 +2,12 @@ package fr.iscpif.client.uimodules
 
 import com.billding.physics.Spatial
 import com.billding.traffic.{IntelligentDriverModelImpl, LaneImpl, PilotedVehicle, PilotedVehicleImpl, Scene, SceneImpl, StreetImpl}
-import fr.iscpif.client.serialization
 import rx.{Ctx, Rx, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
 import squants.time.Seconds
+
+import fr.iscpif.client.SerializationFeatures
 
 trait Serialization {
   val serializeScene: Var[Boolean] = Var(false)
@@ -38,6 +39,7 @@ trait ModelTrait {
  */
 case class Model (
   originalScene: SceneImpl,
+  serializationFeatures: SerializationFeatures,
   // These should probably be gleaned from the scene itself.
   speed: Var[Velocity] = Var(KilometersPerHour(50)),
   carTiming: Var[Time] = Var(Seconds(3)),
@@ -119,7 +121,7 @@ case class Model (
   def respondToAllInput() = {
     this.resetIfNecessary
     this.updateLanesAndScene()
-    serialization.serializeIfNecessary(this)
-    serialization.deserializeIfNecessary(this)
+    serializationFeatures.serializeIfNecessary(this)
+    serializationFeatures.deserializeIfNecessary(this)
   }
 }

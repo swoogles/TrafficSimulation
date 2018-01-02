@@ -48,7 +48,13 @@ object Client extends App {
     speedLimit,
     canvasDimensions
   )
-  val model: Model = Model(originalScene)
+  // TODO create serialization here
+  val model: Model =
+    Model(
+      originalScene,
+      SerializationFeatures("localhost", 8080, "http")
+    )
+
   val buttonBehaviors = ButtonBehaviors(model)
   val controlElements = ControlElements(buttonBehaviors)
 

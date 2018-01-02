@@ -18,7 +18,6 @@ case class ButtonBehaviors(model: Model)(implicit ctx: Ctx.Owner) {
     model.pauseText.trigger(elementClicked.value = model.pauseText.now)
   }
 
-
   // TODO make mousewheel behavior
   private val onMouseWheelUp: (WheelEvent) => Unit =
     (e) => println("mouse event! we should zoom in/out now!")
