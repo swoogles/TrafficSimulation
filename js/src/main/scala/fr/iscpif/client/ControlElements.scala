@@ -1,32 +1,19 @@
 package fr.iscpif.client
 
-import scalatags.JsDom.all.{cls, div, id, input, max, min, onclick, oninput, step, tpe, value}
-import org.scalajs.dom.Event
+import scalatags.JsDom.all.{cls, div, id, input, max, min, oninput, step, tpe, value}
 import org.scalajs.dom.html.{Div, Input}
+import org.scalajs.dom.raw.HTMLDivElement
 import scalatags.JsDom.all._
 
 import scaladget.tools.JsRxTags._
 
+import OutterStyles.TrafficStyles.standardButton
+import OutterStyles.normalButton
+import OutterStyles.dangerButton
+
 case class ControlElements(buttonBehaviors: ButtonBehaviors) {
-  val buttonBaseClasses = "bttn-simple bttn-md lightly-padded"
 
-  val buttonStyleClasses = buttonBaseClasses + " bttn-primary"
-  val dangerButtonClasses = buttonBaseClasses + " bttn-danger"
-
-  def buttonBill(styleClasses: String): (String, (Event) => Unit ) => Input =
-    (content, behavior) =>
-      input(
-        tpe := "button",
-        cls := styleClasses,
-        value := content,
-        onclick := behavior
-      ).render
-
-  val normalButton = buttonBill(buttonStyleClasses)
-  val dangerButton = buttonBill(dangerButtonClasses)
-
-  val buttons: Div = {
-
+  val buttons: Div =
     div(
       cls := "col-md-6 text-center"
     )(
@@ -37,9 +24,8 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
       dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
       dangerButton("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting)
     ).render
-  }
 
-  val sliders = {
+  val sliders =
     div(
       cls := "col-md-6 text-center"
     )(
@@ -66,20 +52,17 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         oninput := buttonBehaviors.speedSliderUpdate
       )
     )
-  }
 
-  def createLayout() = {
+  def createLayout(): HTMLDivElement = {
     val buttonPanel = div(
       id := "button-panel",
       cls := "row"
     )(buttons)
 
-
     val sliderPanel = div(
       id := "slider-panel",
       cls := "row"
     )(sliders)
-
 
     div(
       cls := "container"
