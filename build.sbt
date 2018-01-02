@@ -24,10 +24,6 @@ val squantsVersion = "1.3.0"
 val servletApiVersion = "4.0.0"
 
 import java.io.File
-import org.scalatra.sbt.ScalatraPlugin
-
-/*import sbtcrossproject.{crossProject, CrossType}*/
-
 
 val Resolvers = Seq(
   Resolver.sonatypeRepo("snapshots"),
@@ -65,7 +61,7 @@ def recursiveCopy(from: File, to: File): Unit = {
 }
 
 lazy val root = project.in(file(".")).
-  aggregate(fooJS, trafficJVM).
+  aggregate(trafficJS, trafficJVM).
   settings(
     publish := {},
     publishLocal := {}
@@ -115,7 +111,6 @@ lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).
       "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
       "org.eclipse.jetty" % "jetty-server" % jettyVersion,
       "com.github.pathikrit" %% "better-files" % betterFilesVersion
-
     )
   ).
   jsSettings(
@@ -124,20 +119,20 @@ lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).
   )
 
 lazy val trafficJVM = traffic.jvm enablePlugins (JettyPlugin)
-lazy val fooJS = traffic.js enablePlugins (ScalaJSPlugin)
+lazy val trafficJS = traffic.js enablePlugins (ScalaJSPlugin)
 
 lazy val bootstrap = project.in(file("target/bootstrap")) settings(
   version := Version,
   scalaVersion := ScalaVersion,
   go := {
-    /*val clientTarget = (fullOptJS in fooJS in Compile).value*/
-    val clientTarget = (fastOptJS in fooJS in Compile).value
-    val clientResource = (resourceDirectory in fooJS in Compile).value
+    /*val clientTarget = (fullOptJS in trafficJS in Compile).value*/
+    val clientTarget = (fastOptJS in trafficJS in Compile).value
+    val clientResource = (resourceDirectory in trafficJS in Compile).value
     val serverTarget = (target in trafficJVM in Compile).value
 
     copy(clientTarget, clientResource, new File(serverTarget, "webapp"))
   }
-) dependsOn(fooJS, trafficJVM)
+) dependsOn(trafficJS, trafficJVM)
 
 
 lazy val go = taskKey[Unit]("go")
