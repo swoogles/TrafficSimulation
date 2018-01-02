@@ -76,13 +76,16 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
       "com.lihaoyi" %%% "upickle" % upickleVersion,
       "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
       "com.lihaoyi" %%% "scalarx" % rxVersion,
-      "com.timushev" %%% "scalatags-rx" % "0.3.0",
-      "org.scala-js" %%% "scalajs-dom" % scalajsDomVersion,
+      /*"com.timushev" %%% "scalatags-rx" % "0.3.0",*/
+      /*"org.scala-js" %%% "scalajs-dom" % scalajsDomVersion,*/
+      "com.timushev" % "scalatags-rx_sjs0.6_2.12" % "0.3.0",
+      "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
       "org.json4s" %% "json4s-jackson" % json4sVersion,
       "org.scalanlp" %% "breeze" % "0.13.1",
       "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
       "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
-      "fr.iscpif" %%% "scaladget" % scaladgetVersion,
+      /*"fr.iscpif" %%% "scaladget" % scaladgetVersion,*/
+      "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
 
       // Native libraries are not included by default. add this if you want them (as of 0.7)
       // Native libraries greatly improve performance, but increase jar sizes.
