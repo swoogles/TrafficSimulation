@@ -57,15 +57,15 @@ def recursiveCopy(from: File, to: File): Unit = {
 }
 
 lazy val root = project.in(file(".")).
-  aggregate(fooJS, fooJVM).
+  aggregate(fooJS, trafficJVM).
   settings(
     publish := {},
     publishLocal := {}
   ) enablePlugins (JettyPlugin)
 
-lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file(".")).
+lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(
-    name := "foo",
+    name := "traffic",
     scalaVersion := ScalaVersion,
     resolvers ++= Resolvers,
     version := "0.1-SNAPSHOT",
@@ -76,15 +76,11 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
       "com.lihaoyi" %%% "upickle" % upickleVersion,
       "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
       "com.lihaoyi" %%% "scalarx" % rxVersion,
-      /*"com.timushev" %%% "scalatags-rx" % "0.3.0",*/
-      /*"org.scala-js" %%% "scalajs-dom" % scalajsDomVersion,*/
-      "com.timushev" % "scalatags-rx_sjs0.6_2.12" % "0.3.0",
       "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
       "org.json4s" %% "json4s-jackson" % json4sVersion,
       "org.scalanlp" %% "breeze" % "0.13.1",
       "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
       "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
-      /*"fr.iscpif" %%% "scaladget" % scaladgetVersion,*/
       "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
 
       // Native libraries are not included by default. add this if you want them (as of 0.7)
@@ -122,21 +118,21 @@ lazy val foo = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(f
     jsDependencies += "org.webjars" % "d3js" % "3.5.12" / "d3.min.js"
   )
 
-lazy val fooJVM = foo.jvm enablePlugins (JettyPlugin)
-lazy val fooJS = foo.js enablePlugins (ScalaJSPlugin)
+lazy val trafficJVM = traffic.jvm enablePlugins (JettyPlugin)
+lazy val fooJS = traffic.js enablePlugins (ScalaJSPlugin)
 
 lazy val bootstrap = project.in(file("target/bootstrap")) settings(
   version := Version,
   scalaVersion := ScalaVersion,
   go := {
-    val clientTarget = (fullOptJS in fooJS in Compile).value
-    /*val clientTarget = (fastOptJS in fooJS in Compile).value*/
+    /*val clientTarget = (fullOptJS in fooJS in Compile).value*/
+    val clientTarget = (fastOptJS in fooJS in Compile).value
     val clientResource = (resourceDirectory in fooJS in Compile).value
-    val serverTarget = (target in fooJVM in Compile).value
+    val serverTarget = (target in trafficJVM in Compile).value
 
     copy(clientTarget, clientResource, new File(serverTarget, "webapp"))
   }
-) dependsOn(fooJS, fooJVM)
+) dependsOn(fooJS, trafficJVM)
 
 
 lazy val go = taskKey[Unit]("go")
