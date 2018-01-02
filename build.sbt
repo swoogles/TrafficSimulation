@@ -2,18 +2,28 @@
 val Organization = "fr.iscpif"
 val Name = "Traffice Simulator"
 val Version = "0.1.0-SNAPSHOT"
-val ScalaVersion = "2.12.3"
-val scalatraVersion = "2.5.0"
-val jettyVersion = "9.2.19.v20160908"
-val json4sVersion = "3.5.2"
-val scalatagsVersion = "0.6.5"
+val ScalaVersion = "2.12.4"
+val scalatraVersion = "2.6.2"
+val jettyVersion = "9.4.8.v20171121"
+val json4sVersion = "3.6.0-M2"
+val scalatagsVersion = "0.6.7"
 val autowireVersion = "0.2.6"
 val upickleVersion = "0.4.4"
 val rxVersion = "0.3.2"
 val scaladgetVersion = "0.9.5"
-val scalajsDomVersion = "0.9.3"
+val scalajsDomVersion = "0.9.4"
 val jqueryVersion = "2.2.1"
 val circeVersion = "0.8.0"
+val scalaCssVersion = "0.5.4"
+val betterFilesVersion = "3.4.0"
+val pprintVersion = "0.5.3"
+val utestVersion = "0.6.3"
+val playJsonVersion = "2.6.8"
+val scalaCheckVersion = "1.13.5"
+val breezeVersion = "0.13.2"
+val scalaTestVersion = "3.0.4"
+val squantsVersion = "1.3.0"
+val servletApiVersion = "4.0.0"
 
 import java.io.File
 import org.scalatra.sbt.ScalatraPlugin
@@ -73,43 +83,43 @@ lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).
 
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "autowire" % autowireVersion,
+      // Remove upickle after done upgrading other libs.
       "com.lihaoyi" %%% "upickle" % upickleVersion,
       "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
       "com.lihaoyi" %%% "scalarx" % rxVersion,
       "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
       "org.json4s" %% "json4s-jackson" % json4sVersion,
-      "org.scalanlp" %% "breeze" % "0.13.1",
-      "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
-      "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3",
+      "org.scalanlp" %% "breeze" % breezeVersion,
+      "com.github.japgolly.scalacss" %%% "core" % scalaCssVersion,
+      "com.github.japgolly.scalacss" %%% "ext-scalatags" % scalaCssVersion,
       "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
 
       // Native libraries are not included by default. add this if you want them (as of 0.7)
       // Native libraries greatly improve performance, but increase jar sizes.
       // It also packages various blas implementations, which have licenses that may or may not
       // be compatible with the Apache License. No GPL code, as best I know.
-      "org.scalanlp" %% "breeze-natives" % "0.13.1",
+      "org.scalanlp" %% "breeze-natives" % breezeVersion,
 
-      "com.typesafe.play" %%% "play-json" % "2.6.3",
+      "com.typesafe.play" %%% "play-json" % playJsonVersion,
 
     // The visualization library is distributed separately as well.
       // It depends on LGPL code
-      "org.scalanlp" %% "breeze-viz" % "0.13.1",
+      "org.scalanlp" %% "breeze-viz" % breezeVersion,
       "org.typelevel" %%% "cats" % "0.9.0",
-      "org.typelevel"  %%% "squants"  % "1.2.0",
-      "org.scalatest" %%% "scalatest" % "3.0.0" % "test",
-      "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-      "com.lihaoyi" %%% "pprint" % "0.5.2",
-      "org.scalacheck" %%% "scalacheck" % "1.13.4" % "test",
-      "com.lihaoyi" %%% "utest" % "0.5.3" % "test"
+      "org.typelevel"  %%% "squants"  % squantsVersion,
+      "org.scalatest" %%% "scalatest" % scalaTestVersion % "test",
+      "com.lihaoyi" %%% "pprint" % pprintVersion,
+      "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test",
+      "com.lihaoyi" %%% "utest" % utestVersion % "test"
     )
   ).
   jvmSettings(
     libraryDependencies ++= Seq(
       "org.scalatra" %% "scalatra" % scalatraVersion,
-      "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided",
+      "javax.servlet" % "javax.servlet-api" % servletApiVersion % "provided",
       "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
       "org.eclipse.jetty" % "jetty-server" % jettyVersion,
-      "com.github.pathikrit" %% "better-files" % "3.3.1"
+      "com.github.pathikrit" %% "better-files" % betterFilesVersion
 
     )
   ).
