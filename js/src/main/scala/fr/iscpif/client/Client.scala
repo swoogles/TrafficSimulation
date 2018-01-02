@@ -19,13 +19,23 @@ import scalatags.JsDom.all._
 import scalatags.generic
 
 @JSExportTopLevel("Client")
-object Client {
+//@JSExport("Client")
+object Client extends App {
   val speedLimit: Velocity = KilometersPerHour(65)
 
   val originSpatial = Spatial((0, 0, 0, Kilometers))
   val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
 
   val speed = Var(KilometersPerHour(50))
+
+  override def main(args: Array[String]): Unit = {
+    println("Hello world!")
+  }
+
+  override def delayedInit(body: => Unit) = {
+    println("dummy text, printed before initialization of C")
+    body // evaluates the initialization code of C
+  }
 
   val street = Street(Seconds(2), originSpatial, endingSpatial, speed.now, numLanes=1)
 
