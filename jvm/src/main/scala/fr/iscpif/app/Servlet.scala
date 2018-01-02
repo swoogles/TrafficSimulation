@@ -9,11 +9,12 @@ import scalatags.Text.all._
 import scalatags.Text.{all => tags}
 
 class Servlet extends ScalatraServlet {
+  val projectName = "traffic"
   val jsFolder = "./jvm/target/webapp/js/"
-  val clientJsFull = "foo-opt.js"
-  val clientJsFast = "foo-fastopt.js"
-  val jsDepsFull = "foo-jsdeps.min.js"
-  val jsDepsFast = "foo-jsdeps.js"
+  val clientJsFull = s"$projectName-opt.js"
+  val clientJsFast = s"$projectName-fastopt.js"
+  val jsDepsFull = s"$projectName-jsdeps.min.js"
+  val jsDepsFast = s"$projectName-jsdeps.js"
   val fastDev = File(jsFolder + clientJsFast).exists
   val clientJs = if (fastDev) clientJsFast else clientJsFull
   val jsDeps = if (fastDev) jsDepsFast else jsDepsFull
