@@ -24,7 +24,9 @@ case class VehicleSourceImpl(
 ) extends  VehicleSource {
 
   override def produceVehicle(t: Time, dt: Time, destination: SpatialImpl): Option[PilotedVehicleImpl] = {
-    val res = t % spacingInTime
+    // Woohoo! this was the problem! t was coming in as ms after loading the new scene for some reason...
+    // Should make this prettier/type-safe in the future.
+    val res = t.toSeconds % spacingInTime.toSeconds
     if (res.abs < dt.toSeconds) {
       val vehicleSpatial = Spatial.withVecs(spatial.r, startingVelocitySpacial.v, spatial.dimensions)
       Some(PilotedVehicle.commuter(vehicleSpatial, new IntelligentDriverModelImpl, destination))
