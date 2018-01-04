@@ -20,12 +20,6 @@ case class Disruptions(
 )
 
 trait ModelTrait {
-  def pause: ModelTrait
-  def unpause: ModelTrait
-//  TODO: This would utiliaze originalScene in a more encapsulated way.
-  def reset: ModelTrait
-  def resetIfNecessary: Unit
-  def updateLane(lane: LaneImpl): LaneImpl
   def updateLanesAndScene()
 }
 
@@ -52,7 +46,6 @@ case class Model (
   with ModelTrait
 {
   private implicit val DT = originalScene.dt
-  val savedScene: Var[Scene] = Var(originalScene)
   // TODO Make this private
   var sceneVar: Var[SceneImpl] = Var(originalScene)
   val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
@@ -65,18 +58,23 @@ case class Model (
       "Pause"
   }
 
-  def updateScene(speedLimit: Velocity) =
-    sceneVar() = sceneVar.now.update(speedLimit)
+  def loadScene(scene: SceneImpl) = {
+    sceneVar() = scene
+    paused() = true
+  }
 
-  def pause: ModelTrait = this.copy(paused = Var(true))
-  def unpause: ModelTrait = this.copy(paused = Var(false))
-  def reset: ModelTrait = {
+  def updateScene(speedLimit: Velocity) =
+    sceneVar() = sceneVar.now.updateSpeedLimit(speedLimit)
+
+  private def pause: ModelTrait = this.copy(paused = Var(true))
+  private def unpause: ModelTrait = this.copy(paused = Var(false))
+  private def reset: ModelTrait = {
     sceneVar() = originalScene
     resetScene() = false
     this
   }
 
-  def resetIfNecessary: Unit =
+  private def resetIfNecessary: Unit =
     if (resetScene.now == true) {
       reset
     }
@@ -84,19 +82,27 @@ case class Model (
   val car: PilotedVehicleImpl =
     PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl)
 
+  private def disrupt(lane: LaneImpl): LaneImpl = {
+    this.disruptions.disruptLane() = false
+    lane.addDisruptiveVehicle(car)
+  }
+
   def disruptLane(lane: LaneImpl, model: Model): LaneImpl =
-    if (this.disruptions.disruptLane.now == true) {
-      this.disruptions .disruptLane() = false
-      lane.addDisruptiveVehicle(car)
-    } else
-        lane
+    if (this.disruptions.disruptLane.now == true)
+      disrupt(lane)
+    else
+      lane
+
+  private def disruptExisting(lane: LaneImpl): LaneImpl = {
+    this.disruptions.disruptLaneExisting() = false
+    lane.disruptVehicles()
+  }
 
   def disruptLaneExisting(lane: LaneImpl): LaneImpl =
-    if (this.disruptions.disruptLaneExisting.now == true) {
-      this.disruptions.disruptLaneExisting() = false
-      lane.disruptVehicles()
-    } else
-        lane
+    if (this.disruptions.disruptLaneExisting.now == true)
+      disruptLaneExisting(lane)
+    else
+      lane
 
   def updateLane(lane: LaneImpl): LaneImpl = {
     val laneAfterDisruption = disruptLane(lane, this)
