@@ -45,13 +45,13 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
 
   svgNode.forceRedraw()
 
-  private def createSvgReps[T](drawables: Seq[T], draw: T => SVGElement): SVGElement = {
+  private def createSvgReps(drawables: Seq[SVGElement]): SVGElement = {
     Rx {
       svgTags.g(
         for {
           t <- drawables
         } yield {
-          draw(t)
+          t
         }
       )
     }
@@ -59,7 +59,9 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
 
   private def drawItemsInNewElement() = {
     svgTags.g(
-      createSvgReps(scene.allVehicles, carReal)
+      createSvgReps(
+        scene.applyToAllVehicles(carReal)
+      )
     ).render
   }
 

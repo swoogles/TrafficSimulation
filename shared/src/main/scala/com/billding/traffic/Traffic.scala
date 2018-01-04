@@ -7,27 +7,12 @@ import squants.motion._
 import squants.{Length, Time, Velocity}
 
 trait Scene {
-  val streets: List[StreetImpl]
-  val t: Time
-  implicit val dt: Time
-  val speedLimit: Velocity
-  private val updateLane: (LaneImpl) => LaneImpl = (lane: LaneImpl) => Lane.update(lane, t, dt)
-  val canvasDimensions: (Length, Length)
-
-  def update(speedLimit: Velocity)(implicit dt: Time): SceneImpl = {
-    val nextT =  this.t + this.dt
-    val res: List[StreetImpl] = {
-      streets.map(street=>
-        street.updateLanes(updateLane)
-      )
-    }
-    SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
-  }
+  val canvasDimensions: (Length, Length) // This probably deserves to be inside a more specific Canvas class
 
   def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl
-  // TODO Include Map[Idx, Vehicle]
 
-  val allVehicles: List[PilotedVehicle]
+  def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl
+  def applyToAllVehicles[T]( f: PilotedVehicle=>T ): List[T]
 }
 
 case class SceneImpl(
@@ -38,6 +23,18 @@ case class SceneImpl(
                       canvasDimensions: (Length, Length)
 ) extends Scene {
 
+  private val updateLane: (LaneImpl) => LaneImpl = (lane: LaneImpl) => Lane.update(lane, t, dt)
+
+  def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl = {
+    val nextT =  this.t + this.dt
+    val res: List[StreetImpl] = {
+      streets.map(street=>
+        street.updateLanes(updateLane)
+      )
+    }
+    SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
+  }
+
   def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl = {
     val newStreets = streets.map { street: StreetImpl =>
       street.updateLanes(func)
@@ -45,9 +42,16 @@ case class SceneImpl(
     this.copy(streets=newStreets)
   }
 
-  val allVehicles: List[PilotedVehicle] = streets.flatMap(
+  private val allVehicles: List[PilotedVehicle] = streets.flatMap(
     _.lanes.flatMap(_.vehicles)
   )
+
+  def applyToAllVehicles[T]( f: PilotedVehicle=>T ): List[T] = {
+    for ( vehicle <- allVehicles ) yield {
+      f(vehicle)
+    }
+  }
+
 }
 
 object SceneImpl {
@@ -57,7 +61,6 @@ object SceneImpl {
 
   implicit val sceneFormats: Format[SceneImpl] = Json.format[SceneImpl]
 }
-
 
 trait ErrorMsg {
   val description: String
