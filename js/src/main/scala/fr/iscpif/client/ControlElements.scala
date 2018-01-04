@@ -53,7 +53,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
       )
     )
 
-  def createLayout(): HTMLDivElement = {
+  def createLayout() = {
     val buttonPanel = div(
       id := "button-panel",
       cls := "row"

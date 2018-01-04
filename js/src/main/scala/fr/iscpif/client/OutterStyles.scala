@@ -11,9 +11,9 @@ import org.scalajs.dom.raw.HTMLDivElement
 import scalatags.JsDom.all._
 import scalacss.ScalatagsCss._
 
-package object client {
-  val CssSettings = scalacss.devOrProdDefaults
-}
+//package object client {
+//  val CssSettings = scalacss.devOrProdDefaults
+//}
 
 object OutterStyles {
   object TrafficStyles extends StyleSheet.Inline {

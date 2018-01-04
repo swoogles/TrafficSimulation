@@ -7,7 +7,12 @@ import shared.Orientation
 import squants.{Time, Velocity}
 import squants.space.Meters
 
-case class StreetImpl(lanes: List[LaneImpl], beginning: SpatialImpl, end: SpatialImpl, sourceTiming: Time) {
+case class StreetImpl(
+                       lanes: List[LaneImpl],
+                       beginning: SpatialImpl,
+                       end: SpatialImpl,
+                       sourceTiming: Time
+                     ) {
 
   def updateLanes(f: LaneImpl => LaneImpl) =
     copy(lanes = lanes map f)

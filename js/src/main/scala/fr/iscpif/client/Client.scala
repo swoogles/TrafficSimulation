@@ -55,8 +55,10 @@ object Client extends App {
       SerializationFeatures("localhost", 8080, "http")
     )
 
-  val buttonBehaviors = ButtonBehaviors(model)
-  val controlElements = ControlElements(buttonBehaviors)
+  val controlElements =
+    ControlElements(
+      ButtonBehaviors(model)
+    )
 
   val GLOBAL_T = Rx {
     model.sceneVar().t
