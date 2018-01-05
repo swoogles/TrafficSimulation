@@ -25,7 +25,7 @@ It uses powerful scala tools to construct a fully typed and reactive Web applica
 <!-- - [autowire](https://github.com/lihaoyi/autowire) -->
 - [scaladget](https://github.com/mathieuleclaire/scaladget) to draw some svg.
 
-## Build & Run##
+## Build & Run ##
 First, build the javascript:
 ```sh
 $ cd scalaWUI
