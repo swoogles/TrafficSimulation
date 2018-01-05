@@ -3,18 +3,14 @@ package com.billding.traffic
 import cats.data.NonEmptyList
 import com.billding.physics.{Spatial, SpatialImpl}
 import squants.motion._
+import squants.space.Length
 import squants.{QuantityVector, Time, Velocity}
 
 trait Lane {
   val vehicles: List[PilotedVehicleImpl]
-  val vehicleSource: VehicleSource
-  val beginning: SpatialImpl
-  val end: SpatialImpl
   val vehicleAtInfinityForward: PilotedVehicleImpl
-  val infinitySpatial: SpatialImpl
-  val speedLimit: Velocity
   def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl, fractionCompleted: Double): Boolean
-  val length = beginning.distanceTo(end)
+  val speedLimit: Velocity
 }
 
 object Lane extends LaneFunctions {
@@ -148,6 +144,8 @@ case class LaneImpl(
   speedLimit: Velocity
 ) extends Lane {
 
+  val length: Length = beginning.distanceTo(end)
+
   val infinityPointForward: QuantityVector[Distance] =
     beginning.vectorTo(end).normalize.map( _ * 10000)
   val infinityPointBackwards: QuantityVector[Distance] =
@@ -161,7 +159,7 @@ case class LaneImpl(
     val spatial =  Spatial.withVecs(infinityPointBackwards)
     PilotedVehicle.commuter(spatial, new IntelligentDriverModelImpl, spatial)
   }
-  override val infinitySpatial: SpatialImpl = vehicleAtInfinityForward.spatial
+  val infinitySpatial: SpatialImpl = vehicleAtInfinityForward.spatial
 
   /*
     Look at reusing this for finding leading/following cars in neighboring lane.
