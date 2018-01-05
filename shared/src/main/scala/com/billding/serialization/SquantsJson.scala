@@ -47,7 +47,19 @@ sealed trait BillSquants[T <: Quantity[T]] {
 }
 case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
 
+import com.typesafe.config.ConfigFactory.parseString
+import pureconfig.loadConfig
+import pureconfig.module.squants._
+
+case class HowConfiguration(velocityUnit: String)
+
+
+/*
+  I would like for this class to have its units decided by property files, rather than being hardcoded here.
+  Then it would be possible to eg. Switch between metric and imperial units.
+ */
 object BillSquants {
+
   val distanceConverterJs: (JsString) => Distance = (s: JsString) =>
     Length.apply(s.value).get
 
@@ -63,11 +75,36 @@ object BillSquants {
   val massConverterJs = (s: JsString) =>
     Mass(s.value).get
 
-  val distanceToJsString = (distance: Distance) => new JsString(distance.toMeters + " " + Meters.symbol)
-  val velocityToJsString = (velocity: Velocity) => new JsString(velocity.toKilometersPerHour + " " + KilometersPerHour.symbol)
-  val accelerationToJsString = (acceleration: Acceleration) => new JsString(acceleration.toMetersPerSecondSquared + " " + MetersPerSecondSquared.symbol)
-  val timeToJsString = (time: Time) => new JsString(time.toMilliseconds + " " + Milliseconds.symbol)
-  val massToJsString = (mass: Mass) => new JsString(mass.toKilograms + " " + Kilograms.symbol)
+  val conf = parseString("""{
+  velocity-unit: "km/h"
+}""")
+  // conf: com.typesafe.config.Config = Config(SimpleConfigObject({"far":"42.195 km","hot":"56.7° C"}))
+
+  val config = loadConfig[HowConfiguration](conf)
+  println("config: " + config)
+  println("config velocity unit: " + config.right.get.velocityUnit)
+
+  println("test velocity: " + Velocity("0 " + config.right.get.velocityUnit))
+
+  val distanceToJsString =
+    (distance: Distance) =>
+      new JsString(distance.toMeters + " " + Meters.symbol)
+
+  val velocityToJsString =
+    (velocity: Velocity) =>
+      new JsString(velocity.toKilometersPerHour + " " + KilometersPerHour.symbol)
+
+  val accelerationToJsString =
+    (acceleration: Acceleration) =>
+      new JsString(acceleration.toMetersPerSecondSquared + " " + MetersPerSecondSquared.symbol)
+
+  val timeToJsString =
+    (time: Time) =>
+      new JsString(time.toMilliseconds + " " + Milliseconds.symbol)
+
+  val massToJsString =
+    (mass: Mass) =>
+      new JsString(mass.toKilograms + " " + Kilograms.symbol)
 
   implicit val distance = BillSquantsImpl(distanceConverterJs, distanceToJsString)
   implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityToJsString)
