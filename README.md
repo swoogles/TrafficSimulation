@@ -47,3 +47,6 @@ Open [http://localhost:8080/](http://localhost:8080/) in your browser.
 
 ![](https://i.imgur.com/Cw1YIO7.png)
 
+## Testing Requirements ##
+
+Install NodeJS (and PhantomJS?) to run tests in ScalaJS. Still missing something here though...
