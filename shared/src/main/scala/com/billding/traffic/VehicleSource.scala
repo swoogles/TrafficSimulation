@@ -8,9 +8,6 @@ import squants.{Time, Velocity}
 
 trait VehicleSource {
   def produceVehicle(t: Time, dt: Time, destination: SpatialImpl): Option[PilotedVehicleImpl]
-  val spacingInTime: Time
-  val spatial: SpatialImpl // TODO This will include starting velocity. Might not belong here.
-  val startingVelocitySpacial: SpatialImpl
 }
 
 object VehicleSource {
@@ -36,7 +33,6 @@ case class VehicleSourceImpl(
 
   def updateSpeed(speed: Velocity): VehicleSourceImpl = {
     val startingV = startingVelocitySpacial.v.normalize.map { x: Velocity => x.value * speed }
-    //    val velocitySpatial = SpatialImpl(beginning.r, startingV, beginning.dimensions)
     this.copy(startingVelocitySpacial = this.startingVelocitySpacial.copy(v = startingV))
   }
 }
