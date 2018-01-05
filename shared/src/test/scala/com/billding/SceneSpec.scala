@@ -45,8 +45,6 @@ class SceneSpec extends  FlatSpec{
       canvasDimensions
     )
 
-    val updateScene: Scene = scene.update(speedLimit)
-    val updateScene2: Scene = updateScene.update(speedLimit)
     val updatedLane: Lane = Lane.update(lane, Seconds(1), Milliseconds(100))
   }
 }
