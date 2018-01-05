@@ -20,7 +20,9 @@ case class Disruptions(
 )
 
 trait ModelTrait {
-  def updateLanesAndScene()
+  def togglePause(): Unit
+  def pause(): Unit
+  def respondToAllInput()
 }
 
 /**
@@ -47,7 +49,7 @@ case class Model (
 {
   private implicit val DT = originalScene.dt
   // TODO Make this private
-  var sceneVar: Var[SceneImpl] = Var(originalScene)
+  val sceneVar: Var[SceneImpl] = Var(originalScene)
   val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
@@ -58,15 +60,18 @@ case class Model (
       "Pause"
   }
 
+  def togglePause() =
+    paused() = !paused.now
+
+  def pause() =
+    paused() = true
+
   def loadScene(scene: SceneImpl) = {
     sceneVar() = scene
     paused() = true
   }
 
-  def updateScene(speedLimit: Velocity) =
-    sceneVar() = sceneVar.now.updateSpeedLimit(speedLimit)
-
-  private def pause: ModelTrait = this.copy(paused = Var(true))
+//  private def pause: ModelTrait = this.copy(paused = Var(true))
   private def unpause: ModelTrait = this.copy(paused = Var(false))
   private def reset: ModelTrait = {
     sceneVar() = originalScene
@@ -104,7 +109,7 @@ case class Model (
     else
       lane
 
-  def updateLane(lane: LaneImpl): LaneImpl = {
+  private def updateLane(lane: LaneImpl): LaneImpl = {
     val laneAfterDisruption = disruptLane(lane, this)
     val laneAfterDisruptionExisting = disruptLaneExisting(laneAfterDisruption)
 
@@ -115,13 +120,15 @@ case class Model (
     laneAfterDisruptionExisting.copy(vehicleSource = newSource)
   }
 
-  def updateLanesAndScene() = {
+  private def updateScene(speedLimit: Velocity) =
+    sceneVar() = sceneVar.now.updateSpeedLimit(speedLimit)
+
+  private def updateLanesAndScene() = {
     if (this.paused.now == false) {
       val newScene = this.sceneVar.now.updateAllStreets(this.updateLane)
       this.sceneVar() = newScene
       this.updateScene(this.sceneVar.now.speedLimit)
     }
-
   }
 
   def respondToAllInput() = {
@@ -130,4 +137,5 @@ case class Model (
     serializationFeatures.serializeIfNecessary(this)
     serializationFeatures.deserializeIfNecessary(this)
   }
+
 }

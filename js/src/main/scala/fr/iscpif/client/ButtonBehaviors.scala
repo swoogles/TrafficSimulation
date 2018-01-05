@@ -10,11 +10,13 @@ import squants.motion.KilometersPerHour
 import squants.time.Seconds
 
 case class ButtonBehaviors(model: Model)(implicit ctx: Ctx.Owner) {
+
   val togglePause: (Event) => Unit = (e: dom.Event) => {
     val elementClicked =
       e.target.asInstanceOf[HTMLInputElement]
 
-    model.paused() = !model.paused.now
+    println("paused status: " + model.paused.now) // why is this fuggin true??
+    model.togglePause()
     model.pauseText.trigger(elementClicked.value = model.pauseText.now)
   }
 
@@ -39,8 +41,10 @@ case class ButtonBehaviors(model: Model)(implicit ctx: Ctx.Owner) {
   val initiateSceneSerialization =
     resetToTrue(model.serializeScene)
 
-  val initiateSceneDeserialization =
+  val initiateSceneDeserialization = {
+    model.pause()
     resetToTrue(model.deserializeScene)
+  }
 
   private def genericSlider: (Int => Unit) => Event => Unit =
     (theBehavior) =>
