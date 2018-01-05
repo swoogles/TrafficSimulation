@@ -13,24 +13,26 @@ import squants.time.{Milliseconds, Seconds, Time}
 
 class SquantsJsonSpec extends FlatSpec {
   it should "roundtrip serialize a distance" in {
-    boilerTest(BillSquants.distance, Meters(10), JsString("10 m"))
+    boilerTest(BillSquants.distance, Meters(10), JsString("10.0 m"))
+    boilerTest(BillSquants.distance, Kilometers(.01), JsString("10.0 m"))
   }
 
   it should "roundtrip serialize a time" in {
-    boilerTest(BillSquants.time, Seconds(10), JsString("10000 ms"))
+    boilerTest(BillSquants.time, Seconds(10), JsString("10000.0 ms"))
   }
 
   it should "roundtrip serialize a velocity" in {
-    boilerTest(BillSquants.velocity, MetersPerSecond(10), JsString("10 m/s"))
+    boilerTest(BillSquants.velocity, MetersPerSecond(10), JsString("36.0 km/h"))
+    boilerTest(BillSquants.velocity, KilometersPerHour(36), JsString("36.0 km/h"))
   }
 
   it should "roundtrip serialize a mass" in {
-    boilerTest(BillSquants.mass, Kilograms(10), JsString("10 kg"))
+    boilerTest(BillSquants.mass, Kilograms(10), JsString("10.0 kg"))
   }
 
   it should "roundtrip serialize an acceleration" in {
     // TODO Make sure ^2 isn't a problem in the String result.
-    boilerTest(BillSquants.acceleration, MetersPerSecondSquared(10), JsString("10 m/s\u00b2"))
+    boilerTest(BillSquants.acceleration, MetersPerSecondSquared(10), JsString("10.0 m/s\u00b2"))
   }
 
   it should "roundtrip serialize a distance Quantity Vector" in {
