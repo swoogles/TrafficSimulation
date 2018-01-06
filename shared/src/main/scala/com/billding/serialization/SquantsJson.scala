@@ -53,6 +53,22 @@ import pureconfig.module.squants._
 
 case class HowConfiguration(velocityUnit: String)
 
+class ApplicationConfig() {
+  val conf = parseString("""
+    {
+      velocity-unit: "km/h"
+    }
+  """)
+
+  // conf: com.typesafe.config.Config = Config(SimpleConfigObject({"far":"42.195 km","hot":"56.7° C"}))
+
+  val config = loadConfig[HowConfiguration](conf).right.get
+  println("config: " + config)
+  println("config velocity unit: " + config.velocityUnit)
+
+  println("test velocity: " + Velocity("0 " + config.velocityUnit))
+
+}
 
 /*
   I would like for this class to have its units decided by property files, rather than being hardcoded here.
@@ -75,24 +91,27 @@ object BillSquants {
   val massConverterJs = (s: JsString) =>
     Mass(s.value).get
 
-  val conf = parseString("""{
-  velocity-unit: "km/h"
-}""")
+  val conf = parseString("""
+    {
+      velocity-unit: "km/h"
+    }
+  """)
+
   // conf: com.typesafe.config.Config = Config(SimpleConfigObject({"far":"42.195 km","hot":"56.7° C"}))
 
-  val config = loadConfig[HowConfiguration](conf)
-  println("config: " + config)
-  println("config velocity unit: " + config.right.get.velocityUnit)
+  val config = new ApplicationConfig().config
 
-  println("test velocity: " + Velocity("0 " + config.right.get.velocityUnit))
+  println("test velocity: " + Velocity("0 " + config.velocityUnit))
 
   val distanceToJsString =
     (distance: Distance) =>
       new JsString(distance.toMeters + " " + Meters.symbol)
 
+  val velocityUnit = KilometersPerHour
+
   val velocityToJsString =
     (velocity: Velocity) =>
-      new JsString(velocity.toKilometersPerHour + " " + KilometersPerHour.symbol)
+      new JsString( (velocity to velocityUnit) + " " + velocityUnit.symbol)
 
   val accelerationToJsString =
     (acceleration: Acceleration) =>
