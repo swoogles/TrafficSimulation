@@ -103,11 +103,16 @@ object BillSquants {
 
   println("test velocity: " + Velocity("0 " + config.velocityUnit))
 
+  val lengthUnit = Meters
+  val velocityUnit = KilometersPerHour
+  val accelerationUnit = MetersPerSecondSquared
+  val massUnit = Kilograms
+  val timeUnit = Milliseconds
+
   val distanceToJsString =
     (distance: Distance) =>
-      new JsString(distance.toMeters + " " + Meters.symbol)
+      new JsString( (distance to lengthUnit) + " " + lengthUnit.symbol)
 
-  val velocityUnit = KilometersPerHour
 
   val velocityToJsString =
     (velocity: Velocity) =>
@@ -115,15 +120,15 @@ object BillSquants {
 
   val accelerationToJsString =
     (acceleration: Acceleration) =>
-      new JsString(acceleration.toMetersPerSecondSquared + " " + MetersPerSecondSquared.symbol)
+      new JsString( (acceleration to accelerationUnit) + " " + accelerationUnit.symbol)
 
   val timeToJsString =
     (time: Time) =>
-      new JsString(time.toMilliseconds + " " + Milliseconds.symbol)
+      new JsString( (time to timeUnit) + " " + timeUnit.symbol)
 
   val massToJsString =
     (mass: Mass) =>
-      new JsString(mass.toKilograms + " " + Kilograms.symbol)
+      new JsString( (mass to massUnit) + " " + massUnit.symbol)
 
   implicit val distance = BillSquantsImpl(distanceConverterJs, distanceToJsString)
   implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityToJsString)
