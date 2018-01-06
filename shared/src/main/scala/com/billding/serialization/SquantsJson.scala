@@ -1,5 +1,6 @@
 package com.billding.serialization
 
+import scala.util.Try
 import squants.mass.{Kilograms, Mass}
 import squants.{Acceleration, Mass, Quantity, QuantityVector, Time, UnitOfMeasure}
 import squants.motion._
@@ -45,7 +46,20 @@ sealed trait BillSquants[T <: Quantity[T]] {
   implicit val formatQv: Format[QuantityVector[T]] =
     Format(generalReads, qvWrites)
 }
-case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
+
+case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, unit: UnitOfMeasure[T]) extends BillSquants[T] {
+  private def mkString[A <: Quantity[A]](unit: UnitOfMeasure[A]): A => JsString =
+    (amount: A) => new JsString( (amount to unit) + " " + unit.symbol)
+
+  val toJsString: T => JsString = mkString(unit)
+
+  private def quantityConverterJs[A <: Quantity[A]](quantityCreator: (String => Try[A])): (JsString) => A =
+    (s: JsString) => quantityCreator(s.value).get
+
+
+}
+// Then new instances only need to pass the UnitOfMeasure in.
+//case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
 
 import com.typesafe.config.ConfigFactory.parseString
 import pureconfig.loadConfig
@@ -76,20 +90,27 @@ class ApplicationConfig() {
  */
 object BillSquants {
 
-  val distanceConverterJs: (JsString) => Distance = (s: JsString) =>
-    Length(s.value).get
+  def quantityConverterJs[A <: Quantity[A]](quantityCreator: (String => Try[A])): (JsString) => A =
+    (s: JsString) => quantityCreator(s.value).get
 
-  val velocityConverterJs = (s: JsString) =>
-    Velocity(s.value).get
 
-  val accelerationConverterJs = (s: JsString) =>
-    Acceleration(s.value).get
+  val distanceConverterJs: (JsString) => Length =
+    quantityConverterJs(Length.apply)
 
-  val timeConverterJs = (s: JsString) =>
-    new TimeConversions.TimeStringConversions(s.value).toTime.get
+  val velocityConverterJs: (JsString) => Velocity =
+    quantityConverterJs(Velocity.apply)
 
-  val massConverterJs = (s: JsString) =>
-    Mass(s.value).get
+  val accelerationConverterJs: (JsString) => Acceleration =
+    quantityConverterJs(Acceleration.apply)
+
+  val timeQuantityCreator: (String => Try[Time]) =
+    (s: String) => new TimeConversions.TimeStringConversions(s).toTime
+
+  val timeConverterJs: (JsString) => Time =
+    quantityConverterJs(timeQuantityCreator)
+
+  val massConverterJs: (JsString) => Mass =
+    quantityConverterJs(Mass.apply)
 
   val conf = parseString("""
     {
@@ -110,32 +131,13 @@ object BillSquants {
   val timeUnit = Milliseconds
 
   // Fucking awesome.
-  def mkString[A <: Quantity[A], B <: UnitOfMeasure[A]](unit: B): A => JsString =
+  def mkString[A <: Quantity[A]](unit: UnitOfMeasure[A]): A => JsString =
     (amount: A) => new JsString( (amount to unit) + " " + unit.symbol)
-//  new JsString( amount to unit)
 
-  val distanceToJsString: Distance => JsString =
-    mkString(lengthUnit)
-
-  val velocityToJsString: Velocity => JsString =
-    mkString(velocityUnit)
-
-  val velocityToJsString2: Velocity => JsString =
-    mkString(velocityUnit)
-
-  val accelerationToJsString: Acceleration => JsString =
-    mkString(accelerationUnit)
-
-  val timeToJsString: Time => JsString =
-    mkString(timeUnit)
-
-  val massToJsString: Mass => JsString =
-    mkString(massUnit)
-
-  implicit val distance = BillSquantsImpl(distanceConverterJs, distanceToJsString)
-  implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityToJsString)
-  implicit val acceleration: BillSquants[Acceleration] = BillSquantsImpl(accelerationConverterJs, accelerationToJsString)
-  implicit val time = BillSquantsImpl(timeConverterJs, timeToJsString)
-  implicit val mass = BillSquantsImpl(massConverterJs, massToJsString)
+  implicit val distance = BillSquantsImpl((s: JsString) => Length(s.value).get, lengthUnit)
+  implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityUnit)
+  implicit val acceleration = BillSquantsImpl(accelerationConverterJs, accelerationUnit)
+  implicit val time = BillSquantsImpl(timeConverterJs, timeUnit)
+  implicit val mass = BillSquantsImpl(massConverterJs, massUnit)
 
 }
