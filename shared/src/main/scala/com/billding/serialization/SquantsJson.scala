@@ -1,7 +1,7 @@
 package com.billding.serialization
 
 import squants.mass.{Kilograms, Mass}
-import squants.{Acceleration, Mass, Quantity, QuantityVector, Time}
+import squants.{Acceleration, Mass, Quantity, QuantityVector, Time, UnitOfMeasure}
 import squants.motion._
 import squants.space.{Length, Meters}
 import squants.time.{Milliseconds, Time, TimeConversions}
@@ -109,26 +109,30 @@ object BillSquants {
   val massUnit = Kilograms
   val timeUnit = Milliseconds
 
+  // Fucking awesome.
+  def mkString[A <: Quantity[A], B <: UnitOfMeasure[A]](amount: A, unit: B): JsString = {
+    new JsString( (amount to unit) + " " + unit.symbol)
+  }
+
   val distanceToJsString =
     (distance: Distance) =>
-      new JsString( (distance to lengthUnit) + " " + lengthUnit.symbol)
-
+      mkString(distance, lengthUnit)
 
   val velocityToJsString =
     (velocity: Velocity) =>
-      new JsString( (velocity to velocityUnit) + " " + velocityUnit.symbol)
+      mkString(velocity, velocityUnit)
 
   val accelerationToJsString =
     (acceleration: Acceleration) =>
-      new JsString( (acceleration to accelerationUnit) + " " + accelerationUnit.symbol)
+      mkString(acceleration, accelerationUnit)
 
   val timeToJsString =
     (time: Time) =>
-      new JsString( (time to timeUnit) + " " + timeUnit.symbol)
+      mkString(time, timeUnit)
 
   val massToJsString =
     (mass: Mass) =>
-      new JsString( (mass to massUnit) + " " + massUnit.symbol)
+      mkString(mass, massUnit)
 
   implicit val distance = BillSquantsImpl(distanceConverterJs, distanceToJsString)
   implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityToJsString)
