@@ -77,13 +77,13 @@ class ApplicationConfig() {
 object BillSquants {
 
   val distanceConverterJs: (JsString) => Distance = (s: JsString) =>
-    Length.apply(s.value).get
+    Length(s.value).get
 
   val velocityConverterJs = (s: JsString) =>
-    Velocity.apply(s.value).get
+    Velocity(s.value).get
 
   val accelerationConverterJs = (s: JsString) =>
-    Acceleration.apply(s.value).get
+    Acceleration(s.value).get
 
   val timeConverterJs = (s: JsString) =>
     new TimeConversions.TimeStringConversions(s.value).toTime.get
@@ -110,33 +110,32 @@ object BillSquants {
   val timeUnit = Milliseconds
 
   // Fucking awesome.
-  def mkString[A <: Quantity[A], B <: UnitOfMeasure[A]](amount: A, unit: B): JsString = {
-    new JsString( (amount to unit) + " " + unit.symbol)
-  }
+  def mkString[A <: Quantity[A], B <: UnitOfMeasure[A]](unit: B): A => JsString =
+    (amount: A) => new JsString( (amount to unit) + " " + unit.symbol)
+//  new JsString( amount to unit)
 
-  val distanceToJsString =
-    (distance: Distance) =>
-      mkString(distance, lengthUnit)
+  val distanceToJsString: Distance => JsString =
+    mkString(lengthUnit)
 
-  val velocityToJsString =
-    (velocity: Velocity) =>
-      mkString(velocity, velocityUnit)
+  val velocityToJsString: Velocity => JsString =
+    mkString(velocityUnit)
 
-  val accelerationToJsString =
-    (acceleration: Acceleration) =>
-      mkString(acceleration, accelerationUnit)
+  val velocityToJsString2: Velocity => JsString =
+    mkString(velocityUnit)
 
-  val timeToJsString =
-    (time: Time) =>
-      mkString(time, timeUnit)
+  val accelerationToJsString: Acceleration => JsString =
+    mkString(accelerationUnit)
 
-  val massToJsString =
-    (mass: Mass) =>
-      mkString(mass, massUnit)
+  val timeToJsString: Time => JsString =
+    mkString(timeUnit)
+
+  val massToJsString: Mass => JsString =
+    mkString(massUnit)
 
   implicit val distance = BillSquantsImpl(distanceConverterJs, distanceToJsString)
   implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityToJsString)
   implicit val acceleration: BillSquants[Acceleration] = BillSquantsImpl(accelerationConverterJs, accelerationToJsString)
   implicit val time = BillSquantsImpl(timeConverterJs, timeToJsString)
   implicit val mass = BillSquantsImpl(massConverterJs, massToJsString)
+
 }
