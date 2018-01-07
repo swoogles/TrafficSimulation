@@ -14,9 +14,6 @@ case class SerializationFeatures(hostName: String,
                                  protocol: String) {
   val fullHost = s"$protocol://$hostName:$port"
 
-  /**
-    * TODO: Deserialization is killing the vehicle source now. Not sure when that was introduced.
-    */
   var serializedSceneJson: play.api.libs.json.JsValue = null
   var volatileScene: SceneImpl = null
   def deserializeIfNecessary(model: Model): Unit = {
