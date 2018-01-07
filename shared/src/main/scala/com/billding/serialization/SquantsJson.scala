@@ -22,6 +22,7 @@ sealed trait BillSquants[T <: Quantity[T]] {
   implicit val format: Format[T] =
     Format(singleReads, singleWrites)
 
+  // TODO: This is fairly confusing shit. Take a close look at it.
   implicit val generalReads = new Reads[QuantityVector[T]] {
     def reads(jsValue: JsValue): JsResult[QuantityVector[T]] = {
       val blah: Seq[JsValue] = jsValue.as[Seq[JsValue]]
