@@ -10,7 +10,7 @@ import play.api.libs.json.Reads.JsStringReads
 import play.api.libs.json._
 
 sealed trait BillSquants[T <: Quantity[T]] {
-  val fromJsString: JsString => T
+  def fromJsString: JsString => T // Why you gotta be a def, eh?
   val toJsString: T => JsString
 
   implicit val singleWrites  = new Writes[T] {
@@ -47,7 +47,7 @@ sealed trait BillSquants[T <: Quantity[T]] {
     Format(generalReads, qvWrites)
 }
 
-case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, unit: UnitOfMeasure[T]) extends BillSquants[T] {
+case class BillSquantsImpl[T <: Quantity[T]](fromJsStringTry: (String => Try[T]), unit: UnitOfMeasure[T]) extends BillSquants[T] {
   private def mkString[A <: Quantity[A]](unit: UnitOfMeasure[A]): A => JsString =
     (amount: A) => new JsString( (amount to unit) + " " + unit.symbol)
 
@@ -56,7 +56,7 @@ case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, unit: Un
   private def quantityConverterJs[A <: Quantity[A]](quantityCreator: (String => Try[A])): (JsString) => A =
     (s: JsString) => quantityCreator(s.value).get
 
-
+  def fromJsString: JsString => T = quantityConverterJs(fromJsStringTry)
 }
 // Then new instances only need to pass the UnitOfMeasure in.
 //case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
@@ -90,28 +90,6 @@ class ApplicationConfig() {
  */
 object BillSquants {
 
-  def quantityConverterJs[A <: Quantity[A]](quantityCreator: (String => Try[A])): (JsString) => A =
-    (s: JsString) => quantityCreator(s.value).get
-
-
-  val distanceConverterJs: (JsString) => Length =
-    quantityConverterJs(Length.apply)
-
-  val velocityConverterJs: (JsString) => Velocity =
-    quantityConverterJs(Velocity.apply)
-
-  val accelerationConverterJs: (JsString) => Acceleration =
-    quantityConverterJs(Acceleration.apply)
-
-  val timeQuantityCreator: (String => Try[Time]) =
-    (s: String) => new TimeConversions.TimeStringConversions(s).toTime
-
-  val timeConverterJs: (JsString) => Time =
-    quantityConverterJs(timeQuantityCreator)
-
-  val massConverterJs: (JsString) => Mass =
-    quantityConverterJs(Mass.apply)
-
   val conf = parseString("""
     {
       velocity-unit: "km/h"
@@ -134,10 +112,10 @@ object BillSquants {
   def mkString[A <: Quantity[A]](unit: UnitOfMeasure[A]): A => JsString =
     (amount: A) => new JsString( (amount to unit) + " " + unit.symbol)
 
-  implicit val distance = BillSquantsImpl((s: JsString) => Length(s.value).get, lengthUnit)
-  implicit val velocity = BillSquantsImpl(velocityConverterJs, velocityUnit)
-  implicit val acceleration = BillSquantsImpl(accelerationConverterJs, accelerationUnit)
-  implicit val time = BillSquantsImpl(timeConverterJs, timeUnit)
-  implicit val mass = BillSquantsImpl(massConverterJs, massUnit)
+  implicit val distance = BillSquantsImpl(Length.apply, lengthUnit)
+  implicit val velocity = BillSquantsImpl(Velocity.apply, velocityUnit)
+  implicit val acceleration = BillSquantsImpl(Acceleration.apply, accelerationUnit)
+  implicit val time = BillSquantsImpl((s: String) => new TimeConversions.TimeStringConversions(s).toTime, timeUnit)
+  implicit val mass = BillSquantsImpl(Mass.apply, massUnit)
 
 }
