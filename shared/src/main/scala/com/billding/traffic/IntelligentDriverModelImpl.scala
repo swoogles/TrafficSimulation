@@ -9,7 +9,8 @@ import squants.space.Meters
 import scala.language.postfixOps
 import scala.math.{max, pow}
 
-case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends IntelligentDriverModel {
+case class IntelligentDriverModelImpl(name: String = "simpleIdm")
+    extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.
   // It's basically a magic value via research done by others.
   val aExp: Int = 4
@@ -31,34 +32,31 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends Intell
     * @return the acceleration to apply to the following vehicle.
     */
   def deltaVDimensionallySafe(
-                               v: Velocity,
-                               v0: Velocity,
-                               dV: Velocity,
-                               T: Time,
-                               a: Acceleration,
-                               b: Acceleration,
-                               s: Distance,
-                               s0: Distance
-                             ): Acceleration = {
+      v: Velocity,
+      v0: Velocity,
+      dV: Velocity,
+      T: Time,
+      a: Acceleration,
+      b: Acceleration,
+      s: Distance,
+      s0: Distance
+  ): Acceleration = {
 
-    val desiredDistance = sStar( v, dV, T, a, b, s0 )
-    val accelerationTerm = pow(v/v0, aExp)
+    val desiredDistance = sStar(v, dV, T, a, b, s0)
+    val accelerationTerm = pow(v / v0, aExp)
     val brakingTerm = pow(desiredDistance / s, 2)
 
     a * (1 - accelerationTerm - brakingTerm)
   }
 
-
-
   private def sStar(
-                     v: Velocity,
-                     dV: Velocity,
-                     T: Time,
-                     a: Acceleration,
-                     b: Acceleration,
-                     s0: Distance
-
-                   ): Distance = {
+      v: Velocity,
+      dV: Velocity,
+      T: Time,
+      a: Acceleration,
+      b: Acceleration,
+      s0: Distance
+  ): Distance = {
     /*
     If the desired distance is negative, that means:
       - We've gotten too close to the car in front of us
@@ -66,9 +64,9 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends Intell
       -We've hit the car in front of us
      */
     val desiredDistance =
-      (v*T).toMeters
-    + (v.toMetersPerSecond * dV.toMetersPerSecond) /
-      2 * Math.sqrt(a.toMetersPerSecondSquared*b.toMetersPerSecondSquared)
+      (v * T).toMeters
+    +(v.toMetersPerSecond * dV.toMetersPerSecond) /
+      2 * Math.sqrt(a.toMetersPerSecondSquared * b.toMetersPerSecondSquared)
     Meters(s0.toMeters + max(0.0, desiredDistance)) // This prevents reversing.
   }
 
@@ -82,5 +80,6 @@ object IntelligentDriverModelImpl {
   implicit val vf = BillSquants.velocity.format
   implicit val vQvf = BillSquants.velocity.formatQv
 
-  implicit val idmFormat: Format[IntelligentDriverModelImpl] = Json.format[IntelligentDriverModelImpl]
+  implicit val idmFormat: Format[IntelligentDriverModelImpl] =
+    Json.format[IntelligentDriverModelImpl]
 }

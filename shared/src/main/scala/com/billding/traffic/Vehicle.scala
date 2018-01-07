@@ -19,39 +19,36 @@ sealed trait Vehicle {
 }
 
 case class VehicleImpl(
-                        spatial: SpatialImpl,
-                        accelerationAbility: Acceleration,
-                        brakingAbility: Acceleration,
-                        weight: Mass
-                      ) extends Vehicle {
+    spatial: SpatialImpl,
+    accelerationAbility: Acceleration,
+    brakingAbility: Acceleration,
+    weight: Mass
+) extends Vehicle {
   def move(betterVec: QuantityVector[Distance]): VehicleImpl = {
-    copy(spatial =
-      spatial.copy(r=betterVec)
-    )
+    copy(spatial = spatial.copy(r = betterVec))
   }
 
   val width: Distance = spatial.dimensions.coordinates(0)
   val height: Distance = spatial.dimensions.coordinates(1)
 
-  override def updateSpatial(spatial: SpatialImpl) = this.copy(spatial = spatial)
+  override def updateSpatial(spatial: SpatialImpl) =
+    this.copy(spatial = spatial)
 
   def updateVelocity(newV: QuantityVector[Velocity]): VehicleImpl =
-    this.copy(spatial =
-      this.spatial.updateVelocity(newV)
-    )
+    this.copy(spatial = this.spatial.updateVelocity(newV))
 }
 
 object VehicleImpl {
 
   def simpleCar(p: QuantityVector[Distance],
                 v: QuantityVector[Velocity]): VehicleImpl = {
-    val d: QuantityVector[Length] = Spatial.convertToSVector(VehicleStats.Commuter.dimensions)
+    val d: QuantityVector[Length] =
+      Spatial.convertToSVector(VehicleStats.Commuter.dimensions)
     val spatial = Spatial.withVecs(p, v, d)
     VehicleImpl(spatial,
-      VehicleStats.Commuter.acceleration,
-      VehicleStats.Commuter.deceleration,
-      VehicleStats.Commuter.weight
-    )
+                VehicleStats.Commuter.acceleration,
+                VehicleStats.Commuter.deceleration,
+                VehicleStats.Commuter.weight)
   }
 
   def simpleCar(pIn: (Double, Double, Double, DistanceUnit),
@@ -61,13 +58,8 @@ object VehicleImpl {
     simpleCar(p, v)
   }
 
-
   implicit val mf = BillSquants.mass.format
   implicit val af = BillSquants.acceleration.format
 
   implicit val vehicleFormat: Format[VehicleImpl] = Json.format[VehicleImpl]
 }
-
-
-
-

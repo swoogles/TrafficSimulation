@@ -1,7 +1,15 @@
 package fr.iscpif.client.uimodules
 
 import com.billding.physics.Spatial
-import com.billding.traffic.{IntelligentDriverModelImpl, LaneImpl, PilotedVehicle, PilotedVehicleImpl, Scene, SceneImpl, StreetImpl}
+import com.billding.traffic.{
+  IntelligentDriverModelImpl,
+  LaneImpl,
+  PilotedVehicle,
+  PilotedVehicleImpl,
+  Scene,
+  SceneImpl,
+  StreetImpl
+}
 import rx.{Ctx, Rx, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
@@ -15,8 +23,8 @@ trait Serialization {
 }
 
 case class Disruptions(
-  disruptLane: Var[Boolean] = Var(false),
-  disruptLaneExisting: Var[Boolean] = Var(false)
+    disruptLane: Var[Boolean] = Var(false),
+    disruptLaneExisting: Var[Boolean] = Var(false)
 )
 
 trait ModelTrait {
@@ -32,25 +40,25 @@ trait ModelTrait {
   Thoughts about Vars/Rxs
     I think they should *only* relate to input, and not go down into any of the classes inside a
     given Scene, which does *not* interact directly with the user. The page model does, not the scene.
- */
-case class Model (
-  originalScene: SceneImpl,
-  serializationFeatures: SerializationFeatures,
-  // These should probably be gleaned from the scene itself.
-  speed: Var[Velocity] = Var(KilometersPerHour(50)),
-  carTiming: Var[Time] = Var(Seconds(3)),
-  paused: Var[Boolean] = Var(false),
-  resetScene: Var[Boolean] = Var(false),
-  vehicleCount: Var[Int] = Var(0),
-  disruptions: Disruptions = Disruptions()
+  */
+case class Model(
+    originalScene: SceneImpl,
+    serializationFeatures: SerializationFeatures,
+    // These should probably be gleaned from the scene itself.
+    speed: Var[Velocity] = Var(KilometersPerHour(50)),
+    carTiming: Var[Time] = Var(Seconds(3)),
+    paused: Var[Boolean] = Var(false),
+    resetScene: Var[Boolean] = Var(false),
+    vehicleCount: Var[Int] = Var(0),
+    disruptions: Disruptions = Disruptions()
 )(implicit ctx: Ctx.Owner)
-  extends Serialization
-  with ModelTrait
-{
+    extends Serialization
+    with ModelTrait {
   private implicit val DT = originalScene.dt
   // TODO Make this private
   val sceneVar: Var[SceneImpl] = Var(originalScene)
-  val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
+  val carTimingText: Rx.Dynamic[String] = Rx(
+    s"Current car timing ${carTiming()} ")
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
   val pauseText = Rx {

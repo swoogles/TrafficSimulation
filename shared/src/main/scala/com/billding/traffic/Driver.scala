@@ -23,46 +23,49 @@ trait Driver {
 }
 
 object Driver {
-  def commuter(
-                spatial: SpatialImpl,
-                idm: IntelligentDriverModelImpl) = {
+  def commuter(spatial: SpatialImpl, idm: IntelligentDriverModelImpl) = {
     val reactionTime: Time = (0.5 seconds)
     val preferredDynamicSpacing: Time = (1 seconds)
     val minimumDistance: Distance = (2 meters)
     val desiredSpeed: Velocity = (120.kilometers.per(hour))
-    DriverImpl(spatial, idm, reactionTime, preferredDynamicSpacing, minimumDistance, desiredSpeed)
+    DriverImpl(spatial,
+               idm,
+               reactionTime,
+               preferredDynamicSpacing,
+               minimumDistance,
+               desiredSpeed)
   }
 
-  def aggressive(
-                spatial: SpatialImpl,
-                idm: IntelligentDriverModelImpl) = {
+  def aggressive(spatial: SpatialImpl, idm: IntelligentDriverModelImpl) = {
     val reactionTime: Time = (0.5 seconds)
     val preferredDynamicSpacing: Time = (0.5 seconds)
     val minimumDistance: Distance = (1 meters)
     val desiredSpeed: Velocity = (150.kilometers.per(hour))
-    DriverImpl(spatial, idm, reactionTime, preferredDynamicSpacing, minimumDistance, desiredSpeed)
+    DriverImpl(spatial,
+               idm,
+               reactionTime,
+               preferredDynamicSpacing,
+               minimumDistance,
+               desiredSpeed)
   }
 
 }
 
-
-
 case class DriverImpl(
-  spatial: SpatialImpl,
-  idm: IntelligentDriverModelImpl,
-  reactionTime: Time,
-  preferredDynamicSpacing: Time,
-  minimumDistance: Distance,
-  desiredSpeed: Velocity
+    spatial: SpatialImpl,
+    idm: IntelligentDriverModelImpl,
+    reactionTime: Time,
+    preferredDynamicSpacing: Time,
+    minimumDistance: Distance,
+    desiredSpeed: Velocity
 ) extends Driver {
 
   def move(betterVec: QuantityVector[Distance]): DriverImpl = {
-    copy(spatial =
-      spatial.copy(r=betterVec)
-    )
+    copy(spatial = spatial.copy(r = betterVec))
   }
 
-  override def updateSpatial(spatial: SpatialImpl) = this.copy(spatial = spatial)
+  override def updateSpatial(spatial: SpatialImpl) =
+    this.copy(spatial = spatial)
 
 }
 

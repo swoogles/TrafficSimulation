@@ -37,7 +37,8 @@ object Client extends App {
     body // evaluates the initialization code of C
   }
 
-  val street = Street(Seconds(2), originSpatial, endingSpatial, speed.now, numLanes=1)
+  val street =
+    Street(Seconds(2), originSpatial, endingSpatial, speed.now, numLanes = 1)
 
   val canvasDimensions: (Length, Length) = (Kilometers(.25), Kilometers(.5))
   implicit val DT = Milliseconds(20)
@@ -73,7 +74,7 @@ object Client extends App {
   def run() {
     dom.document.body.appendChild(controlElements.createLayout())
 
-    val window: Rx[Window] = Rx{
+    val window: Rx[Window] = Rx {
       new Window(model.sceneVar())
     }
     dom.window.setInterval(() => {

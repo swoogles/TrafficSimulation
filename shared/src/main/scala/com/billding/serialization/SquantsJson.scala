@@ -2,7 +2,14 @@ package com.billding.serialization
 
 import scala.util.Try
 import squants.mass.{Kilograms, Mass}
-import squants.{Acceleration, Mass, Quantity, QuantityVector, Time, UnitOfMeasure}
+import squants.{
+  Acceleration,
+  Mass,
+  Quantity,
+  QuantityVector,
+  Time,
+  UnitOfMeasure
+}
 import squants.motion._
 import squants.space.{Length, Meters}
 import squants.time.{Milliseconds, Time, TimeConversions}
@@ -13,7 +20,7 @@ sealed trait BillSquants[T <: Quantity[T]] {
   def fromJsString: JsString => T // Why you gotta be a def, eh?
   val toJsString: T => JsString
 
-  implicit val singleWrites  = new Writes[T] {
+  implicit val singleWrites = new Writes[T] {
     override def writes(o: T): JsValue = toJsString(o)
   }
 
@@ -35,26 +42,32 @@ sealed trait BillSquants[T <: Quantity[T]] {
     }
   }
 
-  implicit val qvWrites: Writes[QuantityVector[T]] = new Writes[QuantityVector[T]] {
-    def writes(quantityVector: QuantityVector[T]) =
-      Json.toJson(
-        quantityVector.coordinates.map {
-          piece => singleWrites.writes(piece)
-        }
-      )
-  }
+  implicit val qvWrites: Writes[QuantityVector[T]] =
+    new Writes[QuantityVector[T]] {
+      def writes(quantityVector: QuantityVector[T]) =
+        Json.toJson(
+          quantityVector.coordinates.map { piece =>
+            singleWrites.writes(piece)
+          }
+        )
+    }
 
   implicit val formatQv: Format[QuantityVector[T]] =
     Format(generalReads, qvWrites)
 }
 
-case class BillSquantsImpl[T <: Quantity[T]](fromJsStringTry: (String => Try[T]), unit: UnitOfMeasure[T]) extends BillSquants[T] {
-  private def mkString[A <: Quantity[A]](unit: UnitOfMeasure[A]): A => JsString =
-    (amount: A) => new JsString( (amount to unit) + " " + unit.symbol)
+case class BillSquantsImpl[T <: Quantity[T]](
+    fromJsStringTry: (String => Try[T]),
+    unit: UnitOfMeasure[T])
+    extends BillSquants[T] {
+  private def mkString[A <: Quantity[A]](
+      unit: UnitOfMeasure[A]): A => JsString =
+    (amount: A) => new JsString((amount to unit) + " " + unit.symbol)
 
   val toJsString: T => JsString = mkString(unit)
 
-  private def quantityConverterJs[A <: Quantity[A]](quantityCreator: (String => Try[A])): (JsString) => A =
+  private def quantityConverterJs[A <: Quantity[A]](
+      quantityCreator: (String => Try[A])): (JsString) => A =
     (s: JsString) => quantityCreator(s.value).get
 
   def fromJsString: JsString => T = quantityConverterJs(fromJsStringTry)
@@ -111,12 +124,15 @@ object BillSquants {
 
   // Fucking awesome.
   def mkString[A <: Quantity[A]](unit: UnitOfMeasure[A]): A => JsString =
-    (amount: A) => new JsString( (amount to unit) + " " + unit.symbol)
+    (amount: A) => new JsString((amount to unit) + " " + unit.symbol)
 
   implicit val distance = BillSquantsImpl(Length.apply, lengthUnit)
   implicit val velocity = BillSquantsImpl(Velocity.apply, velocityUnit)
-  implicit val acceleration = BillSquantsImpl(Acceleration.apply, accelerationUnit)
-  implicit val time = BillSquantsImpl((s: String) => new TimeConversions.TimeStringConversions(s).toTime, timeUnit)
+  implicit val acceleration =
+    BillSquantsImpl(Acceleration.apply, accelerationUnit)
+  implicit val time = BillSquantsImpl(
+    (s: String) => new TimeConversions.TimeStringConversions(s).toTime,
+    timeUnit)
   implicit val mass = BillSquantsImpl(Mass.apply, massUnit)
 
 }

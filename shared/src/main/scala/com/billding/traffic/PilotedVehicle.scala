@@ -2,7 +2,13 @@ package com.billding.traffic
 
 import java.util.UUID
 
-import squants.motion.{Acceleration, Distance, DistanceUnit, KilometersPerHour, VelocityUnit}
+import squants.motion.{
+  Acceleration,
+  Distance,
+  DistanceUnit,
+  KilometersPerHour,
+  VelocityUnit
+}
 import com.billding.physics.{Spatial, SpatialForDefaults, SpatialImpl}
 import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
 import play.api.libs.json.{Format, Json}
@@ -12,7 +18,8 @@ import squants.{QuantityVector, Time, Velocity}
 sealed trait PilotedVehicle {
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
   def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration
-  def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicleImpl
+  def accelerateAlongCurrentDirection(dt: Time,
+                                      dP: Acceleration): PilotedVehicleImpl
   def spatial: SpatialImpl
   def tooClose(pilotedVehicle: PilotedVehicle): Boolean
   val width: Distance
@@ -30,38 +37,42 @@ object PilotedVehicle {
 
   val idm: IntelligentDriverModelImpl = new IntelligentDriverModelImpl
   def createVehicle(
-                     pIn1: (Double, Double, Double, LengthUnit),
-                     vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour),
-                   endingSpatial: SpatialImpl = Spatial.BLANK): PilotedVehicleImpl = {
+      pIn1: (Double, Double, Double, LengthUnit),
+      vIn1: (Double, Double, Double, VelocityUnit) =
+        (0, 0, 0, KilometersPerHour),
+      endingSpatial: SpatialImpl = Spatial.BLANK): PilotedVehicleImpl = {
     PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, endingSpatial)
   }
 
   def commuter(
-                pIn: (Double, Double, Double, DistanceUnit),
-                vIn: (Double, Double, Double, VelocityUnit),
-                idm: IntelligentDriverModelImpl,
-                destination: SpatialImpl
-              ): PilotedVehicleImpl = {
+      pIn: (Double, Double, Double, DistanceUnit),
+      vIn: (Double, Double, Double, VelocityUnit),
+      idm: IntelligentDriverModelImpl,
+      destination: SpatialImpl
+  ): PilotedVehicleImpl = {
     val spatial = Spatial(pIn, vIn, VehicleStats.Commuter.dimensions)
-      PilotedVehicleImpl(Driver.commuter(spatial, idm), VehicleImpl.simpleCar(pIn, vIn), destination)
+    PilotedVehicleImpl(Driver.commuter(spatial, idm),
+                       VehicleImpl.simpleCar(pIn, vIn),
+                       destination)
   }
   // TODO: Beware of arbitrary spacial. It should be locked down on Commuter.
   def commuter(
-              spatial: SpatialImpl,
-              idm: IntelligentDriverModelImpl,
-              destination: SpatialImpl = Spatial.BLANK
-              ): PilotedVehicleImpl = {
-    PilotedVehicleImpl(Driver.commuter(spatial, idm), VehicleImpl.simpleCar(spatial.r, spatial.v), destination)
+      spatial: SpatialImpl,
+      idm: IntelligentDriverModelImpl,
+      destination: SpatialImpl = Spatial.BLANK
+  ): PilotedVehicleImpl = {
+    PilotedVehicleImpl(Driver.commuter(spatial, idm),
+                       VehicleImpl.simpleCar(spatial.r, spatial.v),
+                       destination)
   }
 
 }
 
 case class PilotedVehicleImpl(
-  driver: DriverImpl,
-  vehicle: VehicleImpl,
-  destination: SpatialImpl,
-  uuid: UUID =
-  java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
+    driver: DriverImpl,
+    vehicle: VehicleImpl,
+    destination: SpatialImpl,
+    uuid: UUID = java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
 //new java.util.UUID(234, 2342)
 ) extends PilotedVehicle {
 
@@ -87,8 +98,10 @@ case class PilotedVehicleImpl(
     this.reactTo(SpatialForDefaults.disect(obstacle), speedLimit)
   }
 
-  def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicleImpl = {
-    val updatedSpatial: SpatialImpl = Spatial.accelerateAlongCurrentDirection(spatial, dt, dP, destination)
+  def accelerateAlongCurrentDirection(dt: Time,
+                                      dP: Acceleration): PilotedVehicleImpl = {
+    val updatedSpatial: SpatialImpl =
+      Spatial.accelerateAlongCurrentDirection(spatial, dt, dP, destination)
     this.copy(
       driver = driver.updateSpatial(updatedSpatial),
       vehicle = vehicle.updateSpatial(updatedSpatial)
@@ -103,8 +116,10 @@ case class PilotedVehicleImpl(
   }
 
   override def tooClose(pilotedVehicle: PilotedVehicle): Boolean = {
-    val bumperToBumperOffset = this.spatial.dimensions.coordinates.head + pilotedVehicle.spatial.dimensions.coordinates.head
-    (this.spatial.distanceTo(pilotedVehicle.spatial) - bumperToBumperOffset) < this.driver.minimumDistance
+    val bumperToBumperOffset = this.spatial.dimensions.coordinates.head + pilotedVehicle.spatial.dimensions.coordinates
+      .head
+    (this.spatial
+      .distanceTo(pilotedVehicle.spatial) - bumperToBumperOffset) < this.driver.minimumDistance
   }
 
   def stop(): PilotedVehicleImpl = {
@@ -135,5 +150,6 @@ case class PilotedVehicleImpl(
 }
 
 object PilotedVehicleImpl {
-  implicit val pilotedVehicleFormat: Format[PilotedVehicleImpl] = Json.format[PilotedVehicleImpl]
+  implicit val pilotedVehicleFormat: Format[PilotedVehicleImpl] =
+    Json.format[PilotedVehicleImpl]
 }

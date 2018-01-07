@@ -19,22 +19,27 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
   val canvasHeight = 800
   val canvasWidth = 1500
-  val spatialCanvas = SpatialCanvasImpl(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
+  val spatialCanvas = SpatialCanvasImpl(scene.canvasDimensions._1,
+                                        scene.canvasDimensions._2,
+                                        canvasHeight,
+                                        canvasWidth)
 
   val previousSvg: Node = dom.document.getElementsByTagName("svg").item(0)
-  if ( previousSvg != null ) {
+  if (previousSvg != null) {
     dom.document.body.removeChild(previousSvg)
   }
 
   val svgNode = {
     val child =
-      svgTags.svg(
-        width := canvasWidth,
-        height := canvasHeight,
+      svgTags
+        .svg(
+          width := canvasWidth,
+          height := canvasHeight,
 //        onclick := { (e: dom.MouseEvent) =>
 //          println(e)
 //        }
-      ).render
+        )
+        .render
     dom.document.body.appendChild(child.render)
     child
   }
@@ -58,11 +63,13 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
   }
 
   private def drawItemsInNewElement() = {
-    svgTags.g(
-      createSvgReps(
-        scene.applyToAllVehicles(carReal)
+    svgTags
+      .g(
+        createSvgReps(
+          scene.applyToAllVehicles(carReal)
+        )
       )
-    ).render
+      .render
   }
 
   private def carReal(vehicle: PilotedVehicle): G = {
@@ -86,7 +93,7 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
             href := "images/sedan.svg",
             width := renderedWidth.px,
             height := renderedHeight.px,
-              onclick := { (e: dom.MouseEvent) =>
+            onclick := { (e: dom.MouseEvent) =>
               println(vehicle.uuid)
             }
           )
@@ -95,4 +102,3 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
     svgTags.g(element).render
   }
 }
-

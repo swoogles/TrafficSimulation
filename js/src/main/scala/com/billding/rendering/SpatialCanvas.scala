@@ -13,8 +13,8 @@ trait SpatialCanvas {
 }
 
 case class SpatialCanvasImpl(
-  height: Distance,
-  width: Distance,
-  pixelHeight: Int,
-  pixelWidth: Int
+    height: Distance,
+    width: Distance,
+    pixelHeight: Int,
+    pixelWidth: Int
 ) extends SpatialCanvas

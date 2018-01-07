@@ -38,16 +38,18 @@ object CanvasRendering {
         -6.inches.per.pixel
           -pixel == int. It's the End of the Line.
    */
-  def render(canvas: HTMLCanvasElement, renderables: List[Renderable]): Unit = ???
+  def render(canvas: HTMLCanvasElement, renderables: List[Renderable]): Unit =
+    ???
 
   private def clear(canvas: HTMLCanvasElement) = {
-    val ctx = canvas.getContext("2d") .asInstanceOf[CanvasRenderingContext2D]
+    val ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
 //    def putImageData(imagedata: ImageData, dx: Double, dy: Double)
     ctx.clearRect(
-      0, 0, canvas.width, canvas.height
+      0,
+      0,
+      canvas.width,
+      canvas.height
     )
   }
 
 }
-
-

@@ -15,14 +15,14 @@ import squants.{Acceleration, Time, Velocity}
 class MOBIL {
   val safeBreaking = MetersPerSecondSquared(3) // aka b_save
   def approachingVehicleInNeighboringLane(
-    self: PilotedVehicleImpl,
-    desiredLane: LaneImpl
+      self: PilotedVehicleImpl,
+      desiredLane: LaneImpl
   ): VehicleImpl = ???
 
   def safetyCriterion(
-    self: PilotedVehicleImpl,
-    approachingVehicle: PilotedVehicleImpl, // aka B'
-    speedLimit: Velocity // Does this belong here?
+      self: PilotedVehicleImpl,
+      approachingVehicle: PilotedVehicleImpl, // aka B'
+      speedLimit: Velocity // Does this belong here?
   ): Boolean = {
     /*
       - Transpose self in front of approaching vehicle.
@@ -33,7 +33,6 @@ class MOBIL {
      */
     val shiftedSelf = self
 
-
     val potentialDeceleration: Acceleration = // aka  acc' (B')
       approachingVehicle.reactTo(shiftedSelf, speedLimit)
 
@@ -43,28 +42,31 @@ class MOBIL {
   /*
     In direct mathy terms:
     acc' (M') - acc (M) > p [ acc (B) + acc (B') - acc' (B) - acc' (B') ] + athr
-  */
+   */
   def incentiveCriterion(
-    self: PilotedVehicleImpl, // aka M
-    curLeadingVehicle: PilotedVehicleImpl, // Not in formula, but needed for acc(M)
-    newLeadingVehicle: PilotedVehicleImpl, // Not in formula, but needed for acc'(M')
-    curFollowingVehicle: PilotedVehicleImpl, // aka B
-    newFollowingVehicle: PilotedVehicleImpl, // aka B'
-    athr: Acceleration,
-    p: Double,
-    speedLimit: Velocity // Does this belong here?
-
+      self: PilotedVehicleImpl, // aka M
+      curLeadingVehicle: PilotedVehicleImpl, // Not in formula, but needed for acc(M)
+      newLeadingVehicle: PilotedVehicleImpl, // Not in formula, but needed for acc'(M')
+      curFollowingVehicle: PilotedVehicleImpl, // aka B
+      newFollowingVehicle: PilotedVehicleImpl, // aka B'
+      athr: Acceleration,
+      p: Double,
+      speedLimit: Velocity // Does this belong here?
   ): Boolean = {
     val shiftedSelf = self
     val currentAcceleration = self.reactTo(curLeadingVehicle, speedLimit)
-    val potentialAcceleration = shiftedSelf.reactTo(newLeadingVehicle, speedLimit)
-    val impactOnCurFollowerNoChange = curFollowingVehicle.reactTo(self, speedLimit) // acc(B)
-    val impactOnNewFollowerNoChange = newFollowingVehicle.reactTo(shiftedSelf, speedLimit) // acc(B')
-    val impactOnCurFollowerWithChange = curFollowingVehicle.reactTo(curLeadingVehicle, speedLimit) // acc'(B)
-    val impactOnNewFollowerWithChange = newFollowingVehicle.reactTo(newLeadingVehicle, speedLimit) // acc'(B')
+    val potentialAcceleration =
+      shiftedSelf.reactTo(newLeadingVehicle, speedLimit)
+    val impactOnCurFollowerNoChange =
+      curFollowingVehicle.reactTo(self, speedLimit) // acc(B)
+    val impactOnNewFollowerNoChange =
+      newFollowingVehicle.reactTo(shiftedSelf, speedLimit) // acc(B')
+    val impactOnCurFollowerWithChange =
+      curFollowingVehicle.reactTo(curLeadingVehicle, speedLimit) // acc'(B)
+    val impactOnNewFollowerWithChange =
+      newFollowingVehicle.reactTo(newLeadingVehicle, speedLimit) // acc'(B')
     (potentialAcceleration - currentAcceleration) >
       p * (impactOnCurFollowerNoChange + impactOnNewFollowerNoChange - impactOnCurFollowerWithChange - impactOnNewFollowerWithChange)
   }
-
 
 }

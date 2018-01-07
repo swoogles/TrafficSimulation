@@ -9,12 +9,14 @@ import play.api.libs.json.Json
 
 import scala.util.{Failure, Success}
 
-case class SerializationFeatures(hostName: String, port: Int, protocol: String) {
+case class SerializationFeatures(hostName: String,
+                                 port: Int,
+                                 protocol: String) {
   val fullHost = s"$protocol://$hostName:$port"
+
   /**
     * TODO: Deserialization is killing the vehicle source now. Not sure when that was introduced.
     */
-
   var serializedSceneJson: play.api.libs.json.JsValue = null
   var volatileScene: SceneImpl = null
   def deserializeIfNecessary(model: Model): Unit = {
@@ -23,7 +25,9 @@ case class SerializationFeatures(hostName: String, port: Int, protocol: String) 
       f.onComplete {
         case Success(xhr) => {
           val res =
-            Json.parse(xhr.responseText).as[SceneImpl] // Might want to use safer .asOpt
+            Json
+              .parse(xhr.responseText)
+              .as[SceneImpl] // Might want to use safer .asOpt
           model.loadScene(res)
         }
 
@@ -39,15 +43,14 @@ case class SerializationFeatures(hostName: String, port: Int, protocol: String) 
       serializedSceneJson = Json.toJson(curScene)
       volatileScene = curScene
 
-      val f = Ajax.post(s"$fullHost/writeScene", data = Json.toJson(curScene).toString)
+      val f = Ajax.post(s"$fullHost/writeScene",
+                        data = Json.toJson(curScene).toString)
       f.onComplete {
-        case Success(_) => println("serialized some stuff and sent it off")
+        case Success(_)     => println("serialized some stuff and sent it off")
         case Failure(cause) => println("failed: " + cause)
       }
       model.serializeScene() = false
     }
   }
-
-
 
 }

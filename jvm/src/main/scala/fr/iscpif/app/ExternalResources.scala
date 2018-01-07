@@ -23,14 +23,19 @@ object ExternalResources {
   )
 
   val mkStyleSheet =
-    (ref: String) => tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := ref)
+    (ref: String) =>
+      tags.link(tags.rel := "stylesheet",
+                tags.`type` := "text/css",
+                href := ref)
 
   val localResources =
-    allResources.map(_.localRef)
+    allResources
+      .map(_.localRef)
       .map(mkStyleSheet)
 
   val externalResources =
-    allResources.map(_.cdnRef)
+    allResources
+      .map(_.cdnRef)
       .map(mkStyleSheet)
 
 }

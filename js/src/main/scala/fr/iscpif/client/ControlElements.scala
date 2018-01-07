@@ -1,6 +1,17 @@
 package fr.iscpif.client
 
-import scalatags.JsDom.all.{cls, div, id, input, max, min, oninput, step, tpe, value}
+import scalatags.JsDom.all.{
+  cls,
+  div,
+  id,
+  input,
+  max,
+  min,
+  oninput,
+  step,
+  tpe,
+  value
+}
 import org.scalajs.dom.html.{Div, Input}
 import org.scalajs.dom.raw.HTMLDivElement
 import scalatags.JsDom.all._
@@ -19,10 +30,13 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
     )(
       normalButton("Pause", buttonBehaviors.togglePause),
       normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset),
-      normalButton("Serialize the scene", buttonBehaviors.initiateSceneSerialization),
-      normalButton("Deserialize the scene", buttonBehaviors.initiateSceneDeserialization),
+      normalButton("Serialize the scene",
+                   buttonBehaviors.initiateSceneSerialization),
+      normalButton("Deserialize the scene",
+                   buttonBehaviors.initiateSceneDeserialization),
       dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
-      dangerButton("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting)
+      dangerButton("Disrupt the flow Existing",
+                   buttonBehaviors.toggleDisruptExisting)
     ).render
 
   val sliders =
@@ -30,7 +44,6 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
       cls := "col-md-6 text-center"
     )(
       button(buttonBehaviors.model.carTimingText),
-
       input(
         tpe := "range",
         min := 10,
@@ -38,10 +51,8 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         value := 30,
         oninput := buttonBehaviors.updateSlider
       ),
-
       button(
-      )(buttonBehaviors.model.carSpeedText),
-
+        )(buttonBehaviors.model.carSpeedText),
       input(
         id := "speedSlider",
         tpe := "range",

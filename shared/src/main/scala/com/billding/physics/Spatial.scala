@@ -28,13 +28,13 @@ trait Spatial {
   def updateVelocity(newV: QuantityVector[Velocity]): SpatialImpl
 }
 
-case class SpatialImpl (
-                         r: QuantityVector[Distance],
-                         v: QuantityVector[Velocity],
-                         dimensions: QuantityVector[Distance]
+case class SpatialImpl(
+    r: QuantityVector[Distance],
+    v: QuantityVector[Velocity],
+    dimensions: QuantityVector[Distance]
 ) extends Spatial {
   val allAspects: List[QuantityVector[_]] = List(r, v, dimensions)
-  for ( aspect <- allAspects ) {
+  for (aspect <- allAspects) {
     assert(aspect.coordinates.length == numberOfDimensions)
   }
 
@@ -55,7 +55,9 @@ case class SpatialImpl (
     (vectorTo _) andThen (_.magnitude) apply obstacle
 
   def move(orientation: Orientation, distance: Distance) = {
-    val displacement = orientation.vec.map{x:Double => distance * x}
+    val displacement = orientation.vec.map { x: Double =>
+      distance * x
+    }
     this.copy(r = r + displacement)
   }
 
@@ -64,20 +66,26 @@ case class SpatialImpl (
 }
 
 object Spatial {
-  val ZERO_VELOCITY: (Double, Double, Double, VelocityUnit) = (0, 0, 0, MetersPerSecond)
-  val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = convertToSVector(ZERO_VELOCITY)
+  val ZERO_VELOCITY: (Double, Double, Double, VelocityUnit) =
+    (0, 0, 0, MetersPerSecond)
+  val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = convertToSVector(
+    ZERO_VELOCITY)
 
   val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = convertToSVector(ZERO_DIMENSIONS)
+  val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = convertToSVector(
+    ZERO_DIMENSIONS)
 
   def convertToSVector[T <: squants.Quantity[T]](
-    input: (Double, Double, Double, UnitOfMeasure[T])
+      input: (Double, Double, Double, UnitOfMeasure[T])
   ): QuantityVector[T] = {
     val (x, y, z, measurementUnit) = input
-    QuantityVector[T](measurementUnit(x), measurementUnit(y), measurementUnit(z))
+    QuantityVector[T](measurementUnit(x),
+                      measurementUnit(y),
+                      measurementUnit(z))
   }
 
-  def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
+  def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] =
+    ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
   def relativeVelocity(observer: Spatial, target: Spatial) = ???
   def isTouching(observer: Spatial, target: Spatial): Boolean = ???
@@ -96,18 +104,26 @@ object Spatial {
   new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
   new position:   	x(t+Δt) = x(t) + v(t)Δt + 1/2 (dv/dt) (Δt)2,
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
-  */
-  def accelerateAlongCurrentDirection(spatial: Spatial, dt: Time, dV: Acceleration, destination: Spatial): SpatialImpl = {
+   */
+  def accelerateAlongCurrentDirection(spatial: Spatial,
+                                      dt: Time,
+                                      dV: Acceleration,
+                                      destination: Spatial): SpatialImpl = {
     val unitVec =
-      spatial.vectorTo(destination)
-        .map{ r: Distance => r.toMeters}
+      spatial
+        .vectorTo(destination)
+        .map { r: Distance =>
+          r.toMeters
+        }
         .normalize
 
     val accelerationAlongDirectionOfTravel: QuantityVector[Acceleration] =
-      unitVec.map{ unitVecComponent => dV * unitVecComponent}
+      unitVec.map { unitVecComponent =>
+        dV * unitVecComponent
+      }
 
     val changeInVelocity: QuantityVector[Velocity] =
-      accelerationAlongDirectionOfTravel.map(_*dt)
+      accelerationAlongDirectionOfTravel.map(_ * dt)
 
     val newV: QuantityVector[Velocity] = spatial.v.plus(changeInVelocity)
     val newVNoReverse: QuantityVector[Velocity] =
@@ -117,22 +133,26 @@ object Spatial {
         newV
 
     val changeInPositionViaVelocity: QuantityVector[Length] =
-      if (spatial.v.normalize.dotProduct(unitVec).value == -1 )
+      if (spatial.v.normalize.dotProduct(unitVec).value == -1)
         ZERO_DIMENSIONS_VECTOR
       else
-        spatial.v.map{ v: Velocity => v * dt }
+        spatial.v.map { v: Velocity =>
+          v * dt
+        }
 
     val changeInPositionViaAcceleration: QuantityVector[Distance] =
-      accelerationAlongDirectionOfTravel.map{ p: Acceleration => .5 * p * dt.squared}
+      accelerationAlongDirectionOfTravel.map { p: Acceleration =>
+        .5 * p * dt.squared
+      }
 
     val newP = spatial.r + changeInPositionViaVelocity // + changeInPositionViaAcceleration
     SpatialImpl(newP, newVNoReverse, spatial.dimensions)
   }
 
   def apply(
-    pIn: (Double, Double, Double, DistanceUnit),
-    vIn: (Double, Double, Double, VelocityUnit),
-    dIn:((Double, Double, Double, LengthUnit))
+      pIn: (Double, Double, Double, DistanceUnit),
+      vIn: (Double, Double, Double, VelocityUnit),
+      dIn: ((Double, Double, Double, LengthUnit))
   ): SpatialImpl =
     SpatialImpl(
       convertToSVector(pIn),
@@ -141,14 +161,14 @@ object Spatial {
     )
 
   def apply(
-    pIn: (Double, Double, Double, DistanceUnit),
-    vIn: (Double, Double, Double, VelocityUnit)
+      pIn: (Double, Double, Double, DistanceUnit),
+      vIn: (Double, Double, Double, VelocityUnit)
   ): SpatialImpl = {
     apply(pIn, vIn, ZERO_DIMENSIONS)
   }
 
   def apply(
-    pIn: (Double, Double, Double, DistanceUnit)
+      pIn: (Double, Double, Double, DistanceUnit)
   ): SpatialImpl = {
     apply(pIn, ZERO_VELOCITY, ZERO_DIMENSIONS)
   }
@@ -156,9 +176,9 @@ object Spatial {
   val BLANK = Spatial.apply((0, 0, 0, Meters))
 
   def withVecs(
-    p: QuantityVector[Distance],
-    v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
-    d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
+      p: QuantityVector[Distance],
+      v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
+      d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
   ): SpatialImpl =
     SpatialImpl(p, v, d)
 
@@ -180,7 +200,8 @@ object SpatialForDefaults {
     def mostUsedWords[T : SpatialFor](t: T): List[(String, Int)] =
     LiteraryAnalyzer.mostUsedWords(makeSpatial(t))
    */
-  def disect[T : SpatialFor](t: T): Spatial = implicitly[SpatialFor[T]].makeSpatial(t)
+  def disect[T: SpatialFor](t: T): Spatial =
+    implicitly[SpatialFor[T]].makeSpatial(t)
 
   implicit val spatialForPilotedVehicle = new SpatialFor[PilotedVehicle] {
     def makeSpatial(a: PilotedVehicle): Spatial = {
@@ -191,4 +212,3 @@ object SpatialForDefaults {
   }
 
 }
-

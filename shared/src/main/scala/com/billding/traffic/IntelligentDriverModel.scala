@@ -8,6 +8,7 @@ import squants.{Acceleration, Time, Velocity}
     https://en.wikipedia.org/wiki/Intelligent_driver_model
  */
 trait IntelligentDriverModel {
+
   /**
     * This is one of the fundamental algorithms to this whole traffic project.
     * It is an established formula that produces realistic behavior in a single lane.
@@ -25,15 +26,15 @@ trait IntelligentDriverModel {
     * @return the acceleration to apply to the following vehicle.
     */
   def deltaVDimensionallySafe(
-                               v: Velocity,
-                               v0: Velocity,
-                               dV: Velocity,
-                               T: Time,
-                               a: Acceleration,
-                               b: Acceleration,
-                               s: Distance,
-                               s0: Distance
-                             ): Acceleration
+      v: Velocity,
+      v0: Velocity,
+      dV: Velocity,
+      T: Time,
+      a: Acceleration,
+      b: Acceleration,
+      s: Distance,
+      s0: Distance
+  ): Acceleration
 
 }
 

@@ -4,7 +4,19 @@ import scalacss.DevDefaults._
 import scalacss.internal.Macros.Color
 import scalacss.internal.mutable.StyleSheet
 
-import scalatags.JsDom.all.{cls, div, id, input, max, min, onclick, oninput, step, tpe, value}
+import scalatags.JsDom.all.{
+  cls,
+  div,
+  id,
+  input,
+  max,
+  min,
+  onclick,
+  oninput,
+  step,
+  tpe,
+  value
+}
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.{Div, Input}
 import org.scalajs.dom.raw.HTMLDivElement
@@ -23,13 +35,13 @@ object OutterStyles {
     val green = c"#00FF00"
 
     val standardButton = style(
-      addClassNames("bttn-simple", "bttn-xs",  "lightly-padded"), // Bootstrap classes
-      textAlign.center                     // Optional customisation
+      addClassNames("bttn-simple", "bttn-xs", "lightly-padded"), // Bootstrap classes
+      textAlign.center // Optional customisation
     )
   }
 
   import TrafficStyles.standardButton
-  def buttonBill(styleClasses: String): (String, (Event) => Unit ) => Input =
+  def buttonBill(styleClasses: String): (String, (Event) => Unit) => Input =
     (content, behavior) =>
       input(
         tpe := "button",
