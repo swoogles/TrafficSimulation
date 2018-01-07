@@ -29,15 +29,17 @@ sealed trait BillSquants[T <: Quantity[T]] {
   implicit val format: Format[T] =
     Format(singleReads, singleWrites)
 
-  // TODO: This is fairly confusing shit. Take a close look at it.
+  // TODO: This is fairly confusing/unsafe shit. Take a close look at it.
   implicit val generalReads = new Reads[QuantityVector[T]] {
     def reads(jsValue: JsValue): JsResult[QuantityVector[T]] = {
-      val blah: Seq[JsValue] = jsValue.as[Seq[JsValue]]
-      val egh: Seq[JsResult[T]] = blah.map(x => singleReads.reads(x))
-      val foo: Seq[T] = egh.map(jsRes => jsRes.get)
-      val der: QuantityVector[T] = QuantityVector.apply(foo: _*)
+      val foo: Seq[T] =
+        jsValue
+          .as[Seq[JsValue]]
+          .map(singleReads.reads(_))
+          .map(jsRes => jsRes.get)
+
       JsSuccess(
-        der
+        QuantityVector.apply(foo: _*)
       )
     }
   }
@@ -60,21 +62,13 @@ case class BillSquantsImpl[T <: Quantity[T]](
     fromJsStringTry: (String => Try[T]),
     unit: UnitOfMeasure[T])
     extends BillSquants[T] {
-  private def mkString[A <: Quantity[A]](
-      unit: UnitOfMeasure[A]): A => JsString =
-    (amount: A) => new JsString((amount to unit) + " " + unit.symbol)
 
-  val toJsString: T => JsString = mkString(unit)
+  val toJsString: T => JsString =
+    (amount: T) => new JsString((amount to unit) + " " + unit.symbol)
 
-  private def quantityConverterJs[A <: Quantity[A]](
-      quantityCreator: (String => Try[A])): (JsString) => A =
-    (s: JsString) => quantityCreator(s.value).get
-
-  def fromJsString: JsString => T = quantityConverterJs(fromJsStringTry)
+  def fromJsString: JsString => T =
+    (s: JsString) => fromJsStringTry(s.value).get
 }
-// Then new instances only need to pass the UnitOfMeasure in.
-//case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
-
 
 /*
   I would like for this class to have its units decided by property files, rather than being hardcoded here.
