@@ -76,8 +76,6 @@ lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).
     testFrameworks += new TestFramework("utest.runner.Framework"),
 
     libraryDependencies ++= Seq(
-      "com.github.pureconfig" %%% "pureconfig" % "0.8.0",
-      "com.github.pureconfig" %%% "pureconfig-squants" % "0.8.0",
       "com.lihaoyi" %%% "autowire" % autowireVersion,
       "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
       "com.lihaoyi" %%% "scalarx" % rxVersion,
@@ -108,6 +106,8 @@ lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).
   ).
   jvmSettings(
     libraryDependencies ++= Seq(
+      "com.github.pureconfig" %%% "pureconfig" % "0.8.0",
+      "com.github.pureconfig" %%% "pureconfig-squants" % "0.8.0",
       "org.scalatra" %% "scalatra" % scalatraVersion,
       "javax.servlet" % "javax.servlet-api" % servletApiVersion % "provided",
       "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,

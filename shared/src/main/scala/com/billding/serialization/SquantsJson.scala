@@ -75,28 +75,6 @@ case class BillSquantsImpl[T <: Quantity[T]](
 // Then new instances only need to pass the UnitOfMeasure in.
 //case class BillSquantsImpl[T <: Quantity[T]](fromJsString: JsString=>T, toJsString: T =>JsString) extends BillSquants[T]
 
-import com.typesafe.config.ConfigFactory.parseString
-import pureconfig.loadConfig
-import pureconfig.module.squants._
-
-case class HowConfiguration(velocityUnit: String)
-
-class ApplicationConfig() {
-  val conf = parseString("""
-    {
-      velocity-unit: "km/h"
-    }
-  """)
-
-  // conf: com.typesafe.config.Config = Config(SimpleConfigObject({"far":"42.195 km","hot":"56.7° C"}))
-
-  val config = loadConfig[HowConfiguration](conf).right.get
-  println("config: " + config)
-  println("config velocity unit: " + config.velocityUnit)
-
-  println("test velocity: " + Velocity("0 " + config.velocityUnit))
-
-}
 
 /*
   I would like for this class to have its units decided by property files, rather than being hardcoded here.
@@ -104,27 +82,11 @@ class ApplicationConfig() {
  */
 object BillSquants {
 
-  val conf = parseString("""
-    {
-      velocity-unit: "km/h"
-    }
-  """)
-
-  // conf: com.typesafe.config.Config = Config(SimpleConfigObject({"far":"42.195 km","hot":"56.7° C"}))
-
-  val config = new ApplicationConfig().config
-
-  println("test velocity: " + Velocity("0 " + config.velocityUnit))
-
   val lengthUnit = Meters
   val velocityUnit = KilometersPerHour
   val accelerationUnit = MetersPerSecondSquared
   val massUnit = Kilograms
   val timeUnit = Milliseconds
-
-  // Fucking awesome.
-  def mkString[A <: Quantity[A]](unit: UnitOfMeasure[A]): A => JsString =
-    (amount: A) => new JsString((amount to unit) + " " + unit.symbol)
 
   implicit val distance = BillSquantsImpl(Length.apply, lengthUnit)
   implicit val velocity = BillSquantsImpl(Velocity.apply, velocityUnit)
