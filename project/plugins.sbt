@@ -12,3 +12,7 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.3.0")  // (2
 addSbtPlugin("com.geirsson" % "sbt-scalafmt" % "1.4.0")
 
 
+// Auto push after I commit, when on a certain branch?
+// If $beginningOfCommit isUnchanged,
+//  -apppend, then --force-push
+// If this only happens on certain, known-to-be-volatile branches, I can feel okay about it.
