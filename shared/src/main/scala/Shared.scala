@@ -1,15 +1,9 @@
 package shared
 
-import breeze.linalg.DenseVector
 import squants.motion._
-import squants.space.{Length, LengthUnit, Meters}
 import squants.{
   DoubleVector,
-  Length,
   QuantityVector,
-  SVector,
-  Time,
-  UnitOfMeasure,
   Velocity
 }
 
@@ -45,17 +39,19 @@ trait SharedSpatial {
   val r: QuantityVector[Distance]
   val v: QuantityVector[Velocity]
   val dimensions: QuantityVector[Distance]
-  def relativeVelocity(obstacle: SharedSpatial): QuantityVector[Velocity] = {
-    (this.v - obstacle.v)
-  }
+  def relativeVelocity(obstacle: SharedSpatial): QuantityVector[Velocity] =
+    this.v - obstacle.v
+
   def relativeVelocityMag(obstacle: SharedSpatial): Velocity = {
     val z = (relativeVelocity _) andThen (_.magnitude)
     z.apply(obstacle)
   }
   def vectorTo(obstacle: SharedSpatial): QuantityVector[Distance] =
-    (obstacle.r - this.r)
+    obstacle.r - this.r
+
   def vectorToMag(vectorTo: QuantityVector[Distance]): Distance =
     vectorTo.magnitude
+
   def distanceTo(obstacle: SharedSpatial): Distance = {
     val z = (vectorTo _) andThen (_.magnitude)
     z.apply(obstacle)

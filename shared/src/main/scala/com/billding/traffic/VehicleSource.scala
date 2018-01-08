@@ -3,7 +3,6 @@ package com.billding.traffic
 import com.billding.physics.{Spatial, SpatialImpl}
 import com.billding.serialization.BillSquants
 import play.api.libs.json.{Format, Json}
-import squants.motion.KilometersPerHour
 import squants.{Time, Velocity}
 
 trait VehicleSource {
@@ -50,7 +49,7 @@ case class VehicleSourceImpl(
 }
 
 object VehicleSourceImpl {
-  implicit val tf = BillSquants.time.format
+  implicit val tf: Format[Time] = BillSquants.time.format
   implicit val vehicleSourceFormat: Format[VehicleSourceImpl] =
     Json.format[VehicleSourceImpl]
 }

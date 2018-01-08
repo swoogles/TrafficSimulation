@@ -73,7 +73,6 @@ case class PilotedVehicleImpl(
     vehicle: VehicleImpl,
     destination: SpatialImpl,
     uuid: UUID = java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
-//new java.util.UUID(234, 2342)
 ) extends PilotedVehicle {
 
   def spatial: SpatialImpl = vehicle.spatial

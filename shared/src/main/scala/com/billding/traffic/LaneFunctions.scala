@@ -1,7 +1,7 @@
 package com.billding.traffic
 
 import squants.motion.Acceleration
-import squants.{Time, Velocity}
+import squants.Time
 
 trait LaneFunctions {
   // TODO: Test new vehicles from source
