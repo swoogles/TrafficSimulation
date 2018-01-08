@@ -7,6 +7,8 @@ import squants.motion.{KilometersPerHour, Velocity, VelocityUnit}
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.{Milliseconds, Seconds, Time}
 
+case class NamedScene(name: String, scene: SceneImpl)
+
 class SampleSceneCreation(endingSpatial: SpatialImpl) {
   import PilotedVehicle.createVehicle
   implicit val DT: Time = Milliseconds(20)
@@ -23,7 +25,10 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
   def simplerVehicle(xPos: Double, xV: Double) =
     simpleVehicle((xPos, 0, 0, Meters), (xV, 0, 0, KilometersPerHour))
 
-  val scene1 = createWithVehicles(
+  val scene1 =
+    NamedScene(
+      "group encountering a stopped vehilce",
+    createWithVehicles(
     Seconds(300),
     List(
       simplerVehicle(120, 0.1),
@@ -33,20 +38,25 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
       simplerVehicle(15, 100)
     )
   )
-
-  val scene2 = createWithVehicles(
-    Seconds(100),
-    List(
-      simplerVehicle(125, 0),
-      simplerVehicle(120, 0),
-      simplerVehicle(115, 0),
-      simplerVehicle(110, 0),
-      simplerVehicle(105, 0),
-      simplerVehicle(100, 0),
-      simplerVehicle(95, 0),
-      simplerVehicle(90, 0)
     )
-  )
+
+  val scene2 =
+    NamedScene(
+      "stopped group getting back up to speed",
+      createWithVehicles(
+        Seconds(100),
+        List(
+          simplerVehicle(125, 0),
+          simplerVehicle(120, 0),
+          simplerVehicle(115, 0),
+          simplerVehicle(110, 0),
+          simplerVehicle(105, 0),
+          simplerVehicle(100, 0),
+          simplerVehicle(95, 0),
+          simplerVehicle(90, 0)
+        )
+      )
+    )
 
   val startingScene = scene1
 

@@ -1,19 +1,12 @@
 package fr.iscpif.client.uimodules
 
 import com.billding.physics.Spatial
-import com.billding.traffic.{
-  IntelligentDriverModelImpl,
-  LaneImpl,
-  PilotedVehicle,
-  PilotedVehicleImpl,
-  SceneImpl,
-}
+import com.billding.traffic.{IntelligentDriverModelImpl, LaneImpl, PilotedVehicle, PilotedVehicleImpl, SceneImpl}
 import rx.{Ctx, Rx, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
 import squants.time.Seconds
-
-import fr.iscpif.client.SerializationFeatures
+import fr.iscpif.client.{NamedScene, SerializationFeatures}
 
 trait Serialization {
   val serializeScene: Var[Boolean] = Var(false)
@@ -41,6 +34,7 @@ trait ModelTrait {
   */
 case class Model(
     originalScene: SceneImpl,
+    preloadedScenes: List[NamedScene] = List(),
     serializationFeatures: SerializationFeatures,
     // These should probably be gleaned from the scene itself.
     speed: Var[Velocity] = Var(KilometersPerHour(50)),
@@ -75,6 +69,19 @@ case class Model(
 
   def pause(): Unit =
     paused() = true
+
+  def loadNamedScene(name: String) = {
+//    preloadedScenes.co
+    val retrievedSceneAttempt =
+      preloadedScenes.filter(scene=> scene.name.equals(name))
+        .headOption
+    if ( retrievedSceneAttempt.isDefined ) {
+      loadScene(retrievedSceneAttempt.get.scene)
+    } else {
+      println("couldn't find a matching scene for name: " + name)
+    }
+
+  }
 
   def loadScene(scene: SceneImpl): Unit = {
     sceneVar() = scene
