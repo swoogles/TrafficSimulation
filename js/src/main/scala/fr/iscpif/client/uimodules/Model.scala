@@ -111,7 +111,7 @@ case class Model(
 
   def disruptLaneExisting(lane: LaneImpl): LaneImpl =
     if (this.disruptions.disruptLaneExisting.now == true)
-      disruptLaneExisting(lane)
+      disruptExisting(lane)
     else
       lane
 
