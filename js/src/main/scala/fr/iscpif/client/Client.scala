@@ -17,8 +17,6 @@ import scaladget.tools.JsRxTags._
 import scalatags.JsDom.all._
 import scalatags.generic
 
-
-
 @JSExportTopLevel("Client")
 object Client extends App {
   val speedLimit: Velocity = KilometersPerHour(65)
@@ -55,6 +53,7 @@ object Client extends App {
     Model(
       scenes.startingScene.scene,
       List(
+        scenes.emptyScene,
         scenes.scene1,
         scenes.scene2
       ),

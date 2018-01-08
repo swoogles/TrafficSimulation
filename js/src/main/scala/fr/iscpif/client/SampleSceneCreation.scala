@@ -25,19 +25,30 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
   def simplerVehicle(xPos: Double, xV: Double) =
     simpleVehicle((xPos, 0, 0, Meters), (xV, 0, 0, KilometersPerHour))
 
+  val emptyScene =
+    NamedScene(
+      "Empty Scene",
+      createWithVehicles(
+        Seconds(2),
+        List(
+          simplerVehicle(15, 100)
+        )
+      )
+    )
+
   val scene1 =
     NamedScene(
       "group encountering a stopped vehilce",
-    createWithVehicles(
-    Seconds(300),
-    List(
-      simplerVehicle(120, 0.1),
-      simplerVehicle(60, 100),
-      simplerVehicle(45, 100),
-      simplerVehicle(30, 100),
-      simplerVehicle(15, 100)
-    )
-  )
+      createWithVehicles(
+        Seconds(300),
+        List(
+          simplerVehicle(120, 0.1),
+          simplerVehicle(60, 100),
+          simplerVehicle(45, 100),
+          simplerVehicle(30, 100),
+          simplerVehicle(15, 100)
+        )
+      )
     )
 
   val scene2 =
