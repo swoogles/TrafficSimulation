@@ -10,8 +10,7 @@ import squants.space.Meters
 case class StreetImpl(
     lanes: List[LaneImpl],
     beginning: SpatialImpl,
-    end: SpatialImpl,
-    sourceTiming: Time
+    end: SpatialImpl
 ) {
 
   def updateLanes(f: LaneImpl => LaneImpl): StreetImpl =
@@ -37,7 +36,7 @@ object Street {
       val newEnd = end.move(Orientation.South, offset)
       Lane(sourceTiming, newBeginning, newEnd, speed)
     }
-    StreetImpl(lanes, beginning, end, sourceTiming)
+    StreetImpl(lanes, beginning, end)
   }
 
   def isVehicleBlockingTargetLane(street: StreetImpl,
