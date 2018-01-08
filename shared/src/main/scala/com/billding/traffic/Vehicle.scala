@@ -31,7 +31,7 @@ case class VehicleImpl(
   val width: Distance = spatial.dimensions.coordinates(0)
   val height: Distance = spatial.dimensions.coordinates(1)
 
-  override def updateSpatial(spatial: SpatialImpl) =
+  override def updateSpatial(spatial: SpatialImpl): VehicleImpl =
     this.copy(spatial = spatial)
 
   def updateVelocity(newV: QuantityVector[Velocity]): VehicleImpl =
@@ -58,8 +58,8 @@ object VehicleImpl {
     simpleCar(p, v)
   }
 
-  implicit val mf = BillSquants.mass.format
-  implicit val af = BillSquants.acceleration.format
+  implicit val mf: Format[Mass] = BillSquants.mass.format
+  implicit val af: Format[Acceleration] = BillSquants.acceleration.format
 
   implicit val vehicleFormat: Format[VehicleImpl] = Json.format[VehicleImpl]
 }

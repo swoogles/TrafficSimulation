@@ -5,9 +5,16 @@ import com.billding.serialization.BillSquants
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import play.api.libs.json.{Format, Json}
 import shared.Orientation
-import squants.motion._
+import squants.motion.{Distance, DistanceUnit, MetersPerSecond, VelocityUnit}
 import squants.space.{LengthUnit, Meters}
-import squants.{Length, QuantityVector, Time, UnitOfMeasure, Velocity}
+import squants.{
+  Acceleration,
+  Length,
+  QuantityVector,
+  Time,
+  UnitOfMeasure,
+  Velocity
+}
 
 trait Spatial {
   val numberOfDimensions = 3
@@ -46,7 +53,7 @@ case class SpatialImpl(
   }
 
   override def vectorTo(obstacle: Spatial): QuantityVector[Distance] =
-    (obstacle.r - this.r)
+    obstacle.r - this.r
 
   override def vectorToMag(vectorTo: QuantityVector[Distance]): Distance =
     vectorTo.magnitude
@@ -182,8 +189,10 @@ object Spatial {
   ): SpatialImpl =
     SpatialImpl(p, v, d)
 
-  implicit val dQvf = BillSquants.distance.formatQv
-  implicit val vQvf = BillSquants.velocity.formatQv
+  implicit val dQvf: Format[QuantityVector[Distance]] =
+    BillSquants.distance.formatQv
+  implicit val vQvf: Format[QuantityVector[Velocity]] =
+    BillSquants.velocity.formatQv
   implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
 }
 
@@ -203,12 +212,8 @@ object SpatialForDefaults {
   def disect[T: SpatialFor](t: T): Spatial =
     implicitly[SpatialFor[T]].makeSpatial(t)
 
-  implicit val spatialForPilotedVehicle = new SpatialFor[PilotedVehicle] {
-    def makeSpatial(a: PilotedVehicle): Spatial = {
-      a match {
-        case vehicle: PilotedVehicleImpl => vehicle.spatial
-      }
-    }
+  implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
+    case vehicle: PilotedVehicleImpl => vehicle.spatial
   }
 
 }

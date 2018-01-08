@@ -19,7 +19,7 @@ case class StreetImpl(
 }
 
 object StreetImpl {
-  implicit val tf = BillSquants.time.format
+  implicit val tf: Format[Time] = BillSquants.time.format
   implicit val streetFormat: Format[StreetImpl] = Json.format[StreetImpl]
 }
 

@@ -1,12 +1,9 @@
 package com.billding.traffic
 
-import com.billding.physics.{Spatial, SpatialImpl}
 import com.billding.serialization.BillSquants
 import play.api.libs.json.{Format, Json}
-import squants.motion.Distance
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
-import squants.{QuantityVector, Time, Velocity}
 import com.billding.physics.SpatialImpl
 import squants.motion.Distance
 import squants.{QuantityVector, Time, Velocity}
@@ -24,10 +21,10 @@ trait Driver {
 
 object Driver {
   def commuter(spatial: SpatialImpl, idm: IntelligentDriverModelImpl) = {
-    val reactionTime: Time = (0.5 seconds)
-    val preferredDynamicSpacing: Time = (1 seconds)
-    val minimumDistance: Distance = (2 meters)
-    val desiredSpeed: Velocity = (120.kilometers.per(hour))
+    val reactionTime: Time = 0.5 seconds
+    val preferredDynamicSpacing: Time = 1 seconds
+    val minimumDistance: Distance = 2 meters
+    val desiredSpeed: Velocity = 120.kilometers.per(hour)
     DriverImpl(spatial,
                idm,
                reactionTime,
@@ -37,10 +34,10 @@ object Driver {
   }
 
   def aggressive(spatial: SpatialImpl, idm: IntelligentDriverModelImpl) = {
-    val reactionTime: Time = (0.5 seconds)
-    val preferredDynamicSpacing: Time = (0.5 seconds)
-    val minimumDistance: Distance = (1 meters)
-    val desiredSpeed: Velocity = (150.kilometers.per(hour))
+    val reactionTime: Time = 0.5 seconds
+    val preferredDynamicSpacing: Time = 0.5 seconds
+    val minimumDistance: Distance = 1 meters
+    val desiredSpeed: Velocity = 150.kilometers.per(hour)
     DriverImpl(spatial,
                idm,
                reactionTime,
@@ -70,9 +67,9 @@ case class DriverImpl(
 }
 
 object DriverImpl {
-  implicit val df = BillSquants.distance.format
-  implicit val tf = BillSquants.time.format
-  implicit val vf = BillSquants.velocity.format
+  implicit val df: Format[Distance] = BillSquants.distance.format
+  implicit val tf: Format[Time] = BillSquants.time.format
+  implicit val vf: Format[Velocity] = BillSquants.velocity.format
 
   implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
 }

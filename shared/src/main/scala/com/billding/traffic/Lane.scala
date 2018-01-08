@@ -1,7 +1,7 @@
 package com.billding.traffic
 
 import cats.data.NonEmptyList
-import com.billding.physics.{Spatial, SpatialImpl}
+import com.billding.physics.SpatialImpl
 import squants.motion._
 import squants.space.Length
 import squants.{QuantityVector, Time, Velocity}

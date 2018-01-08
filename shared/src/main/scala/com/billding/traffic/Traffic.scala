@@ -54,9 +54,9 @@ case class SceneImpl(
 }
 
 object SceneImpl {
-  implicit val df = BillSquants.distance.format
-  implicit val tf = BillSquants.time.format
-  implicit val vf = BillSquants.velocity.format
+  implicit val df: Format[Distance] = BillSquants.distance.format
+  implicit val tf: Format[Time] = BillSquants.time.format
+  implicit val vf: Format[Velocity] = BillSquants.velocity.format
 
   implicit val sceneFormats: Format[SceneImpl] = Json.format[SceneImpl]
 }
@@ -66,15 +66,11 @@ trait ErrorMsg {
 }
 
 trait Universe {
-  // NOTE: Assumes vehicles travelling in same direction
   val speedLimit: Velocity
-  //  val idm: IntelligentDriverModel
   def calculateDriverResponse(vehicle: PilotedVehicle,
                               scene: Scene): Acceleration
   // TODO Work on this after Lane processing functions.
   def getAllActions(scene: Scene): List[(PilotedVehicle, Acceleration)]
   def update(scene: Scene, dt: Time): Validated[NonEmptyList[ErrorMsg], Scene]
-  //  def createScene(roads: Road): Scene
-  // Get vehicles that haven't taken a recent action.
   def reactiveVehicles(scene: Scene): List[PilotedVehicle]
 }

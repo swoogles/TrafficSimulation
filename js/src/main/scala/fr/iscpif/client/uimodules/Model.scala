@@ -6,9 +6,7 @@ import com.billding.traffic.{
   LaneImpl,
   PilotedVehicle,
   PilotedVehicleImpl,
-  Scene,
   SceneImpl,
-  StreetImpl
 }
 import rx.{Ctx, Rx, Var}
 import squants.Time
@@ -54,7 +52,7 @@ case class Model(
 )(implicit ctx: Ctx.Owner)
     extends Serialization
     with ModelTrait {
-  private implicit val DT = originalScene.dt
+  private implicit val DT: Time = originalScene.dt
   // TODO Make this private
   val sceneVar: Var[SceneImpl] = Var(originalScene)
   val carTimingText: Rx.Dynamic[String] = Rx(

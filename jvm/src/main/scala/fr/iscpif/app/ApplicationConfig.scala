@@ -13,8 +13,6 @@ class ApplicationConfig() {
 
   // conf: com.typesafe.config.Config = Config(SimpleConfigObject({"far":"42.195 km","hot":"56.7° C"}))
 
-
-
   val config = loadConfig[HowConfiguration](conf).right.get
   println("config: " + config)
   println("config velocity unit: " + config.velocityUnit)
@@ -25,4 +23,3 @@ class ApplicationConfig() {
 object UsinIt {
   val config = new ApplicationConfig().config
 }
-

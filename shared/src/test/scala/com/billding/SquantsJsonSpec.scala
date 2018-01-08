@@ -2,14 +2,14 @@ package com.billding
 
 import scala.language.postfixOps
 import com.billding.serialization.BillSquants
-import org.scalatest.FlatSpec
+import org.scalatest.{Assertion, FlatSpec}
 import org.scalatest.Matchers._
-import squants.{Length, Quantity, QuantityVector}
-import squants.motion._
-import squants.space.{Kilometers, LengthUnit, Meters}
-import play.api.libs.json.{JsArray, JsString, JsValue, Json}
+import squants.motion.{KilometersPerHour, MetersPerSecond, MetersPerSecondSquared}
+import squants.{Quantity, QuantityVector}
+import squants.space.{Kilometers, Meters}
+import play.api.libs.json.{JsString, Json}
 import squants.mass.Kilograms
-import squants.time.{Milliseconds, Seconds, Time}
+import squants.time.Seconds
 
 class SquantsJsonSpec extends FlatSpec {
   it should "roundtrip serialize a distance" in {
@@ -55,7 +55,7 @@ class SquantsJsonSpec extends FlatSpec {
     )
   }
 
-  def boilerTest[T <: Quantity[T]](billSquants: BillSquants[T], testVal: T, serializedTarget: JsString) = {
+  def boilerTest[T <: Quantity[T]](billSquants: BillSquants[T], testVal: T, serializedTarget: JsString): Assertion = {
     import billSquants.format
     val serializedJson = Json.toJson(testVal)
     pprint.pprintln(serializedJson)
@@ -66,7 +66,7 @@ class SquantsJsonSpec extends FlatSpec {
     result shouldBe testVal
   }
 
-  def boilerTestQv[T <: Quantity[T]](billSquants: BillSquants[T], testVal: QuantityVector[T]) = {
+  def boilerTestQv[T <: Quantity[T]](billSquants: BillSquants[T], testVal: QuantityVector[T]): Assertion = {
     import billSquants.formatQv
     val serializedJson = Json.toJson(testVal)
     pprint.pprintln(serializedJson)

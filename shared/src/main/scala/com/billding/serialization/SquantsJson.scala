@@ -1,18 +1,11 @@
 package com.billding.serialization
 
 import scala.util.Try
-import squants.mass.{Kilograms, Mass}
-import squants.{
-  Acceleration,
-  Mass,
-  Quantity,
-  QuantityVector,
-  Time,
-  UnitOfMeasure
-}
+import squants.mass.{Kilograms, Mass, MassUnit}
+import squants.{Quantity, QuantityVector, UnitOfMeasure}
 import squants.motion._
-import squants.space.{Length, Meters}
-import squants.time.{Milliseconds, Time, TimeConversions}
+import squants.space.{Length, LengthUnit, Meters}
+import squants.time.{Milliseconds, Time, TimeConversions, TimeUnit}
 import play.api.libs.json.Reads.JsStringReads
 import play.api.libs.json._
 
@@ -20,9 +13,7 @@ sealed trait BillSquants[T <: Quantity[T]] {
   def fromJsString: JsString => T // Why you gotta be a def, eh?
   val toJsString: T => JsString
 
-  implicit val singleWrites = new Writes[T] {
-    override def writes(o: T): JsValue = toJsString(o)
-  }
+  implicit val singleWrites: Writes[T] = (o: T) => toJsString(o)
 
   implicit val singleReads: Reads[T] = JsStringReads.map(fromJsString)
 
@@ -30,29 +21,25 @@ sealed trait BillSquants[T <: Quantity[T]] {
     Format(singleReads, singleWrites)
 
   // TODO: This is fairly confusing/unsafe shit. Take a close look at it.
-  implicit val generalReads = new Reads[QuantityVector[T]] {
-    def reads(jsValue: JsValue): JsResult[QuantityVector[T]] = {
-      val foo: Seq[T] =
-        jsValue
-          .as[Seq[JsValue]]
-          .map(singleReads.reads(_))
-          .map(jsRes => jsRes.get)
+  implicit val generalReads: Reads[QuantityVector[T]] = (jsValue: JsValue) => {
+    val foo: Seq[T] =
+      jsValue
+        .as[Seq[JsValue]]
+        .map(singleReads.reads)
+        .map(jsRes => jsRes.get)
 
-      JsSuccess(
-        QuantityVector.apply(foo: _*)
-      )
-    }
+    JsSuccess(
+      QuantityVector.apply(foo: _*)
+    )
   }
 
   implicit val qvWrites: Writes[QuantityVector[T]] =
-    new Writes[QuantityVector[T]] {
-      def writes(quantityVector: QuantityVector[T]) =
-        Json.toJson(
-          quantityVector.coordinates.map { piece =>
-            singleWrites.writes(piece)
-          }
-        )
-    }
+    (quantityVector: QuantityVector[T]) =>
+      Json.toJson(
+        quantityVector.coordinates.map { piece =>
+          singleWrites.writes(piece)
+        }
+    )
 
   implicit val formatQv: Format[QuantityVector[T]] =
     Format(generalReads, qvWrites)
@@ -64,7 +51,7 @@ case class BillSquantsImpl[T <: Quantity[T]](
     extends BillSquants[T] {
 
   val toJsString: T => JsString =
-    (amount: T) => new JsString((amount to unit) + " " + unit.symbol)
+    (amount: T) => JsString((amount to unit) + " " + unit.symbol)
 
   def fromJsString: JsString => T =
     (s: JsString) => fromJsStringTry(s.value).get
@@ -76,19 +63,22 @@ case class BillSquantsImpl[T <: Quantity[T]](
  */
 object BillSquants {
 
-  val lengthUnit = Meters
-  val velocityUnit = KilometersPerHour
-  val accelerationUnit = MetersPerSecondSquared
-  val massUnit = Kilograms
-  val timeUnit = Milliseconds
+  val lengthUnit: LengthUnit = Meters
+  val velocityUnit: VelocityUnit = KilometersPerHour
+  val accelerationUnit: AccelerationUnit = MetersPerSecondSquared
+  val massUnit: MassUnit = Kilograms
+  val timeUnit: TimeUnit = Milliseconds
 
-  implicit val distance = BillSquantsImpl(Length.apply, lengthUnit)
-  implicit val velocity = BillSquantsImpl(Velocity.apply, velocityUnit)
-  implicit val acceleration =
+  implicit val distance: BillSquantsImpl[Distance] =
+    BillSquantsImpl(Length.apply, lengthUnit)
+  implicit val velocity: BillSquantsImpl[Velocity] =
+    BillSquantsImpl(Velocity.apply, velocityUnit)
+  implicit val acceleration: BillSquantsImpl[Acceleration] =
     BillSquantsImpl(Acceleration.apply, accelerationUnit)
-  implicit val time = BillSquantsImpl(
+  implicit val time: BillSquantsImpl[Time] = BillSquantsImpl(
     (s: String) => new TimeConversions.TimeStringConversions(s).toTime,
     timeUnit)
-  implicit val mass = BillSquantsImpl(Mass.apply, massUnit)
+  implicit val mass: BillSquantsImpl[Mass] =
+    BillSquantsImpl(Mass.apply, massUnit)
 
 }
