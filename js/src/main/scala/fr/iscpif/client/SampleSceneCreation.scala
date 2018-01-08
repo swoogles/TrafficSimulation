@@ -20,23 +20,37 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
     createVehicle(pIn1, vIn1, endingSpatial)
   }
 
+  def simplerVehicle(xPos: Double, xV: Double) =
+    simpleVehicle((xPos, 0, 0, Meters), (xV, 0, 0, KilometersPerHour))
+
   val scene1 = createWithVehicles(
+    Seconds(300),
     List(
-      simpleVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour)),
-      simpleVehicle((80, 0, 0, Meters), (50, 0, 0, KilometersPerHour)),
-      simpleVehicle((60, 0, 0, Meters), (100, 0, 0, KilometersPerHour))
+      simplerVehicle(120, 0.1),
+      simplerVehicle(60, 100),
+      simplerVehicle(45, 100),
+      simplerVehicle(30, 100),
+      simplerVehicle(15, 100)
     )
   )
 
   val scene2 = createWithVehicles(
+    Seconds(100),
     List(
-      simpleVehicle((100, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
-      simpleVehicle((95, 0, 0, Meters), (0, 0, 0, KilometersPerHour)),
-      simpleVehicle((90, 0, 0, Meters), (0, 0, 0, KilometersPerHour))
+      simplerVehicle(125, 0),
+      simplerVehicle(120, 0),
+      simplerVehicle(115, 0),
+      simplerVehicle(110, 0),
+      simplerVehicle(105, 0),
+      simplerVehicle(100, 0),
+      simplerVehicle(95, 0),
+      simplerVehicle(90, 0)
     )
   )
 
-  def createWithVehicles(vehicles: List[PilotedVehicleImpl]): SceneImpl = {
+  val startingScene = scene1
+
+  def createWithVehicles(sourceTiming: Time, vehicles: List[PilotedVehicleImpl]): SceneImpl = {
 
     val speedLimit: Velocity = KilometersPerHour(65)
     val originSpatial = Spatial((0, 0, 0, Kilometers))
@@ -44,7 +58,7 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
     val canvasDimensions: (Length, Length) = (Kilometers(.25), Kilometers(.5))
 
     val lane =
-    Lane.apply(Seconds(2), originSpatial, endingSpatial, speedLimit, vehicles)
+    Lane.apply(sourceTiming, originSpatial, endingSpatial, speedLimit, vehicles)
     val street = StreetImpl(List(lane), originSpatial, endingSpatial)
     SceneImpl(
       List(street),

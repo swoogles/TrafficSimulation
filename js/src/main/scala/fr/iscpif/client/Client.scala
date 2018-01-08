@@ -53,7 +53,7 @@ object Client extends App {
   val scenes = new SampleSceneCreation(endingSpatial)
   val model: Model =
     Model(
-      scenes.scene2,
+      scenes.startingScene,
       SerializationFeatures("localhost", 8080, "http")
     )
 
