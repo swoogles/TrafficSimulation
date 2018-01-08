@@ -13,7 +13,7 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
   import PilotedVehicle.createVehicle
   implicit val DT: Time = Milliseconds(20)
 
-  def simpleVehicle(
+  private def simpleVehicle(
       pIn1: (Double, Double, Double, LengthUnit),
       vIn1: (Double, Double, Double, VelocityUnit) =
         (0, 0, 0, KilometersPerHour)
@@ -21,7 +21,7 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
     createVehicle(pIn1, vIn1, endingSpatial)
   }
 
-  def simplerVehicle(xPos: Double, xV: Double) =
+  private def simplerVehicle(xPos: Double, xV: Double) =
     simpleVehicle((xPos, 0, 0, Meters), (xV, 0, 0, KilometersPerHour))
 
   val emptyScene =
@@ -56,6 +56,31 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
       createWithVehicles(
         Seconds(100),
         List(
+          simplerVehicle(125, 0),
+          simplerVehicle(120, 0),
+          simplerVehicle(115, 0),
+          simplerVehicle(110, 0),
+          simplerVehicle(105, 0),
+          simplerVehicle(100, 0),
+          simplerVehicle(95, 0),
+          simplerVehicle(90, 0)
+        )
+      )
+    )
+
+  val multipleStoppedGroups =
+    NamedScene(
+      "multiple stopped groups getting back up to speed",
+      createWithVehicles(
+        Seconds(100),
+        List(
+          simplerVehicle(180, 0),
+          simplerVehicle(175, 0),
+          simplerVehicle(170, 0),
+          simplerVehicle(165, 0),
+          simplerVehicle(160, 0),
+          simplerVehicle(155, 0),
+          simplerVehicle(150, 0),
           simplerVehicle(125, 0),
           simplerVehicle(120, 0),
           simplerVehicle(115, 0),

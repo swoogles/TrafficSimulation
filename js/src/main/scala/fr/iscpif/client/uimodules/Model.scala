@@ -11,7 +11,6 @@ import com.billding.traffic.{
 import rx.{Ctx, Rx, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
-import squants.time.Seconds
 import fr.iscpif.client.{NamedScene, SerializationFeatures}
 
 trait Serialization {
