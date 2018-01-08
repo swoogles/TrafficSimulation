@@ -1,11 +1,7 @@
 package shared
 
 import squants.motion._
-import squants.{
-  DoubleVector,
-  QuantityVector,
-  Velocity
-}
+import squants.{DoubleVector, QuantityVector, Velocity}
 
 trait Api {
   def uuid(): String = java.util.UUID.randomUUID.toString

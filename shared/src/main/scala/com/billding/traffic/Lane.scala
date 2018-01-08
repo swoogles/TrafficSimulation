@@ -6,7 +6,7 @@ import squants.motion._
 import squants.space.Length
 import squants.{QuantityVector, Time, Velocity}
 
-trait Lane {
+sealed trait Lane {
   val vehicles: List[PilotedVehicleImpl]
   val vehicleAtInfinityForward: PilotedVehicleImpl
   def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl,
@@ -129,7 +129,7 @@ object Lane extends LaneFunctions {
   def fractionCompleted(pilotedVehicleImpl: PilotedVehicleImpl,
                         lane: LaneImpl): Double = {
     val vehicleDistance: Distance = pilotedVehicleImpl.distanceTo(lane.end)
-    (1.0 - vehicleDistance / lane.length)
+    1.0 - vehicleDistance / lane.length
   }
 
   def moveToNeighboringLane(pilotedVehicleImpl: PilotedVehicleImpl,
@@ -138,7 +138,6 @@ object Lane extends LaneFunctions {
     val fractionComplete = fractionCompleted(pilotedVehicleImpl, lane)
     val disruptionPoint: QuantityVector[Distance] =
       desiredLane.end.vectorTo(desiredLane.beginning).times(fractionComplete)
-    fractionComplete
     ???
   }
 }

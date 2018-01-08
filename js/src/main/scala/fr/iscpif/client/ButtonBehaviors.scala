@@ -39,7 +39,7 @@ case class ButtonBehaviors(model: Model)(implicit ctx: Ctx.Owner) {
   val initiateSceneSerialization =
     resetToTrue(model.serializeScene)
 
-  val initiateSceneDeserialization = {
+  val initiateSceneDeserialization: Event => Unit = {
     model.pause()
     resetToTrue(model.deserializeScene)
   }

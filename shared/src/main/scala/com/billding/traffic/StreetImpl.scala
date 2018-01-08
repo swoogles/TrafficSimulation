@@ -14,7 +14,7 @@ case class StreetImpl(
     sourceTiming: Time
 ) {
 
-  def updateLanes(f: LaneImpl => LaneImpl) =
+  def updateLanes(f: LaneImpl => LaneImpl): StreetImpl =
     copy(lanes = lanes map f)
 }
 
