@@ -51,7 +51,7 @@ case class Model(
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
   val carTiming: Var[Time] = Var(
-  originalScene.streets.flatMap(street=>street.lanes.map(lane=>lane.vehicleSource.spacingInTime)).head
+    originalScene.streets.flatMap(street=>street.lanes.map(lane=>lane.vehicleSource.spacingInTime)).head
   )
 
   val carTimingText: Rx.Dynamic[String] = Rx(
@@ -85,6 +85,7 @@ case class Model(
 
   def loadScene(scene: SceneImpl): Unit = {
     sceneVar() = scene
+    carTiming() = sceneVar.now.streets.flatMap(street=>street.lanes.map(lane=>lane.vehicleSource.spacingInTime)).head
     paused() = true
   }
 
