@@ -12,13 +12,11 @@ import scalatags.JsDom.all.{
   tpe,
   value
 }
-import org.scalajs.dom.html.{Div, Input}
-import org.scalajs.dom.raw.HTMLDivElement
+import org.scalajs.dom.html.Div
 import scalatags.JsDom.all._
 
 import scaladget.tools.JsRxTags._
 
-import OutterStyles.TrafficStyles.standardButton
 import OutterStyles.normalButton
 import OutterStyles.dangerButton
 
@@ -30,9 +28,9 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
     )(
       normalButton("Pause", buttonBehaviors.togglePause),
       normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset),
-      normalButton("Serialize the scene",
+      normalButton("Save the scene",
                    buttonBehaviors.initiateSceneSerialization),
-      normalButton("Deserialize the scene",
+      normalButton("Load the scene",
                    buttonBehaviors.initiateSceneDeserialization),
       dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
       dangerButton("Disrupt the flow Existing",
@@ -64,7 +62,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
       )
     )
 
-  def createLayout() = {
+  def createLayout(): Div = {
     val buttonPanel = div(
       id := "button-panel",
       cls := "row"
