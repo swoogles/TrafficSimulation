@@ -66,13 +66,13 @@ case class Model(
       "Pause"
   }
 
-  def togglePause() =
+  def togglePause(): Unit =
     paused() = !paused.now
 
-  def pause() =
+  def pause(): Unit =
     paused() = true
 
-  def loadScene(scene: SceneImpl) = {
+  def loadScene(scene: SceneImpl): Unit = {
     sceneVar() = scene
     paused() = true
   }
@@ -85,7 +85,7 @@ case class Model(
     this
   }
 
-  private def resetIfNecessary: Unit =
+  private def resetIfNecessary(): Unit =
     if (resetScene.now == true) {
       reset
     }
@@ -129,7 +129,7 @@ case class Model(
   private def updateScene(speedLimit: Velocity) =
     sceneVar() = sceneVar.now.updateSpeedLimit(speedLimit)
 
-  private def updateLanesAndScene() = {
+  private def updateLanesAndScene(): Unit = {
     if (this.paused.now == false) {
       val newScene = this.sceneVar.now.updateAllStreets(this.updateLane)
       this.sceneVar() = newScene
@@ -137,8 +137,8 @@ case class Model(
     }
   }
 
-  def respondToAllInput() = {
-    this.resetIfNecessary
+  def respondToAllInput(): Unit = {
+    this.resetIfNecessary()
     this.updateLanesAndScene()
     serializationFeatures.serializeIfNecessary(this)
     serializationFeatures.deserializeIfNecessary(this)
