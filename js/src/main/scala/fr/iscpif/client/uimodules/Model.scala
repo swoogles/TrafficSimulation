@@ -1,7 +1,13 @@
 package fr.iscpif.client.uimodules
 
 import com.billding.physics.Spatial
-import com.billding.traffic.{IntelligentDriverModelImpl, LaneImpl, PilotedVehicle, PilotedVehicleImpl, SceneImpl}
+import com.billding.traffic.{
+  IntelligentDriverModelImpl,
+  LaneImpl,
+  PilotedVehicle,
+  PilotedVehicleImpl,
+  SceneImpl
+}
 import rx.{Ctx, Rx, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
@@ -51,7 +57,10 @@ case class Model(
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
   val carTiming: Var[Time] = Var(
-    originalScene.streets.flatMap(street=>street.lanes.map(lane=>lane.vehicleSource.spacingInTime)).head
+    originalScene.streets
+      .flatMap(street =>
+        street.lanes.map(lane => lane.vehicleSource.spacingInTime))
+      .head
   )
 
   val carTimingText: Rx.Dynamic[String] = Rx(
@@ -70,12 +79,10 @@ case class Model(
   def pause(): Unit =
     paused() = true
 
-  def loadNamedScene(name: String) = {
-//    preloadedScenes.co
+  def loadNamedScene(name: String): Unit = {
     val retrievedSceneAttempt =
-      preloadedScenes.filter(scene=> scene.name.equals(name))
-        .headOption
-    if ( retrievedSceneAttempt.isDefined ) {
+      preloadedScenes.find(scene => scene.name.equals(name))
+    if (retrievedSceneAttempt.isDefined) {
       loadScene(retrievedSceneAttempt.get.scene)
     } else {
       println("couldn't find a matching scene for name: " + name)
@@ -85,12 +92,16 @@ case class Model(
 
   def loadScene(scene: SceneImpl): Unit = {
     sceneVar() = scene
-    carTiming() = sceneVar.now.streets.flatMap(street=>street.lanes.map(lane=>lane.vehicleSource.spacingInTime)).head
+    carTiming() = sceneVar.now.streets
+      .flatMap(street =>
+        street.lanes.map(lane => lane.vehicleSource.spacingInTime))
+      .head
     paused() = true
   }
 
 //  private def pause: ModelTrait = this.copy(paused = Var(true))
-  private def unpause: ModelTrait = this.copy(paused = Var(false))
+  private def unpause: ModelTrait =
+    this.copy(paused = Var(false)) // TODO think this should be just modifying the Rx value
   private def reset: ModelTrait = {
     sceneVar() = originalScene
     resetScene() = false

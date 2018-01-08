@@ -1,6 +1,17 @@
 package fr.iscpif.client
 
-import scalatags.JsDom.all.{cls, div, id, input, max, min, oninput, step, tpe, value}
+import scalatags.JsDom.all.{
+  cls,
+  div,
+  id,
+  input,
+  max,
+  min,
+  oninput,
+  step,
+  tpe,
+  value
+}
 import org.scalajs.dom.html.Div
 
 import scalatags.JsDom.all._
@@ -11,12 +22,13 @@ import org.scalajs.dom
 
 case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
-  val sceneSelections = for ( scene <- buttonBehaviors.model.preloadedScenes ) yield {
-    normalButton(
-    scene.name,
-      (e: dom.Event) => buttonBehaviors.model.loadNamedScene(scene.name))
+  val sceneSelections = for (scene <- buttonBehaviors.model.preloadedScenes)
+    yield {
+      normalButton(
+        scene.name,
+        (e: dom.Event) => buttonBehaviors.model.loadNamedScene(scene.name))
 
-  }
+    }
 
   val buttons: Div =
     div(
@@ -73,7 +85,6 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
       id := "slider-panel",
       cls := "row"
     )(sceneSelections)
-
 
     div(
       cls := "container"
