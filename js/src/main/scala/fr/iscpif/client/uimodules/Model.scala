@@ -44,7 +44,6 @@ case class Model(
     serializationFeatures: SerializationFeatures,
     // These should probably be gleaned from the scene itself.
     speed: Var[Velocity] = Var(KilometersPerHour(50)),
-    carTiming: Var[Time] = Var(Seconds(3)),
     paused: Var[Boolean] = Var(false),
     resetScene: Var[Boolean] = Var(false),
     vehicleCount: Var[Int] = Var(0),
@@ -55,9 +54,14 @@ case class Model(
   private implicit val DT: Time = originalScene.dt
   // TODO Make this private
   val sceneVar: Var[SceneImpl] = Var(originalScene)
+  val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
+
+  val carTiming: Var[Time] = Var(
+  originalScene.streets.flatMap(street=>street.lanes.map(lane=>lane.vehicleSource.spacingInTime)).head
+  )
+
   val carTimingText: Rx.Dynamic[String] = Rx(
     s"Current car timing ${carTiming()} ")
-  val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
   val pauseText = Rx {
     if (paused())
