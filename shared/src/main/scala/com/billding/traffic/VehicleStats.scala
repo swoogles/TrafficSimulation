@@ -1,5 +1,7 @@
 package com.billding.traffic
 
+import scala.language.postfixOps
+
 import squants.Acceleration
 import squants.mass.Kilograms
 import squants.space.LengthConversions._

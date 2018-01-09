@@ -1,10 +1,14 @@
 package com.billding.traffic
 
+import com.billding.physics.SpatialImpl
 import com.billding.serialization.BillSquants
+
 import play.api.libs.json.{Format, Json}
+
+import scala.language.postfixOps
+
 import squants.space.LengthConversions._
 import squants.time.TimeConversions._
-import com.billding.physics.SpatialImpl
 import squants.motion.Distance
 import squants.{QuantityVector, Time, Velocity}
 

@@ -1,5 +1,7 @@
 package com.billding.physics
 
+import scala.language.postfixOps
+
 import squants.{Acceleration, Length, QuantityVector, SVector}
 import squants.space.Kilometers
 import squants.space.LengthConversions._
