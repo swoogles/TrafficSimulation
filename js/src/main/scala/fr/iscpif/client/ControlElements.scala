@@ -82,7 +82,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
     )(sliders)
 
     val preloadedScenesPanel = div(
-      id := "slider-panel",
+      id := "sample-scenes-panel",
       cls := "row"
     )(sceneSelections)
 

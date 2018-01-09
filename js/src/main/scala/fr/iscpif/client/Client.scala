@@ -3,7 +3,6 @@ package fr.iscpif.client
 import com.billding.physics.Spatial
 import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
-import org.scalajs.dom.Element
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import squants.space.Kilometers
@@ -11,8 +10,6 @@ import squants.time.{Milliseconds, Time}
 import rx.Rx
 
 import scaladget.tools.JsRxTags._
-import scalatags.JsDom.all._
-import scalatags.generic
 
 @JSExportTopLevel("Client")
 object Client extends App {
@@ -30,7 +27,6 @@ object Client extends App {
   }
 
   implicit val DT: Time = Milliseconds(20)
-  // TODO create serialization here
   val scenes = new SampleSceneCreation(endingSpatial)
   val model: Model =
     Model(
@@ -52,11 +48,6 @@ object Client extends App {
   val GLOBAL_T = Rx {
     model.sceneVar().t
   }
-
-  // Just a snippet to remind me how to pass html parameters around
-  val startingColor: generic.Modifier[Element] = modifier(
-    color := "blue"
-  )
 
   @JSExport
   def run() {
