@@ -58,8 +58,11 @@ object Client {
   def run() {
     dom.document.body.appendChild(controlElements.createLayout())
 
+    val canvasHeight = 800
+    val canvasWidth = 1500
+
     val window: Rx[Window] = Rx {
-      new Window(sceneVar())
+      new Window(sceneVar(), canvasHeight, canvasWidth)
     }
     val x: Int = dom.window.setInterval(() => {
       model.respondToAllInput()
