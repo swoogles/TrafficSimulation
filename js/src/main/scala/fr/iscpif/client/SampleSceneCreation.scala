@@ -15,8 +15,7 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
 
   private def simpleVehicle(
       pIn1: (Double, Double, Double, LengthUnit),
-      vIn1: (Double, Double, Double, VelocityUnit) =
-        (0, 0, 0, KilometersPerHour)
+      vIn1: (Double, Double, Double, VelocityUnit)
   ) = {
     createVehicle(pIn1, vIn1, endingSpatial)
   }

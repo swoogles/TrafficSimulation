@@ -98,13 +98,9 @@ case class Model(
     paused() = true
   }
 
-//  private def pause: ModelTrait = this.copy(paused = Var(true))
-  private def unpause: ModelTrait =
-    this.copy(paused = Var(false)) // TODO think this should be just modifying the Rx value
-  private def reset: ModelTrait = {
+  private def reset: Unit = {
     sceneVar() = originalScene
     resetScene() = false
-    this
   }
 
   private def resetIfNecessary(): Unit =
@@ -120,7 +116,7 @@ case class Model(
     lane.addDisruptiveVehicle(car)
   }
 
-  def disruptLane(lane: LaneImpl, model: Model): LaneImpl =
+  def disruptLane(lane: LaneImpl): LaneImpl =
     if (this.disruptions.disruptLane.now == true)
       disrupt(lane)
     else
@@ -138,7 +134,7 @@ case class Model(
       lane
 
   private def updateLane(lane: LaneImpl): LaneImpl = {
-    val laneAfterDisruption = disruptLane(lane, this)
+    val laneAfterDisruption = disruptLane(lane)
     val laneAfterDisruptionExisting = disruptLaneExisting(laneAfterDisruption)
 
     val newSource =

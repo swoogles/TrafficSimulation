@@ -1,6 +1,5 @@
 package com.billding.physics
 
-import breeze.linalg.DenseVector
 import com.billding.serialization.BillSquants
 import com.billding.traffic.{PilotedVehicle, PilotedVehicleImpl}
 import play.api.libs.json.{Format, Json}
@@ -46,10 +45,10 @@ case class SpatialImpl(
   }
 
   override def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] =
-    (this.v - obstacle.v)
+    this.v - obstacle.v
 
   override def relativeVelocityMag(obstacle: Spatial): Velocity = {
-    (relativeVelocity _) andThen (_.magnitude) apply obstacle
+    relativeVelocity _ andThen (_.magnitude) apply obstacle
   }
 
   override def vectorTo(obstacle: Spatial): QuantityVector[Distance] =
@@ -59,7 +58,7 @@ case class SpatialImpl(
     vectorTo.magnitude
 
   override def distanceTo(obstacle: Spatial): Distance =
-    (vectorTo _) andThen (_.magnitude) apply obstacle
+    vectorTo _ andThen (_.magnitude) apply obstacle
 
   def move(orientation: Orientation, distance: Distance) = {
     val displacement = orientation.vec.map { x: Double =>
@@ -91,21 +90,21 @@ object Spatial {
                       measurementUnit(z))
   }
 
-  def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] =
-    ???
+  /*
+  A bunch of future posibilities:
+  def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
   def distanceBetween(observer: Spatial, target: Spatial): Distance = ???
-  def relativeVelocity(observer: Spatial, target: Spatial) = ???
+  def relativeVelocity(observer: Spatial, target: Spatial): QuantityVector[Velocity] = ???
   def isTouching(observer: Spatial, target: Spatial): Boolean = ???
   def onCollisionCourse(observer: Spatial, target: Spatial): Boolean = {
-    /*
      Consider approach described here:
      https://math.stackexchange.com/questions/1438002/determine-if-objects-are-moving-towards-each-other?newreg=900c99882b6b4753a3a89d6109f6b83c
       val relativeV = target.v - observer.v
       breeze.linalg.normalize(target.p + relativeV) == normalize(observer.p - relativeV)
-     */
     // Alternate solution: Determe in observer.p lines on the line defined by target.p + target.v
     ???
   }
+   */
 
   /*
   new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
@@ -152,7 +151,7 @@ object Spatial {
         .5 * p * dt.squared
       }
 
-    val newP = spatial.r + changeInPositionViaVelocity // + changeInPositionViaAcceleration
+    val newP = spatial.r + changeInPositionViaVelocity + changeInPositionViaAcceleration
     SpatialImpl(newP, newVNoReverse, spatial.dimensions)
   }
 
@@ -196,19 +195,11 @@ object Spatial {
   implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
 }
 
-/*
-  TODO: This class will enable spatial behavior with a class.
-  But maybe that's not needed... I dunno. It's late.
- */
 trait SpatialFor[A] {
   def makeSpatial(a: A): Spatial
 }
 
 object SpatialForDefaults {
-  /*
-    def mostUsedWords[T : SpatialFor](t: T): List[(String, Int)] =
-    LiteraryAnalyzer.mostUsedWords(makeSpatial(t))
-   */
   def disect[T: SpatialFor](t: T): Spatial =
     implicitly[SpatialFor[T]].makeSpatial(t)
 

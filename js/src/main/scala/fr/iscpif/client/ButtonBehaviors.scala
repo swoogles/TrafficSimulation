@@ -4,12 +4,12 @@ import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
-import org.scalajs.dom.raw.{HTMLInputElement, MouseEvent, WheelEvent}
-import rx.{Ctx, Obs, Var}
+import org.scalajs.dom.raw.{HTMLInputElement, WheelEvent}
+import rx.Var
 import squants.motion.KilometersPerHour
 import squants.time.Seconds
 
-case class ButtonBehaviors(model: Model)(implicit ctx: Ctx.Owner) {
+case class ButtonBehaviors(model: Model) {
 
   val togglePause: (Event) => Unit = (e: dom.Event) => {
     val elementClicked =
@@ -17,7 +17,7 @@ case class ButtonBehaviors(model: Model)(implicit ctx: Ctx.Owner) {
 
     println("paused status: " + model.paused.now) // why is this fuggin true??
     model.togglePause()
-    model.pauseText.trigger(elementClicked.value = model.pauseText.now)
+    elementClicked.value = model.pauseText.now
   }
 
   // TODO make mousewheel behavior

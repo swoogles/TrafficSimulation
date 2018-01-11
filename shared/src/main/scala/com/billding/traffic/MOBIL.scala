@@ -1,7 +1,7 @@
 package com.billding.traffic
 
-import squants.motion.{Distance, MetersPerSecondSquared}
-import squants.{Acceleration, Time, Velocity}
+import squants.motion.MetersPerSecondSquared
+import squants.{Acceleration, Velocity}
 
 /**
   MOBIL: Minimizing Overall Braking Induced by Lane Change
@@ -14,10 +14,12 @@ import squants.{Acceleration, Time, Velocity}
   */
 class MOBIL {
   val safeBreaking = MetersPerSecondSquared(3) // aka b_save
+  /* TODO Is this doing/going-to-do anything?
   def approachingVehicleInNeighboringLane(
       self: PilotedVehicleImpl,
       desiredLane: LaneImpl
   ): VehicleImpl = ???
+  */
 
   def safetyCriterion(
       self: PilotedVehicleImpl,
@@ -66,7 +68,7 @@ class MOBIL {
     val impactOnNewFollowerWithChange =
       newFollowingVehicle.reactTo(newLeadingVehicle, speedLimit) // acc'(B')
     (potentialAcceleration - currentAcceleration) >
-      p * (impactOnCurFollowerNoChange + impactOnNewFollowerNoChange - impactOnCurFollowerWithChange - impactOnNewFollowerWithChange)
+      p * (impactOnCurFollowerNoChange + impactOnNewFollowerNoChange - impactOnCurFollowerWithChange - impactOnNewFollowerWithChange) + athr
   }
 
 }

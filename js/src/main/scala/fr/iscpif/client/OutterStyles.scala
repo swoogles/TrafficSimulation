@@ -6,20 +6,13 @@ import scalacss.internal.mutable.StyleSheet
 
 import scalatags.JsDom.all.{
   cls,
-  div,
-  id,
   input,
-  max,
-  min,
   onclick,
-  oninput,
-  step,
   tpe,
   value
 }
 import org.scalajs.dom.Event
-import org.scalajs.dom.html.{Div, Input}
-import org.scalajs.dom.raw.HTMLDivElement
+import org.scalajs.dom.html.Input
 import scalatags.JsDom.all._
 import scalacss.ScalatagsCss._
 
@@ -50,7 +43,7 @@ object OutterStyles {
         onclick := behavior
       )(standardButton).render
 
-  val normalButton = buttonBill("bttn-primary")
-  val dangerButton = buttonBill("bttn-danger")
+  val normalButton: (String, Event => Unit) => Input = buttonBill("bttn-primary")
+  val dangerButton: (String, Event => Unit) => Input = buttonBill("bttn-danger")
 
 }

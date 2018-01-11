@@ -11,10 +11,6 @@ trait VehicleSource {
                      destination: SpatialImpl): Option[PilotedVehicleImpl]
 }
 
-object VehicleSource {
-  def withTimeSpacing(averageDt: Time): VehicleSource = ???
-}
-
 case class VehicleSourceImpl(
     spacingInTime: Time,
     spatial: SpatialImpl,

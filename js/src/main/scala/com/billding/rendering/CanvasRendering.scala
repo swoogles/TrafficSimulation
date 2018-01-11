@@ -1,10 +1,7 @@
 package com.billding.rendering
 
-// This isn't giving the correct class...
-//import org.scalajs.dom.html.Canvas
 import com.billding.physics.Spatial
-import org.scalajs.dom.raw.HTMLCanvasElement
-import org.scalajs.dom.{CanvasRenderingContext2D, ImageData}
+import org.scalajs.dom.ImageData
 
 trait SpriteMap
 
@@ -38,18 +35,5 @@ object CanvasRendering {
         -6.inches.per.pixel
           -pixel == int. It's the End of the Line.
    */
-  def render(canvas: HTMLCanvasElement, renderables: List[Renderable]): Unit =
-    ???
-
-  private def clear(canvas: HTMLCanvasElement) = {
-    val ctx = canvas.getContext("2d").asInstanceOf[CanvasRenderingContext2D]
-//    def putImageData(imagedata: ImageData, dx: Double, dy: Double)
-    ctx.clearRect(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    )
-  }
 
 }

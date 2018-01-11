@@ -1,6 +1,7 @@
 package fr.iscpif.client
 
 import com.billding.physics.Spatial
+import com.billding.traffic.SceneImpl
 import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 
@@ -12,19 +13,19 @@ import rx.Rx
 import scaladget.tools.JsRxTags._
 
 @JSExportTopLevel("Client")
-object Client extends App {
+object Client {
 
   val originSpatial = Spatial((0, 0, 0, Kilometers))
   val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
 
-  override def main(args: Array[String]): Unit = {
-    println("Hello world!")
-  }
-
-  override def delayedInit(body: => Unit) = {
-    println("dummy text, printed before initialization of C")
-    body // evaluates the initialization code of C
-  }
+//  override def main(args: Array[String]): Unit = {
+//    println("Hello world!")
+//  }
+//
+//  override def delayedInit(body: => Unit) = {
+//    println("dummy text, printed before initialization of C")
+//    body // evaluates the initialization code of C
+//  }
 
   implicit val DT: Time = Milliseconds(20)
   val scenes = new SampleSceneCreation(endingSpatial)
@@ -40,6 +41,10 @@ object Client extends App {
       SerializationFeatures("localhost", 8080, "http")
     )
 
+  val sceneVar: Rx[SceneImpl] = Rx {
+    model.sceneVar()
+  }
+
   val controlElements =
     ControlElements(
       ButtonBehaviors(model)
@@ -54,9 +59,9 @@ object Client extends App {
     dom.document.body.appendChild(controlElements.createLayout())
 
     val window: Rx[Window] = Rx {
-      new Window(model.sceneVar())
+      new Window(sceneVar())
     }
-    dom.window.setInterval(() => {
+    val x: Int = dom.window.setInterval(() => {
       model.respondToAllInput()
     }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
   }

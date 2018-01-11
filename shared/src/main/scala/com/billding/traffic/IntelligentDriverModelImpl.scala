@@ -5,7 +5,6 @@ import squants.Time
 import squants.motion.{Acceleration, Distance, Velocity}
 import squants.space.Meters
 
-import scala.language.postfixOps
 import scala.math.{max, pow}
 
 case class IntelligentDriverModelImpl(name: String = "simpleIdm")

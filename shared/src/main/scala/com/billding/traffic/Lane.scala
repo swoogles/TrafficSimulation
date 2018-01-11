@@ -1,7 +1,7 @@
 package com.billding.traffic
 
 import cats.data.NonEmptyList
-import com.billding.physics.SpatialImpl
+import com.billding.physics.{Spatial, SpatialImpl}
 import squants.motion._
 import squants.space.Length
 import squants.{QuantityVector, Time, Velocity}
@@ -83,7 +83,7 @@ object Lane extends LaneFunctions {
   def responsesInOneLanePrep(lane: Lane): List[Acceleration] = {
     lane.vehicles match {
       case Nil => Nil
-      case head :: _ =>
+      case _ :: _ =>
         responsesInOneLane(
           NonEmptyList(lane.vehicleAtInfinityForward, lane.vehicles),
           lane.speedLimit).toList
@@ -132,13 +132,17 @@ object Lane extends LaneFunctions {
     1.0 - vehicleDistance / lane.length
   }
 
+  // TODO See if this actually works... Very important to MOBIL algorithm.
   def moveToNeighboringLane(pilotedVehicleImpl: PilotedVehicleImpl,
                             lane: LaneImpl,
                             desiredLane: LaneImpl): LaneImpl = {
     val fractionComplete = fractionCompleted(pilotedVehicleImpl, lane)
     val disruptionPoint: QuantityVector[Distance] =
       desiredLane.end.vectorTo(desiredLane.beginning).times(fractionComplete)
-    ???
+    val movedVehicle = pilotedVehicleImpl.copy(
+      vehicle = pilotedVehicleImpl.vehicle.copy(spatial = Spatial.withVecs(disruptionPoint))
+    )
+    desiredLane.copy(vehicles = desiredLane.vehicles :+ movedVehicle)
   }
 }
 
@@ -227,6 +231,6 @@ case class LaneImpl(
 }
 
 object LaneImpl {
-  private implicit val vf: Format[Velocity] = BillSquants.velocity.format
+  import BillSquants.velocity.format
   implicit val laneFormat: Format[LaneImpl] = Json.format[LaneImpl]
 }

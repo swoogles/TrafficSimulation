@@ -3,11 +3,12 @@ package fr.iscpif.client
 import com.billding.traffic.SceneImpl
 import fr.iscpif.client.uimodules.Model
 
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 import org.scalajs.dom.ext.Ajax
 import play.api.libs.json.Json
 
 import scala.util.{Failure, Success}
+
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 case class SerializationFeatures(hostName: String,
                                  port: Int,
