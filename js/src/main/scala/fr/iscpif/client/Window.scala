@@ -10,15 +10,15 @@ import scalatags.JsDom.svgTags
 import scaladget.stylesheet.all.ms
 import scaladget.tools.JsRxTags._
 import org.scalajs.dom.raw._
-import org.scalajs.dom.svg.G
+import org.scalajs.dom.svg.{G, SVG}
 
+import scalatags.JsDom
 import scalatags.JsDom.all._
 
-class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
+class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ctx.Owner) {
+  println("making a new Window")
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
-  val canvasHeight = 800
-  val canvasWidth = 1500
   val spatialCanvas = SpatialCanvasImpl(scene.canvasDimensions._1,
                                         scene.canvasDimensions._2,
                                         canvasHeight,
@@ -29,29 +29,44 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
     dom.document.body.removeChild(previousSvg)
   }
 
-  val svgNode = {
-    val child =
+  val svgNode: JsDom.TypedTag[SVG] = {
       svgTags
         .svg(
           width := canvasWidth,
           height := canvasHeight,
-//        onclick := { (e: dom.MouseEvent) =>
-//          println(e)
-//        }
-        )
-        .render
-    dom.document.body.appendChild(child.render)
-    child
+        onclick := { (e: dom.MouseEvent) =>
+          println(e)
+        },
+          oninput := {
+            (wheelEvent: MouseEvent) =>
+              (wheelEvent: MouseEvent) => println("wheel event: " + wheelEvent)
+
+          },
+          onscroll := {
+            (wheelEvent: MouseEvent) =>
+              (wheelEvent: MouseEvent) => println("wheel event: " + wheelEvent)
+            // Add mousewheel behavior here?
+          },
+          onwheel := {
+            (wheelEvent: MouseEvent) =>
+              (wheelEvent: MouseEvent) => println("wheel event: " + wheelEvent)
+            // Add mousewheel behavior here?
+          }
+        )(drawItemsInNewElement())
+//        .render
   }
 
-  svgNode.appendChild(
-    drawItemsInNewElement()
-  )
+  // TODO: This is less terribly unfunctional.
+//  svgNode()
 
-  svgNode.forceRedraw()
+//  svgNode.appendChild(
+//    drawItemsInNewElement().render
+//  )
 
-  private def createSvgReps(drawables: Seq[SVGElement]): SVGElement = {
-    Rx {
+  dom.document.body.appendChild(svgNode.render)
+//  svgNode.forceRedraw()
+
+  private def createSvgReps(drawables: Seq[JsDom.TypedTag[SVGElement]]): JsDom.TypedTag[SVGElement] = {
       svgTags.g(
         for {
           t <- drawables
@@ -59,7 +74,6 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
           t
         }
       )
-    }
   }
 
   private def drawItemsInNewElement() = {
@@ -69,10 +83,9 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
           scene.applyToAllVehicles(carReal)
         )
       )
-      .render
   }
 
-  private def carReal(vehicle: PilotedVehicle): G = {
+  private def carReal(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
     val CIRCLE: String = "conceptG"
     import com.billding.physics.SpatialForDefaults
     import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
@@ -99,6 +112,8 @@ class Window(scene: Scene)(implicit ctx: Ctx.Owner) {
           )
         )
       }
-    svgTags.g(element).render
+
+    val bar: JsDom.TypedTag[G] = svgTags.g(element)
+    bar
   }
 }
