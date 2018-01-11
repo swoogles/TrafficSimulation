@@ -29,7 +29,7 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ct
     dom.document.body.removeChild(previousSvg)
   }
 
-  val svgNode: JsDom.TypedTag[SVG] = {
+  val svgNode: JsDom.TypedTag[SVG] =
       svgTags
         .svg(
           width := canvasWidth,
@@ -52,16 +52,14 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ct
               (wheelEvent: MouseEvent) => println("wheel event: " + wheelEvent)
             // Add mousewheel behavior here?
           }
-        )(drawItemsInNewElement())
-//        .render
-  }
-
-  // TODO: This is less terribly unfunctional.
-//  svgNode()
-
-//  svgNode.appendChild(
-//    drawItemsInNewElement().render
-//  )
+        )(
+          svgTags
+            .g(
+              createSvgReps(
+                scene.applyToAllVehicles(carReal)
+              )
+            )
+        )
 
   dom.document.body.appendChild(svgNode.render)
 //  svgNode.forceRedraw()
@@ -73,15 +71,6 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ct
         } yield {
           t
         }
-      )
-  }
-
-  private def drawItemsInNewElement() = {
-    svgTags
-      .g(
-        createSvgReps(
-          scene.applyToAllVehicles(carReal)
-        )
       )
   }
 
@@ -113,7 +102,6 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ct
         )
       }
 
-    val bar: JsDom.TypedTag[G] = svgTags.g(element)
-    bar
+    svgTags.g(element)
   }
 }
