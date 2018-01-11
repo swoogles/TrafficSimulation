@@ -61,9 +61,15 @@ object Client {
     val canvasHeight = 800
     val canvasWidth = 1500
 
-    val window: Rx[Window] = Rx {
+    val windowLocal: Rx[Window] = Rx {
       new Window(sceneVar(), canvasHeight, canvasWidth)
     }
+
+
+    windowLocal.trigger(
+      dom.document.body.appendChild(windowLocal.now.svgNode.render)
+    )
+
     val x: Int = dom.window.setInterval(() => {
       model.respondToAllInput()
     }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.

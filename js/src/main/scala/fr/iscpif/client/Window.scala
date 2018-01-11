@@ -37,19 +37,8 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ct
         onclick := { (e: dom.MouseEvent) =>
           println(e)
         },
-          oninput := {
-            (wheelEvent: MouseEvent) =>
-              (wheelEvent: MouseEvent) => println("wheel event: " + wheelEvent)
-
-          },
-          onscroll := {
-            (wheelEvent: MouseEvent) =>
-              (wheelEvent: MouseEvent) => println("wheel event: " + wheelEvent)
-            // Add mousewheel behavior here?
-          },
           onwheel := {
-            (wheelEvent: MouseEvent) =>
-              (wheelEvent: MouseEvent) => println("wheel event: " + wheelEvent)
+              (wheelEvent: MouseEvent) => println("we want to zoom in/out here." + wheelEvent)
             // Add mousewheel behavior here?
           }
         )(
@@ -60,9 +49,6 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ct
               )
             )
         )
-
-  dom.document.body.appendChild(svgNode.render)
-//  svgNode.forceRedraw()
 
   private def createSvgReps(drawables: Seq[JsDom.TypedTag[SVGElement]]): JsDom.TypedTag[SVGElement] = {
       svgTags.g(
