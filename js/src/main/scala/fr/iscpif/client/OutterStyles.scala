@@ -4,13 +4,7 @@ import scalacss.DevDefaults._
 import scalacss.internal.Macros.Color
 import scalacss.internal.mutable.StyleSheet
 
-import scalatags.JsDom.all.{
-  cls,
-  input,
-  onclick,
-  tpe,
-  value
-}
+import scalatags.JsDom.all.{cls, input, onclick, tpe, value}
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import scalatags.JsDom.all._
@@ -43,7 +37,8 @@ object OutterStyles {
         onclick := behavior
       )(standardButton).render
 
-  val normalButton: (String, Event => Unit) => Input = buttonBill("bttn-primary")
+  val normalButton: (String, Event => Unit) => Input = buttonBill(
+    "bttn-primary")
   val dangerButton: (String, Event => Unit) => Input = buttonBill("bttn-danger")
 
 }

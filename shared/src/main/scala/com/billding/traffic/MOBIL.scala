@@ -19,7 +19,7 @@ class MOBIL {
       self: PilotedVehicleImpl,
       desiredLane: LaneImpl
   ): VehicleImpl = ???
-  */
+   */
 
   def safetyCriterion(
       self: PilotedVehicleImpl,

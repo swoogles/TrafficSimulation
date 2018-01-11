@@ -4,6 +4,7 @@ import com.billding.physics.Spatial
 import com.billding.traffic.SceneImpl
 import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
+import org.scalajs.dom.raw.Node
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import squants.space.Kilometers
@@ -65,10 +66,13 @@ object Client {
       new Window(sceneVar(), canvasHeight, canvasWidth)
     }
 
-
-    windowLocal.trigger(
+    windowLocal.trigger {
+      val previousSvg: Node = dom.document.getElementsByTagName("svg").item(0)
+      if (previousSvg != null) {
+        dom.document.body.removeChild(previousSvg)
+      }
       dom.document.body.appendChild(windowLocal.now.svgNode.render)
-    )
+    }
 
     val x: Int = dom.window.setInterval(() => {
       model.respondToAllInput()

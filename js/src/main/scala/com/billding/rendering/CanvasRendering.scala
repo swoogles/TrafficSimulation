@@ -34,6 +34,6 @@ object CanvasRendering {
       -Come up with appropriate pixel <=> Distance conversion.
         -6.inches.per.pixel
           -pixel == int. It's the End of the Line.
-   */
+ */
 
 }

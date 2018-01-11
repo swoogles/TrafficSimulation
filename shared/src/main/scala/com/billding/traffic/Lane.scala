@@ -140,7 +140,8 @@ object Lane extends LaneFunctions {
     val disruptionPoint: QuantityVector[Distance] =
       desiredLane.end.vectorTo(desiredLane.beginning).times(fractionComplete)
     val movedVehicle = pilotedVehicleImpl.copy(
-      vehicle = pilotedVehicleImpl.vehicle.copy(spatial = Spatial.withVecs(disruptionPoint))
+      vehicle = pilotedVehicleImpl.vehicle.copy(
+        spatial = Spatial.withVecs(disruptionPoint))
     )
     desiredLane.copy(vehicles = desiredLane.vehicles :+ movedVehicle)
   }
