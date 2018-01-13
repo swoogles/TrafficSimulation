@@ -51,8 +51,9 @@ object Client {
       ButtonBehaviors(model)
     )
 
-  val GLOBAL_T = Rx {
-    model.sceneVar().t
+  // Should directly use sceneVar
+  val GLOBAL_T: Rx[Time] = Rx {
+    sceneVar().t
   }
 
   @JSExport

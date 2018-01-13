@@ -15,6 +15,10 @@ import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
 import scalatags.JsDom.all._
 
+/*
+  * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
+  * and canvas dimensions to not muck around with anything specific to the scene.
+  */
 class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     implicit ctx: Ctx.Owner) {
   println("making a new Window")
@@ -57,6 +61,7 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     )
   }
 
+  // TODO This should go somewhere else, on its own.
   private def carReal(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
     val CIRCLE: String = "conceptG"
     import com.billding.physics.SpatialForDefaults
