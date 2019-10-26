@@ -32,8 +32,8 @@ class SceneSpec extends  FlatSpec{
     )
 
     val vehicleSource = VehicleSourceImpl(Seconds(1), originSpatial, endingSpatial)
-    val lane = LaneImpl(vehicles, vehicleSource, originSpatial, endingSpatial, speedLimit)
-    val street = StreetImpl(List(lane), originSpatial, endingSpatial, Seconds(1))
+    val lane = Lane(vehicles, vehicleSource, originSpatial, endingSpatial, speedLimit)
+    val street = StreetImpl(List(lane), originSpatial, endingSpatial)
     val t = Seconds(500)
     implicit val dt = Milliseconds(500)
     val scene: Scene = SceneImpl(

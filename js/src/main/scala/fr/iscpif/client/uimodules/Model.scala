@@ -3,7 +3,7 @@ package fr.iscpif.client.uimodules
 import fr.iscpif.client.physics.Spatial
 import fr.iscpif.client.traffic.{
   IntelligentDriverModelImpl,
-  LaneImpl,
+  Lane,
   PilotedVehicle,
   SceneImpl
 }
@@ -111,29 +111,29 @@ case class Model(
   val car: PilotedVehicle =
     PilotedVehicle.commuter2(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
 
-  private def disrupt(lane: LaneImpl): LaneImpl = {
+  private def disrupt(lane: Lane): Lane = {
     this.disruptions.disruptLane() = false
     lane.addDisruptiveVehicle(car)
   }
 
-  def disruptLane(lane: LaneImpl): LaneImpl =
+  def disruptLane(lane: Lane): Lane =
     if (this.disruptions.disruptLane.now == true)
       disrupt(lane)
     else
       lane
 
-  private def disruptExisting(lane: LaneImpl): LaneImpl = {
+  private def disruptExisting(lane: Lane): Lane = {
     this.disruptions.disruptLaneExisting() = false
     lane.disruptVehicles()
   }
 
-  def disruptLaneExisting(lane: LaneImpl): LaneImpl =
+  def disruptLaneExisting(lane: Lane): Lane =
     if (this.disruptions.disruptLaneExisting.now == true)
       disruptExisting(lane)
     else
       lane
 
-  private def updateLane(lane: LaneImpl): LaneImpl = {
+  private def updateLane(lane: Lane): Lane = {
     val laneAfterDisruption = disruptLane(lane)
     val laneAfterDisruptionExisting = disruptLaneExisting(laneAfterDisruption)
 

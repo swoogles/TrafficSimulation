@@ -5,7 +5,7 @@ import squants.{Length, Time, Velocity}
 trait Scene {
   val canvasDimensions: (Length, Length) // This probably deserves to be inside a more specific Canvas class
 
-  def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl
+  def updateAllStreets(func: Lane => Lane): SceneImpl
 
   def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl
   def applyToAllVehicles[T](f: PilotedVehicle => T): List[T]
@@ -19,8 +19,8 @@ case class SceneImpl(
     canvasDimensions: (Length, Length)
 ) extends Scene {
 
-  private val updateLane: (LaneImpl) => LaneImpl =
-    (lane: LaneImpl) => Lane.update(lane, t, dt)
+  private val updateLane: (Lane) => Lane =
+    (lane: Lane) => Lane.update(lane, t, dt)
 
   def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl = {
     val nextT = this.t + this.dt
@@ -30,7 +30,7 @@ case class SceneImpl(
     SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
   }
 
-  def updateAllStreets(func: LaneImpl => LaneImpl): SceneImpl = {
+  def updateAllStreets(func: Lane => Lane): SceneImpl = {
     val newStreets = streets.map { street: StreetImpl =>
       street.updateLanes(func)
     }

@@ -6,12 +6,12 @@ import squants.{Time, Velocity}
 import squants.space.Meters
 
 case class StreetImpl(
-    lanes: List[LaneImpl],
-    beginning: SpatialImpl,
-    end: SpatialImpl
+                       lanes: List[Lane],
+                       beginning: SpatialImpl,
+                       end: SpatialImpl
 ) {
 
-  def updateLanes(f: LaneImpl => LaneImpl): StreetImpl =
+  def updateLanes(f: Lane => Lane): StreetImpl =
     copy(lanes = lanes map f)
 }
 
