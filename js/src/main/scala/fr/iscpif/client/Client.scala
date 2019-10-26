@@ -1,7 +1,7 @@
 package fr.iscpif.client
 
-import com.billding.physics.Spatial
-import com.billding.traffic.SceneImpl
+import fr.iscpif.client.previouslySharedCode.physics.Spatial
+import fr.iscpif.client.previouslySharedCode.traffic.SceneImpl
 import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 import org.scalajs.dom.raw.Node

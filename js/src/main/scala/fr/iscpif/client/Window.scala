@@ -1,7 +1,7 @@
 package fr.iscpif.client
 
 import com.billding.rendering.SpatialCanvasImpl
-import com.billding.traffic.{PilotedVehicle, Scene}
+import fr.iscpif.client.previouslySharedCode.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
 import org.scalajs.dom.raw.SVGElement
 import rx.{Ctx, Rx}
@@ -64,8 +64,8 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
   // TODO This should go somewhere else, on its own.
   private def carReal(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
     val CIRCLE: String = "conceptG"
-    import com.billding.physics.SpatialForDefaults
-    import com.billding.physics.SpatialForDefaults.spatialForPilotedVehicle
+    import fr.iscpif.client.previouslySharedCode.physics.SpatialForDefaults
+    import fr.iscpif.client.previouslySharedCode.physics.SpatialForDefaults.spatialForPilotedVehicle
     val spatial = SpatialForDefaults.disect(vehicle)
     val x = spatial.x / spatialCanvas.widthDistancePerPixel
     val y = spatial.y / spatialCanvas.heightDistancePerPixel

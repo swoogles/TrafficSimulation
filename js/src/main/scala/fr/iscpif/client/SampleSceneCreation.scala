@@ -1,7 +1,7 @@
 package fr.iscpif.client
 
-import com.billding.physics.{Spatial, SpatialImpl}
-import com.billding.traffic._
+import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialImpl}
+import fr.iscpif.client.previouslySharedCode.traffic._
 import squants.Length
 import squants.motion.{KilometersPerHour, Velocity, VelocityUnit}
 import squants.space.{Kilometers, LengthUnit, Meters}

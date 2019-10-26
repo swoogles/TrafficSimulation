@@ -1,7 +1,7 @@
 package com.billding.rendering
 
-import com.billding.traffic.{Lane, Vehicle}
-import com.billding.physics.Spatial
+import fr.iscpif.client.previouslySharedCode.traffic.{Lane, Vehicle}
+import fr.iscpif.client.previouslySharedCode.physics.Spatial
 import org.scalajs.dom.ImageData
 
 trait Renderator[T] {

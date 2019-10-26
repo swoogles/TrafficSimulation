@@ -1,6 +1,6 @@
 package fr.iscpif.client
 
-import com.billding.traffic.SceneImpl
+import fr.iscpif.client.previouslySharedCode.traffic.SceneImpl
 import fr.iscpif.client.uimodules.Model
 
 import org.scalajs.dom.ext.Ajax

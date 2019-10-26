@@ -1,7 +1,7 @@
 package fr.iscpif.client.uimodules
 
-import com.billding.physics.Spatial
-import com.billding.traffic.{
+import fr.iscpif.client.previouslySharedCode.physics.Spatial
+import fr.iscpif.client.previouslySharedCode.traffic.{
   IntelligentDriverModelImpl,
   LaneImpl,
   PilotedVehicle,

@@ -1,6 +1,6 @@
 package com.billding.rendering
 
-import com.billding.physics.Spatial
+import fr.iscpif.client.previouslySharedCode.physics.Spatial
 import org.scalajs.dom.ImageData
 
 trait SpriteMap
