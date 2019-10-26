@@ -58,8 +58,4 @@ object VehicleImpl {
     apply(p, v)
   }
 
-  implicit val mf: Format[Mass] = BillSquants.mass.format
-  implicit val af: Format[Acceleration] = BillSquants.acceleration.format
-
-  implicit val vehicleFormat: Format[VehicleImpl] = Json.format[VehicleImpl]
 }

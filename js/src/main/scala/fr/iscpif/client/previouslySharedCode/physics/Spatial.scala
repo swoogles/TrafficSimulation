@@ -181,11 +181,6 @@ object Spatial {
   ): SpatialImpl =
     SpatialImpl(p, v, d)
 
-  implicit val dQvf: Format[QuantityVector[Distance]] =
-    BillSquants.distance.formatQv
-  implicit val vQvf: Format[QuantityVector[Velocity]] =
-    BillSquants.velocity.formatQv
-  implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
 }
 
 trait SpatialFor[A] {
@@ -195,9 +190,5 @@ trait SpatialFor[A] {
 object SpatialForDefaults {
   def disect[T: SpatialFor](t: T): Spatial =
     implicitly[SpatialFor[T]].makeSpatial(t)
-
-  implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
-    case vehicle: PilotedVehicleImpl => vehicle.spatial
-  }
 
 }

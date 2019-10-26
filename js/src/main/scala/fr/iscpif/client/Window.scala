@@ -1,19 +1,22 @@
 package fr.iscpif.client
 
 import com.billding.rendering.SpatialCanvasImpl
-import fr.iscpif.client.previouslySharedCode.traffic.{PilotedVehicle, Scene}
+import fr.iscpif.client.previouslySharedCode.physics.{SpatialFor, SpatialImpl}
+import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
+import fr.iscpif.client.previouslySharedCode.traffic.{DriverImpl, PilotedVehicle, PilotedVehicleImpl, Scene}
 import org.scalajs.dom
 import org.scalajs.dom.raw.SVGElement
 import rx.{Ctx, Rx}
-
 import scalatags.JsDom.svgAttrs
 import scalatags.JsDom.svgTags
 import scaladget.stylesheet.all.ms
 import scaladget.tools.JsRxTags._
 import org.scalajs.dom.svg.{G, SVG}
-
 import scalatags.JsDom
 import scalatags.JsDom.all._
+import squants.motion._
+import squants.{Length, QuantityVector, Time, Velocity}
+import play.api.libs.json.{Format, Json}
 
 /*
   * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
@@ -65,7 +68,18 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
   private def carReal(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
     val CIRCLE: String = "conceptG"
     import fr.iscpif.client.previouslySharedCode.physics.SpatialForDefaults
-    import fr.iscpif.client.previouslySharedCode.physics.SpatialForDefaults.spatialForPilotedVehicle
+    implicit val df: Format[Distance] = BillSquants.distance.format
+    implicit val tf: Format[Time] = BillSquants.time.format
+    implicit val vf: Format[Velocity] = BillSquants.velocity.format
+    implicit val dQvf: Format[QuantityVector[Distance]] =
+      BillSquants.distance.formatQv
+    implicit val vQvf: Format[QuantityVector[Velocity]] =
+      BillSquants.velocity.formatQv
+    implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
+    implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
+    implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
+      case vehicle: PilotedVehicleImpl => vehicle.spatial
+    }
     val spatial = SpatialForDefaults.disect(vehicle)
     val x = spatial.x / spatialCanvas.widthDistancePerPixel
     val y = spatial.y / spatialCanvas.heightDistancePerPixel

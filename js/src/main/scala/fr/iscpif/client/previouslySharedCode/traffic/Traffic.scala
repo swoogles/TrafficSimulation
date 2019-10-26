@@ -1,10 +1,11 @@
 package fr.iscpif.client.previouslySharedCode.traffic
 
 import cats.data.{NonEmptyList, Validated}
+import fr.iscpif.client.previouslySharedCode.physics.{SpatialFor, SpatialImpl}
 import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
 import play.api.libs.json.{Format, Json}
 import squants.motion._
-import squants.{Length, Time, Velocity}
+import squants.{Length, Mass, QuantityVector, Time, Velocity}
 
 trait Scene {
   val canvasDimensions: (Length, Length) // This probably deserves to be inside a more specific Canvas class
@@ -58,8 +59,25 @@ object SceneImpl {
   implicit val tf: Format[Time] = BillSquants.time.format
   implicit val vf: Format[Velocity] = BillSquants.velocity.format
 
+  implicit val dQvf: Format[QuantityVector[Distance]] =
+    BillSquants.distance.formatQv
+  implicit val vQvf: Format[QuantityVector[Velocity]] =
+    BillSquants.velocity.formatQv
+  implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
+  implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
+  implicit val mf: Format[Mass] = BillSquants.mass.format
+  implicit val af: Format[Acceleration] = BillSquants.acceleration.format
+
+  implicit val vehicleFormat: Format[VehicleImpl] = Json.format[VehicleImpl]
+  implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
+    case vehicle: PilotedVehicleImpl => vehicle.spatial
+  }
+  implicit val pilotedVehicleFormat: Format[PilotedVehicleImpl] =
+    Json.format[PilotedVehicleImpl]
+
   implicit val laneFormat: Format[LaneImpl] = Json.format[LaneImpl]
   implicit val streetFormat: Format[StreetImpl] = Json.format[StreetImpl]
+
 
   implicit val sceneFormats: Format[SceneImpl] = Json.format[SceneImpl]
 }

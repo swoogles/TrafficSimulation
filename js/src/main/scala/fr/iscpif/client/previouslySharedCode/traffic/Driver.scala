@@ -71,9 +71,4 @@ case class DriverImpl(
 }
 
 object DriverImpl {
-  implicit val df: Format[Distance] = BillSquants.distance.format
-  implicit val tf: Format[Time] = BillSquants.time.format
-  implicit val vf: Format[Velocity] = BillSquants.velocity.format
-
-  implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
 }
