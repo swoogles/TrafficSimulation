@@ -135,9 +135,9 @@ object Spatial {
       if (spatial.v.normalize.dotProduct(unitVec).value == -1)
         ZERO_DIMENSIONS_VECTOR
       else
-        spatial.v.map { v: Velocity =>
-          v * dt
-        }
+        spatial
+          .v
+          .map { v: Velocity => v * dt }
 
     val changeInPositionViaAcceleration: QuantityVector[Distance] =
       accelerationAlongDirectionOfTravel.map { p: Acceleration =>
@@ -151,7 +151,7 @@ object Spatial {
   def apply(
       pIn: (Double, Double, Double, DistanceUnit),
       vIn: (Double, Double, Double, VelocityUnit),
-      dIn: ((Double, Double, Double, LengthUnit))
+      dIn: (Double, Double, Double, LengthUnit)
   ): SpatialImpl =
     SpatialImpl(
       convertToSVector(pIn),
