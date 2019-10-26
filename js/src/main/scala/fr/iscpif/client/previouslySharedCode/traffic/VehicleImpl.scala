@@ -40,8 +40,8 @@ case class VehicleImpl(
 
 object VehicleImpl {
 
-  def simpleCar(p: QuantityVector[Distance],
-                v: QuantityVector[Velocity]): VehicleImpl = {
+  def apply(p: QuantityVector[Distance],
+            v: QuantityVector[Velocity]): VehicleImpl = {
     val d: QuantityVector[Length] =
       Spatial.convertToSVector(VehicleStats.Commuter.dimensions)
     val spatial = Spatial.withVecs(p, v, d)
@@ -51,11 +51,11 @@ object VehicleImpl {
                 VehicleStats.Commuter.weight)
   }
 
-  def simpleCar(pIn: (Double, Double, Double, DistanceUnit),
-                vIn: (Double, Double, Double, VelocityUnit)): VehicleImpl = {
+  def apply(pIn: (Double, Double, Double, DistanceUnit),
+            vIn: (Double, Double, Double, VelocityUnit)): VehicleImpl = {
     val p = Spatial.convertToSVector(pIn)
     val v = Spatial.convertToSVector(vIn)
-    simpleCar(p, v)
+    apply(p, v)
   }
 
   implicit val mf: Format[Mass] = BillSquants.mass.format

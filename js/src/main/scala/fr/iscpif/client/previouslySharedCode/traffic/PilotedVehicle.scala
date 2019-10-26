@@ -52,7 +52,7 @@ object PilotedVehicle {
   ): PilotedVehicleImpl = {
     val spatial = Spatial(pIn, vIn, VehicleStats.Commuter.dimensions)
     PilotedVehicleImpl(Driver.commuter(spatial, idm),
-                       VehicleImpl.simpleCar(pIn, vIn),
+                       VehicleImpl.apply(pIn, vIn),
                        destination)
   }
   // TODO: Beware of arbitrary spacial. It should be locked down on Commuter.
@@ -62,7 +62,7 @@ object PilotedVehicle {
       destination: SpatialImpl = Spatial.BLANK
   ): PilotedVehicleImpl = {
     PilotedVehicleImpl(Driver.commuter(spatial, idm),
-                       VehicleImpl.simpleCar(spatial.r, spatial.v),
+                       VehicleImpl(spatial.r, spatial.v),
                        destination)
   }
 
