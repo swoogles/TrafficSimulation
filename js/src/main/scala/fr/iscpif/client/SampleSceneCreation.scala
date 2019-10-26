@@ -87,7 +87,7 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
   val startingScene = scene1
 
   def createWithVehicles(sourceTiming: Time,
-                         vehicles: List[PilotedVehicleImpl]): SceneImpl = {
+                         vehicles: List[PilotedVehicle]): SceneImpl = {
 
     val speedLimit: Velocity = KilometersPerHour(65)
     val originSpatial = Spatial((0, 0, 0, Kilometers))

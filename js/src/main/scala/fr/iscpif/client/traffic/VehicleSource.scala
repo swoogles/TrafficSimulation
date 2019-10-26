@@ -6,7 +6,7 @@ import squants.{Time, Velocity}
 trait VehicleSource {
   def produceVehicle(t: Time,
                      dt: Time,
-                     destination: SpatialImpl): Option[PilotedVehicleImpl]
+                     destination: SpatialImpl): Option[PilotedVehicle]
 }
 
 case class VehicleSourceImpl(
@@ -18,7 +18,7 @@ case class VehicleSourceImpl(
   override def produceVehicle(
       t: Time,
       dt: Time,
-      destination: SpatialImpl): Option[PilotedVehicleImpl] = {
+      destination: SpatialImpl): Option[PilotedVehicle] = {
     // Woohoo! this was the problem! t was coming in as ms after loading the new scene for some reason...
     // Should make this prettier/type-safe in the future.
     val res = t.toSeconds % spacingInTime.toSeconds
@@ -27,7 +27,7 @@ case class VehicleSourceImpl(
                                             startingVelocitySpacial.v,
                                             spatial.dimensions)
       Some(
-        PilotedVehicle.commuter(vehicleSpatial,
+        PilotedVehicle.commuter2(vehicleSpatial,
                                 new IntelligentDriverModelImpl,
                                 destination))
     } else Option.empty

@@ -5,7 +5,6 @@ import fr.iscpif.client.traffic.{
   IntelligentDriverModelImpl,
   LaneImpl,
   PilotedVehicle,
-  PilotedVehicleImpl,
   SceneImpl
 }
 import rx.{Ctx, Rx, Var}
@@ -109,8 +108,8 @@ case class Model(
       reset
     }
 
-  val car: PilotedVehicleImpl =
-    PilotedVehicle.commuter(Spatial.BLANK, new IntelligentDriverModelImpl)
+  val car: PilotedVehicle =
+    PilotedVehicle.commuter2(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
 
   private def disrupt(lane: LaneImpl): LaneImpl = {
     this.disruptions.disruptLane() = false

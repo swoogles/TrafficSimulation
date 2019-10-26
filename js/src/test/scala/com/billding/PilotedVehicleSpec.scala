@@ -2,7 +2,7 @@ package com.billding
 
 import com.billding.SquantsMatchers._
 import fr.iscpif.client.physics.Spatial
-import fr.iscpif.client.traffic.{IntelligentDriverModelImpl, PilotedVehicle}
+import fr.iscpif.client.traffic.{IntelligentDriverModelImpl, PilotedVehicle, PilotedVehicle}
 import org.scalatest.Matchers._
 import org.scalatest._
 import squants.motion._
@@ -23,8 +23,8 @@ class PilotedVehicleSpec extends FlatSpec {
                          pIn2: (Double, Double, Double, LengthUnit),
                          vIn2: (Double, Double, Double, VelocityUnit)
                        ): (PilotedVehicle, PilotedVehicle) = {
-    (PilotedVehicle.commuter(Spatial(pIn1, vIn1), idm, destination),
-      PilotedVehicle.commuter(Spatial(pIn2, vIn2), idm, destination))
+    (PilotedVehicle.commuter2(Spatial(pIn1, vIn1), idm, destination),
+      PilotedVehicle.commuter2(Spatial(pIn2, vIn2), idm, destination))
   }
 
   def accelerationTest (

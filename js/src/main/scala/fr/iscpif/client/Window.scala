@@ -1,7 +1,7 @@
 package fr.iscpif.client
 
 import fr.iscpif.client.physics.SpatialFor
-import fr.iscpif.client.traffic.{PilotedVehicle, PilotedVehicleImpl, Scene}
+import fr.iscpif.client.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
 import org.scalajs.dom.raw.SVGElement
 import rx.{Ctx, Rx}
@@ -62,11 +62,11 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
   }
 
   // TODO This should go somewhere else, on its own.
-  private def carReal(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
+  private def carReal(vehicle: PilotedVehicle) = {
     val CIRCLE: String = "conceptG"
 
     implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = { // TODO This should be a parameter to this method or the class constructor
-      case vehicle: PilotedVehicleImpl => vehicle.spatial
+      case vehicle: PilotedVehicle => vehicle.spatial
     }
     val spatial = SpatialForDefaults.disect(vehicle)
     val x = spatial.x / spatialCanvas.widthDistancePerPixel

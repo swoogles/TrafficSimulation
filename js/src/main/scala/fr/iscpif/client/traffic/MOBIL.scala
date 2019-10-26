@@ -22,9 +22,9 @@ class MOBIL {
    */
 
   def safetyCriterion(
-      self: PilotedVehicleImpl,
-      approachingVehicle: PilotedVehicleImpl, // aka B'
-      speedLimit: Velocity // Does this belong here?
+                       self: PilotedVehicle,
+                       approachingVehicle: PilotedVehicle, // aka B'
+                       speedLimit: Velocity // Does this belong here?
   ): Boolean = {
     /*
       - Transpose self in front of approaching vehicle.
@@ -46,14 +46,14 @@ class MOBIL {
     acc' (M') - acc (M) > p [ acc (B) + acc (B') - acc' (B) - acc' (B') ] + athr
    */
   def incentiveCriterion(
-      self: PilotedVehicleImpl, // aka M
-      curLeadingVehicle: PilotedVehicleImpl, // Not in formula, but needed for acc(M)
-      newLeadingVehicle: PilotedVehicleImpl, // Not in formula, but needed for acc'(M')
-      curFollowingVehicle: PilotedVehicleImpl, // aka B
-      newFollowingVehicle: PilotedVehicleImpl, // aka B'
-      athr: Acceleration,
-      p: Double,
-      speedLimit: Velocity // Does this belong here?
+                          self: PilotedVehicle, // aka M
+                          curLeadingVehicle: PilotedVehicle, // Not in formula, but needed for acc(M)
+                          newLeadingVehicle: PilotedVehicle, // Not in formula, but needed for acc'(M')
+                          curFollowingVehicle: PilotedVehicle, // aka B
+                          newFollowingVehicle: PilotedVehicle, // aka B'
+                          athr: Acceleration,
+                          p: Double,
+                          speedLimit: Velocity // Does this belong here?
   ): Boolean = {
     val shiftedSelf = self
     val currentAcceleration = self.reactTo(curLeadingVehicle, speedLimit)

@@ -7,9 +7,9 @@ import squants.motion.{Acceleration, Distance}
 import squants.{QuantityVector, Velocity}
 
 trait Lane {
-  val vehicles: List[PilotedVehicleImpl]
-  val vehicleAtInfinityForward: PilotedVehicleImpl
-  def vehicleCanBePlaced(pilotedVehicle: PilotedVehicleImpl,
+  val vehicles: List[PilotedVehicle]
+  val vehicleAtInfinityForward: PilotedVehicle
+  def vehicleCanBePlaced(pilotedVehicle: PilotedVehicle,
                          fractionCompleted: Double): Boolean
   val speedLimit: Velocity
 }
@@ -23,7 +23,7 @@ object Lane extends LaneFunctions {
       beginning: SpatialImpl,
       end: SpatialImpl,
       speedLimit: Velocity,
-      vehicles: List[PilotedVehicleImpl] = Nil
+      vehicles: List[PilotedVehicle] = Nil
   ): LaneImpl = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
@@ -40,8 +40,8 @@ object Lane extends LaneFunctions {
   }
 
   private def responsesInOneLane(
-      vehicles: NonEmptyList[PilotedVehicle],
-      speedLimit: Velocity
+                                  vehicles: NonEmptyList[PilotedVehicle],
+                                  speedLimit: Velocity
   ): NonEmptyList[Acceleration] = {
     val target = vehicles.head
     vehicles.tail match {
@@ -57,10 +57,10 @@ object Lane extends LaneFunctions {
   }
 
   def update(lane: LaneImpl, t: Time, dt: Time): LaneImpl = {
-    val newVehicleOption: Option[PilotedVehicleImpl] =
+    val newVehicleOption: Option[PilotedVehicle] =
       lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
 
-    val newVehicleList: List[PilotedVehicleImpl] =
+    val newVehicleList: List[PilotedVehicle] =
       newVehicleOption match {
         // This could be tweaked so it's always reducing to MAX_VEHICLES_PER_LANE, rather than only dropping 1
         case Some(newVehicle) if (lane.vehicles.size > MAX_VEHICLES_PER_LANE) =>
@@ -71,7 +71,7 @@ object Lane extends LaneFunctions {
 
     val laneWithNewVehicle = lane.copy(vehicles = newVehicleList)
     val dMomentumList = responsesInOneLanePrep(laneWithNewVehicle)
-    val newVehicles: List[PilotedVehicleImpl] =
+    val newVehicles: List[PilotedVehicle] =
       newVehicleList.zip(dMomentumList) map {
         case (vehicle, dMomentum) =>
           vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
@@ -91,15 +91,15 @@ object Lane extends LaneFunctions {
   }
 
   def attemptVehicleBeforeAndAfter(
-      pilotedVehicleImpl: PilotedVehicleImpl,
-      lane: LaneImpl): Option[(PilotedVehicleImpl, PilotedVehicleImpl)] = {
+                                    pilotedVehicleImpl: PilotedVehicle,
+                                    lane: LaneImpl): Option[(PilotedVehicle, PilotedVehicle)] = {
     for (before <- getVehicleBefore(pilotedVehicleImpl, lane);
          after <- getVehicleAfter(pilotedVehicleImpl, lane)) yield {
       (before, after)
     }
   }
 
-  def getVehicleIndex(pilotedVehicleImpl: PilotedVehicleImpl,
+  def getVehicleIndex(pilotedVehicleImpl: PilotedVehicle,
                       lane: LaneImpl): Option[Integer] = {
     val index: Int = lane.vehicles.indexWhere(_.equals(pilotedVehicleImpl))
     if (index == -1)
@@ -108,14 +108,14 @@ object Lane extends LaneFunctions {
       Some(index)
   }
 
-  def getVehicleBefore(pilotedVehicleImpl: PilotedVehicleImpl,
-                       lane: LaneImpl): Option[PilotedVehicleImpl] = {
+  def getVehicleBefore(pilotedVehicleImpl: PilotedVehicle,
+                       lane: LaneImpl): Option[PilotedVehicle] = {
     for (index <- getVehicleIndex(pilotedVehicleImpl, lane)) yield {
       lane.vehicles.lift(index - 1).getOrElse(lane.vehicleAtInfinityForward)
     }
   }
-  def getVehicleAfter(pilotedVehicleImpl: PilotedVehicleImpl,
-                      lane: LaneImpl): Option[PilotedVehicleImpl] = {
+  def getVehicleAfter(pilotedVehicleImpl: PilotedVehicle,
+                      lane: LaneImpl): Option[PilotedVehicle] = {
     for (index <- getVehicleIndex(pilotedVehicleImpl, lane)) yield {
       lane.vehicles.lift(index + 1).getOrElse(lane.vehicleAtInfinityBackwards)
     }
@@ -125,14 +125,14 @@ object Lane extends LaneFunctions {
     * TODO : getFractionBetweenEndpoints(pilotedVehicleImpl: PilotedVehicleImpl, lane: LaneImpl): Double
     *         getFractionalPoint(lane: LaneImpl): Spatial
     */
-  def fractionCompleted(pilotedVehicleImpl: PilotedVehicleImpl,
+  def fractionCompleted(pilotedVehicleImpl: PilotedVehicle,
                         lane: LaneImpl): Double = {
     val vehicleDistance: Distance = pilotedVehicleImpl.distanceTo(lane.end)
     1.0 - vehicleDistance / lane.length
   }
 
   // TODO See if this actually works... Very important to MOBIL algorithm.
-  def moveToNeighboringLane(pilotedVehicleImpl: PilotedVehicleImpl,
+  def moveToNeighboringLane(pilotedVehicleImpl: PilotedVehicle,
                             lane: LaneImpl,
                             desiredLane: LaneImpl): LaneImpl = {
     val fractionComplete = fractionCompleted(pilotedVehicleImpl, lane)
