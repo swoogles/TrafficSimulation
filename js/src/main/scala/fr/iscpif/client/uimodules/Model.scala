@@ -12,6 +12,7 @@ import rx.{Ctx, Rx, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
 import fr.iscpif.client.{NamedScene, SerializationFeatures}
+import play.api.libs.json.{Format, Json}
 
 trait Serialization {
   val serializeScene: Var[Boolean] = Var(false)
@@ -26,7 +27,7 @@ case class Disruptions(
 trait ModelTrait {
   def togglePause(): Unit
   def pause(): Unit
-  def respondToAllInput()
+  def respondToAllInput()(implicit format: Format[SceneImpl])
 }
 
 /**
@@ -155,7 +156,7 @@ case class Model(
     }
   }
 
-  def respondToAllInput(): Unit = {
+  def respondToAllInput()(implicit format: Format[SceneImpl]): Unit = {
     this.resetIfNecessary()
     this.updateLanesAndScene()
     serializationFeatures.serializeIfNecessary(this)

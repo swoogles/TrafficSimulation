@@ -3,7 +3,7 @@ package fr.iscpif.client
 import com.billding.rendering.SpatialCanvasImpl
 import fr.iscpif.client.previouslySharedCode.physics.{SpatialFor, SpatialImpl}
 import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import fr.iscpif.client.previouslySharedCode.traffic.{DriverImpl, PilotedVehicle, PilotedVehicleImpl, Scene}
+import fr.iscpif.client.previouslySharedCode.traffic.{DriverImpl, PilotedVehicle, PilotedVehicleImpl, Scene, SceneImpl}
 import org.scalajs.dom
 import org.scalajs.dom.raw.SVGElement
 import rx.{Ctx, Rx}
@@ -23,7 +23,7 @@ import play.api.libs.json.{Format, Json}
   * and canvas dimensions to not muck around with anything specific to the scene.
   */
 class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
-    implicit ctx: Ctx.Owner) {
+    implicit ctx: Ctx.Owner, format: Format[SceneImpl]) {
   println("making a new Window")
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.

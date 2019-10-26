@@ -5,6 +5,7 @@ import fr.iscpif.client.uimodules.Model
 
 import org.scalajs.dom.ext.Ajax
 import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
 import scala.util.{Failure, Success}
 
@@ -17,7 +18,7 @@ case class SerializationFeatures(hostName: String,
 
   var serializedSceneJson: play.api.libs.json.JsValue = null
   var volatileScene: SceneImpl = null
-  def deserializeIfNecessary(model: Model): Unit = {
+  def deserializeIfNecessary(model: Model)(implicit format: Format[SceneImpl]): Unit = {
     if (model.deserializeScene.now == true) {
       val f = Ajax.get(s"$fullHost/loadScene")
       f.onComplete {
@@ -35,7 +36,7 @@ case class SerializationFeatures(hostName: String,
     }
   }
 
-  def serializeIfNecessary(model: Model): Unit = {
+  def serializeIfNecessary(model: Model)(implicit format: Format[SceneImpl]): Unit = {
     if (model.serializeScene.now == true) {
       val curScene = model.sceneVar.now
       serializedSceneJson = Json.toJson(curScene)
