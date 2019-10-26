@@ -48,20 +48,4 @@ object Driver {
 
 }
 
-case class DriverImpl(
-    spatial: SpatialImpl,
-    idm: IntelligentDriverModelImpl,
-    reactionTime: Time,
-    preferredDynamicSpacing: Time,
-    minimumDistance: Distance,
-    desiredSpeed: Velocity
-) extends Driver {
 
-  def move(betterVec: QuantityVector[Distance]): DriverImpl = {
-    copy(spatial = spatial.copy(r = betterVec))
-  }
-
-  override def updateSpatial(spatial: SpatialImpl) =
-    this.copy(spatial = spatial)
-
-}
