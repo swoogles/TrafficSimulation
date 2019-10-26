@@ -1,7 +1,6 @@
 package fr.iscpif.client.traffic
 
-import cats.data.{NonEmptyList, Validated}
-import squants.{Acceleration, Length, Time, Velocity}
+import squants.{Length, Time, Velocity}
 
 trait Scene {
   val canvasDimensions: (Length, Length) // This probably deserves to be inside a more specific Canvas class
@@ -20,8 +19,8 @@ case class SceneImpl(
     canvasDimensions: (Length, Length)
 ) extends Scene {
 
-  private val updateLane: (LaneImpl) => LaneImpl = (lane: LaneImpl) =>
-    Lane.update(lane, t, dt)
+  private val updateLane: (LaneImpl) => LaneImpl =
+    (lane: LaneImpl) => Lane.update(lane, t, dt)
 
   def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl = {
     val nextT = this.t + this.dt
@@ -48,18 +47,4 @@ case class SceneImpl(
     }
   }
 
-}
-
-trait ErrorMsg {
-  val description: String
-}
-
-trait Universe {
-  val speedLimit: Velocity
-  def calculateDriverResponse(vehicle: PilotedVehicle,
-                              scene: Scene): Acceleration
-  // TODO Work on this after Lane processing functions.
-  def getAllActions(scene: Scene): List[(PilotedVehicle, Acceleration)]
-  def update(scene: Scene, dt: Time): Validated[NonEmptyList[ErrorMsg], Scene]
-  def reactiveVehicles(scene: Scene): List[PilotedVehicle]
 }

@@ -37,7 +37,3 @@ trait IntelligentDriverModel {
   ): Acceleration
 
 }
-
-object DefaultDriverModel {
-  val idm = new IntelligentDriverModelImpl
-}

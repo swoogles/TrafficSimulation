@@ -15,9 +15,6 @@ case class StreetImpl(
     copy(lanes = lanes map f)
 }
 
-object StreetImpl {
-}
-
 object Street {
   def apply(sourceTiming: Time,
             beginning: SpatialImpl,
