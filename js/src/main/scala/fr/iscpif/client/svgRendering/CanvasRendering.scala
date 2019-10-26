@@ -1,15 +1,5 @@
 package fr.iscpif.client.svgRendering
 
-import fr.iscpif.client.physics.Spatial
-import org.scalajs.dom.ImageData
-
-trait SpriteMap
-
-trait Renderable {
-  val sprites: ImageData
-  val spatial: Spatial
-}
-
 object CanvasRendering {
   /*
     TODO This has NO concept of svg scaling, so the cars could very well be GINORMOUS.

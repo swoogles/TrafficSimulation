@@ -4,9 +4,6 @@ import fr.iscpif.client.physics.Spatial
 import fr.iscpif.client.traffic.{Lane, Vehicle}
 import org.scalajs.dom.ImageData
 
-trait Renderator[T] {
-  def makeRenderable(t: T): Renderable
-}
 object TypeClasses {
   val vehicleRenderator = new Renderator[Vehicle] {
     override def makeRenderable(t: Vehicle): Renderable = new Renderable {
