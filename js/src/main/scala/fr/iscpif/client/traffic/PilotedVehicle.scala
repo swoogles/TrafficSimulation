@@ -10,7 +10,7 @@ import squants.motion.{Acceleration, Distance}
 import squants.{QuantityVector, Time, Velocity}
 
 case class PilotedVehicle(
-                           driver: DriverImpl,
+                           driver: Driver,
                            vehicle: Vehicle,
                            destination: Spatial,
                            uuid: UUID
@@ -97,12 +97,12 @@ object PilotedVehicle {
   val idm: IntelligentDriverModelImpl = new IntelligentDriverModelImpl
 
   def apply(
-             driver: DriverImpl,
+             driver: Driver,
              vehicle: Vehicle,
              destination: Spatial
    ): PilotedVehicle =
     PilotedVehicle(
-      driver: DriverImpl,
+      driver: Driver,
       vehicle: Vehicle,
       destination: Spatial,
       java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
