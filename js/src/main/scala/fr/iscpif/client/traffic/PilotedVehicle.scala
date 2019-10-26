@@ -5,18 +5,18 @@ import java.util.UUID
 import squants.motion.{DistanceUnit, KilometersPerHour, VelocityUnit}
 import squants.space.LengthUnit
 
-import fr.iscpif.client.physics.{Spatial, SpatialFor, SpatialForDefaults, SpatialImpl}
+import fr.iscpif.client.physics.{Spatial, SpatialFor, SpatialForDefaults}
 import squants.motion.{Acceleration, Distance}
 import squants.{QuantityVector, Time, Velocity}
 
 case class PilotedVehicle(
-    driver: DriverImpl,
-    vehicle: VehicleImpl,
-    destination: SpatialImpl,
-    uuid: UUID
+                           driver: DriverImpl,
+                           vehicle: VehicleImpl,
+                           destination: Spatial,
+                           uuid: UUID
 ) {
 
-  def spatial: SpatialImpl = vehicle.spatial
+  def spatial: Spatial = vehicle.spatial
 
   val width: Distance = vehicle.width
   val height: Distance = vehicle.height
@@ -43,7 +43,7 @@ case class PilotedVehicle(
 
   def accelerateAlongCurrentDirection(dt: Time,
                                       dP: Acceleration): PilotedVehicle = {
-    val updatedSpatial: SpatialImpl =
+    val updatedSpatial: Spatial =
       Spatial.accelerateAlongCurrentDirection(spatial, dt, dP, destination)
     this.copy(
       driver = driver.updateSpatial(updatedSpatial),
@@ -51,7 +51,7 @@ case class PilotedVehicle(
     )
   }
 
-  def updateSpatial(spatialImpl: SpatialImpl): PilotedVehicle = {
+  def updateSpatial(spatialImpl: Spatial): PilotedVehicle = {
     this.copy(
       driver = driver.updateSpatial(spatialImpl),
       vehicle = vehicle.updateSpatial(spatialImpl)
@@ -87,7 +87,7 @@ case class PilotedVehicle(
   def distanceTo(target: PilotedVehicle): Distance =
     distanceTo(target.spatial)
 
-  def target(spatialImpl: SpatialImpl): PilotedVehicle =
+  def target(spatialImpl: Spatial): PilotedVehicle =
     this.copy(destination = spatialImpl)
 
 }
@@ -99,12 +99,12 @@ object PilotedVehicle {
   def apply(
      driver: DriverImpl,
      vehicle: VehicleImpl,
-     destination: SpatialImpl
+     destination: Spatial
    ): PilotedVehicle =
     PilotedVehicle(
       driver: DriverImpl,
       vehicle: VehicleImpl,
-      destination: SpatialImpl,
+      destination: Spatial,
       java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
     )
 
@@ -112,7 +112,7 @@ object PilotedVehicle {
              pIn1: (Double, Double, Double, LengthUnit),
              vIn1: (Double, Double, Double, VelocityUnit) =
              (0, 0, 0, KilometersPerHour),
-             endingSpatial: SpatialImpl = Spatial.BLANK): PilotedVehicle = {
+             endingSpatial: Spatial = Spatial.BLANK): PilotedVehicle = {
     PilotedVehicle.commuter2(Spatial(pIn1, vIn1), idm, endingSpatial)
   }
 
@@ -120,7 +120,7 @@ object PilotedVehicle {
                 pIn: (Double, Double, Double, DistanceUnit),
                 vIn: (Double, Double, Double, VelocityUnit),
                 idm: IntelligentDriverModelImpl,
-                destination: SpatialImpl
+                destination: Spatial
               ): PilotedVehicle = {
     val spatial = Spatial(pIn, vIn, VehicleStats.Commuter.dimensions)
     PilotedVehicle(Driver.commuter(spatial, idm),
@@ -129,9 +129,9 @@ object PilotedVehicle {
   }
   // TODO: Beware of arbitrary spacial. It should be locked down on Commuter.
   def commuter2(
-                spatial: SpatialImpl,
-                idm: IntelligentDriverModelImpl,
-                destination: SpatialImpl
+                 spatial: Spatial,
+                 idm: IntelligentDriverModelImpl,
+                 destination: Spatial
               ): PilotedVehicle = {
     PilotedVehicle(Driver.commuter(spatial, idm),
       VehicleImpl(spatial.r, spatial.v),

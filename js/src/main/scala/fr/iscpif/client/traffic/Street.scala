@@ -1,14 +1,14 @@
 package fr.iscpif.client.traffic
 
 import fr.iscpif.client.Orientation
-import fr.iscpif.client.physics.SpatialImpl
+import fr.iscpif.client.physics.Spatial
 import squants.{Time, Velocity}
 import squants.space.Meters
 
 case class Street(
-                       lanes: List[Lane],
-                       beginning: SpatialImpl,
-                       end: SpatialImpl
+                   lanes: List[Lane],
+                   beginning: Spatial,
+                   end: Spatial
 ) {
 
   def updateLanes(f: Lane => Lane): Street =
@@ -17,8 +17,8 @@ case class Street(
 
 object Street {
   def apply(sourceTiming: Time,
-            beginning: SpatialImpl,
-            end: SpatialImpl,
+            beginning: Spatial,
+            end: Spatial,
             speed: Velocity,
             numLanes: Integer): Street = {
 

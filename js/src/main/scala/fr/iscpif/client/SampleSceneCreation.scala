@@ -1,6 +1,6 @@
 package fr.iscpif.client
 
-import fr.iscpif.client.physics.{Spatial, SpatialImpl}
+import fr.iscpif.client.physics.Spatial
 import fr.iscpif.client.traffic._
 import squants.Length
 import squants.motion.{KilometersPerHour, Velocity}
@@ -9,7 +9,7 @@ import squants.time.{Milliseconds, Seconds, Time}
 
 case class NamedScene(name: String, scene: SceneImpl)
 
-class SampleSceneCreation(endingSpatial: SpatialImpl) {
+class SampleSceneCreation(endingSpatial: Spatial) {
   implicit val DT: Time = Milliseconds(20)
 
   private def simplerVehicle(xPos: Double, xV: Double) =

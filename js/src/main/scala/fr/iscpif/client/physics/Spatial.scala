@@ -5,49 +5,34 @@ import squants.motion.{Distance, DistanceUnit, MetersPerSecond, VelocityUnit}
 import squants.space.{LengthUnit, Meters}
 import squants.{Acceleration, Length, QuantityVector, Time, UnitOfMeasure, Velocity}
 
-trait Spatial {
-  val numberOfDimensions = 3
-  val r: QuantityVector[Distance]
-  val v: QuantityVector[Velocity]
-  val dimensions: QuantityVector[Distance]
-  def move(orientation: Orientation, distance: Distance): Spatial
-  def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity]
-  def relativeVelocityMag(obstacle: Spatial): Velocity
-  def vectorTo(obstacle: Spatial): QuantityVector[Distance]
-
-  def vectorToMag(vectorTo: QuantityVector[Distance]): Distance
-  def distanceTo(obstacle: Spatial): Distance
-
-  val x: Distance = r.coordinates.head
-  val y: Distance = r.coordinates.tail.head
-
-  def updateVelocity(newV: QuantityVector[Velocity]): SpatialImpl
-}
-
-case class SpatialImpl(
+case class Spatial(
     r: QuantityVector[Distance],
     v: QuantityVector[Velocity],
     dimensions: QuantityVector[Distance]
-) extends Spatial {
+) {
+  val numberOfDimensions = 3
+  val x: Distance = r.coordinates.head
+  val y: Distance = r.coordinates.tail.head
+
   val allAspects: List[QuantityVector[_]] = List(r, v, dimensions)
   for (aspect <- allAspects) {
     assert(aspect.coordinates.length == numberOfDimensions)
   }
 
-  override def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] =
+  def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] =
     this.v - obstacle.v
 
-  override def relativeVelocityMag(obstacle: Spatial): Velocity = {
+  def relativeVelocityMag(obstacle: Spatial): Velocity = {
     relativeVelocity _ andThen (_.magnitude) apply obstacle
   }
 
-  override def vectorTo(obstacle: Spatial): QuantityVector[Distance] =
+  def vectorTo(obstacle: Spatial): QuantityVector[Distance] =
     obstacle.r - this.r
 
-  override def vectorToMag(vectorTo: QuantityVector[Distance]): Distance =
+  def vectorToMag(vectorTo: QuantityVector[Distance]): Distance =
     vectorTo.magnitude
 
-  override def distanceTo(obstacle: Spatial): Distance =
+  def distanceTo(obstacle: Spatial): Distance =
     vectorTo _ andThen (_.magnitude) apply obstacle
 
   def move(orientation: Orientation, distance: Distance) = {
@@ -57,7 +42,7 @@ case class SpatialImpl(
     this.copy(r = r + displacement)
   }
 
-  def updateVelocity(newV: QuantityVector[Velocity]): SpatialImpl =
+  def updateVelocity(newV: QuantityVector[Velocity]): Spatial =
     this.copy(v = newV)
 }
 
@@ -104,7 +89,7 @@ object Spatial {
   def accelerateAlongCurrentDirection(spatial: Spatial,
                                       dt: Time,
                                       dV: Acceleration,
-                                      destination: Spatial): SpatialImpl = {
+                                      destination: Spatial): Spatial = {
     val unitVec =
       spatial
         .vectorTo(destination)
@@ -142,15 +127,15 @@ object Spatial {
       }
 
     val newP = spatial.r + changeInPositionViaVelocity + changeInPositionViaAcceleration
-    SpatialImpl(newP, newVNoReverse, spatial.dimensions)
+    Spatial(newP, newVNoReverse, spatial.dimensions)
   }
 
   def apply(
       pIn: (Double, Double, Double, DistanceUnit),
       vIn: (Double, Double, Double, VelocityUnit),
       dIn: (Double, Double, Double, LengthUnit)
-  ): SpatialImpl =
-    SpatialImpl(
+  ): Spatial =
+    Spatial(
       convertToSVector(pIn),
       convertToSVector(vIn),
       convertToSVector(dIn)
@@ -159,13 +144,13 @@ object Spatial {
   def apply(
       pIn: (Double, Double, Double, DistanceUnit),
       vIn: (Double, Double, Double, VelocityUnit)
-  ): SpatialImpl = {
+  ): Spatial = {
     apply(pIn, vIn, ZERO_DIMENSIONS)
   }
 
   def apply(
       pIn: (Double, Double, Double, DistanceUnit)
-  ): SpatialImpl = {
+  ): Spatial = {
     apply(pIn, ZERO_VELOCITY, ZERO_DIMENSIONS)
   }
 
@@ -175,8 +160,8 @@ object Spatial {
       p: QuantityVector[Distance],
       v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
       d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
-  ): SpatialImpl =
-    SpatialImpl(p, v, d)
+  ): Spatial =
+    Spatial(p, v, d)
 
 }
 

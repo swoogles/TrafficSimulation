@@ -9,7 +9,7 @@ import org.scalajs.dom.raw.Node
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import rx.Rx
 import scaladget.tools.JsRxTags._
-import fr.iscpif.client.physics.{SpatialFor, SpatialImpl}
+import fr.iscpif.client.physics.{SpatialFor, Spatial}
 import fr.iscpif.client.serialization.BillSquants
 import play.api.libs.json.{Format, Json}
 import squants.motion._
@@ -68,7 +68,7 @@ object Client {
     BillSquants.distance.formatQv
   implicit val vQvf: Format[QuantityVector[Velocity]] =
     BillSquants.velocity.formatQv
-  implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
+  implicit val spatialFormat: Format[Spatial] = Json.format[Spatial]
   implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
   implicit val mf: Format[Mass] = BillSquants.mass.format
   implicit val af: Format[Acceleration] = BillSquants.acceleration.format

@@ -12,7 +12,7 @@ import scala.language.postfixOps
 class SpatialTest extends FlatSpec {
   private val dt = 1 seconds
 
-  val destination: SpatialImpl = Spatial.apply((1, 0, 0, Kilometers))
+  val destination: Spatial = Spatial.apply((1, 0, 0, Kilometers))
 
   it should "accelerate a spatial in the direction of travel." in {
     val acceleration = MetersPerSecondSquared(1)
@@ -61,7 +61,7 @@ class SpatialTest extends FlatSpec {
 
   it should "sit still if accelerating backwards" in {
     val startingSpatial = Spatial((100, 0, 0, Meters))
-    val updatedSpatial: SpatialImpl = Spatial.accelerateAlongCurrentDirection(startingSpatial, 1.seconds, -MetersPerSecondSquared(1), goalSpatial)
+    val updatedSpatial: Spatial = Spatial.accelerateAlongCurrentDirection(startingSpatial, 1.seconds, -MetersPerSecondSquared(1), goalSpatial)
     updatedSpatial shouldBe startingSpatial
   }
 

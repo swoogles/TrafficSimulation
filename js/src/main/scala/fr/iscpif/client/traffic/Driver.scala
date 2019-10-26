@@ -1,6 +1,6 @@
 package fr.iscpif.client.traffic
 
-import fr.iscpif.client.physics.SpatialImpl
+import fr.iscpif.client.physics.Spatial
 import scala.language.postfixOps
 
 import squants.space.LengthConversions._
@@ -9,18 +9,18 @@ import squants.motion.Distance
 import squants.{QuantityVector, Time, Velocity}
 
 trait Driver {
-  val spatial: SpatialImpl
+  val spatial: Spatial
   val reactionTime: Time
   val preferredDynamicSpacing: Time
   val minimumDistance: Distance
   val desiredSpeed: Velocity
   val idm: IntelligentDriverModelImpl
   def move(betterVec: QuantityVector[Distance]): DriverImpl
-  def updateSpatial(spatial: SpatialImpl): DriverImpl
+  def updateSpatial(spatial: Spatial): DriverImpl
 }
 
 object Driver {
-  def commuter(spatial: SpatialImpl, idm: IntelligentDriverModelImpl) = {
+  def commuter(spatial: Spatial, idm: IntelligentDriverModelImpl) = {
     val reactionTime: Time = 0.5 seconds
     val preferredDynamicSpacing: Time = 1 seconds
     val minimumDistance: Distance = 2 meters
@@ -33,7 +33,7 @@ object Driver {
                desiredSpeed)
   }
 
-  def aggressive(spatial: SpatialImpl, idm: IntelligentDriverModelImpl) = {
+  def aggressive(spatial: Spatial, idm: IntelligentDriverModelImpl) = {
     val reactionTime: Time = 0.5 seconds
     val preferredDynamicSpacing: Time = 0.5 seconds
     val minimumDistance: Distance = 1 meters

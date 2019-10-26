@@ -1,24 +1,24 @@
 package fr.iscpif.client.traffic
 
-import fr.iscpif.client.physics.{Spatial, SpatialImpl}
+import fr.iscpif.client.physics.Spatial
 import squants.{Time, Velocity}
 
 trait VehicleSource {
   def produceVehicle(t: Time,
                      dt: Time,
-                     destination: SpatialImpl): Option[PilotedVehicle]
+                     destination: Spatial): Option[PilotedVehicle]
 }
 
 case class VehicleSourceImpl(
-    spacingInTime: Time,
-    spatial: SpatialImpl,
-    startingVelocitySpacial: SpatialImpl
+                              spacingInTime: Time,
+                              spatial: Spatial,
+                              startingVelocitySpacial: Spatial
 ) extends VehicleSource {
 
   override def produceVehicle(
       t: Time,
       dt: Time,
-      destination: SpatialImpl): Option[PilotedVehicle] = {
+      destination: Spatial): Option[PilotedVehicle] = {
     // Woohoo! this was the problem! t was coming in as ms after loading the new scene for some reason...
     // Should make this prettier/type-safe in the future.
     val res = t.toSeconds % spacingInTime.toSeconds

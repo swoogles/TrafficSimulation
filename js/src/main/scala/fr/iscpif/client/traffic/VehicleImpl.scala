@@ -1,6 +1,6 @@
 package fr.iscpif.client.traffic
 
-import fr.iscpif.client.physics.{Spatial, SpatialImpl}
+import fr.iscpif.client.physics.Spatial
 import squants.motion.{Acceleration, Distance, DistanceUnit, VelocityUnit}
 import squants.{Length, Mass, QuantityVector, Velocity}
 
@@ -10,17 +10,17 @@ sealed trait Vehicle {
   val accelerationAbility: Acceleration
   val brakingAbility: Acceleration
   def move(betterVec: QuantityVector[Distance]): VehicleImpl
-  def updateSpatial(spatial: SpatialImpl): VehicleImpl
+  def updateSpatial(spatial: Spatial): VehicleImpl
   val width: Distance
   val height: Distance
   def updateVelocity(newV: QuantityVector[Velocity]): VehicleImpl
 }
 
 case class VehicleImpl(
-    spatial: SpatialImpl,
-    accelerationAbility: Acceleration,
-    brakingAbility: Acceleration,
-    weight: Mass
+                        spatial: Spatial,
+                        accelerationAbility: Acceleration,
+                        brakingAbility: Acceleration,
+                        weight: Mass
 ) extends Vehicle {
   def move(betterVec: QuantityVector[Distance]): VehicleImpl = {
     copy(spatial = spatial.copy(r = betterVec))
@@ -29,7 +29,7 @@ case class VehicleImpl(
   val width: Distance = spatial.dimensions.coordinates(0)
   val height: Distance = spatial.dimensions.coordinates(1)
 
-  override def updateSpatial(spatial: SpatialImpl): VehicleImpl =
+  override def updateSpatial(spatial: Spatial): VehicleImpl =
     this.copy(spatial = spatial)
 
   def updateVelocity(newV: QuantityVector[Velocity]): VehicleImpl =

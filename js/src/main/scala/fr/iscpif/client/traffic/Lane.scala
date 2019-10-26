@@ -4,17 +4,17 @@ import cats.data.NonEmptyList
 import squants.Time
 import squants.motion.Acceleration
 
-import fr.iscpif.client.physics.{Spatial, SpatialImpl}
+import fr.iscpif.client.physics.Spatial
 import squants.motion.Distance
 import squants.space.{Length, Meters}
 import squants.{QuantityVector, Velocity}
 
 case class Lane(
-                     vehicles: List[PilotedVehicle],
-                     vehicleSource: VehicleSourceImpl,
-                     beginning: SpatialImpl,
-                     end: SpatialImpl,
-                     speedLimit: Velocity
+                 vehicles: List[PilotedVehicle],
+                 vehicleSource: VehicleSourceImpl,
+                 beginning: Spatial,
+                 end: Spatial,
+                 speedLimit: Velocity
                    ) {
 
   val length: Length = beginning.distanceTo(end)
@@ -32,7 +32,7 @@ case class Lane(
     val spatial = Spatial.withVecs(infinityPointBackwards)
     PilotedVehicle.commuter2(spatial, new IntelligentDriverModelImpl, spatial)
   }
-  val infinitySpatial: SpatialImpl = vehicleAtInfinityForward.spatial
+  val infinitySpatial: Spatial = vehicleAtInfinityForward.spatial
 
   /*
     Look at reusing this for finding leading/following cars in neighboring lane.
@@ -91,11 +91,11 @@ object Lane extends LaneFunctions {
   val MAX_VEHICLES_PER_LANE = 60
 
   def apply(
-      sourceTiming: Time,
-      beginning: SpatialImpl,
-      end: SpatialImpl,
-      speedLimit: Velocity,
-      vehicles: List[PilotedVehicle] = Nil
+             sourceTiming: Time,
+             beginning: Spatial,
+             end: Spatial,
+             speedLimit: Velocity,
+             vehicles: List[PilotedVehicle] = Nil
   ): Lane = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
@@ -106,7 +106,7 @@ object Lane extends LaneFunctions {
       }
 
     val velocitySpatial =
-      SpatialImpl(beginning.r, startingV, beginning.dimensions)
+      Spatial(beginning.r, startingV, beginning.dimensions)
     val source = VehicleSourceImpl(sourceTiming, beginning, velocitySpatial)
     Lane(vehicles, source, beginning, end, speedLimit)
   }
