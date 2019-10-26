@@ -86,7 +86,7 @@ case class Lane(
 
 }
 
-object Lane extends LaneFunctions {
+object Lane {
 
   val MAX_VEHICLES_PER_LANE = 60
 

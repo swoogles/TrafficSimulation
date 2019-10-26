@@ -13,7 +13,7 @@ import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
 import scalatags.JsDom.all._
 import fr.iscpif.client.physics.SpatialForDefaults
-import fr.iscpif.client.svgRendering.SpatialCanvasImpl
+import fr.iscpif.client.svgRendering.SpatialCanvas
 
 /*
   * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
@@ -24,7 +24,7 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
   println("making a new Window")
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
-  val spatialCanvas = SpatialCanvasImpl(scene.canvasDimensions._1,
+  val spatialCanvas = SpatialCanvas(scene.canvasDimensions._1,
                                         scene.canvasDimensions._2,
                                         canvasHeight,
                                         canvasWidth)
