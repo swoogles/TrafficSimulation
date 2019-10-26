@@ -1,4 +1,4 @@
-package fr.iscpif.app
+package fr.iscpif.client.previouslySharedCode.server
 
 import scalatags.Text.all.href
 

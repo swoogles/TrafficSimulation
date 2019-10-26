@@ -1,28 +1,25 @@
-package fr.iscpif.app
+package fr.iscpif.client.previouslySharedCode.server
 
-import org.scalatra._
-
-import better.files.File
-import play.api.libs.json.Json
+//import org.scalatra._
+//import better.files.File
 
 import scalatags.Text.all._
 import scalatags.Text.{all => tags}
 
-class Servlet extends ScalatraServlet {
+class Servlet {
   val projectName = "traffic"
   val jsFolder = "./jvm/target/webapp/js/"
   val clientJsFull = s"$projectName-opt.js"
   val clientJsFast = s"$projectName-fastopt.js"
   val jsDepsFull = s"$projectName-jsdeps.min.js"
   val jsDepsFast = s"$projectName-jsdeps.js"
-  val fastDev = File(jsFolder + clientJsFast).exists
+  val fastDev = ??? // Should be a better file via: File(jsFolder + clientJsFast).exists
   val clientJs = if (fastDev) clientJsFast else clientJsFull
   val jsDeps = if (fastDev) jsDepsFast else jsDepsFull
 
   val basePath = "shared"
 
-  get("/") {
-    contentType = "text/html"
+  val mainPage =
     tags.html(
       tags.head(
         ExternalResources.localResources,
@@ -39,8 +36,8 @@ class Servlet extends ScalatraServlet {
       ),
       tags.body(tags.onload := "Client.run();")
     )
-  }
 
+  /*
   val file = File("/tmp/nflx")
   post("/writeScene") {
     file.write(request.body)
@@ -49,5 +46,7 @@ class Servlet extends ScalatraServlet {
   get("/loadScene") {
     Json.parse(file.contentAsString)
   }
+
+   */
 
 }
