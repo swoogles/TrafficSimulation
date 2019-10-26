@@ -23,13 +23,12 @@ class SceneSpec extends  FlatSpec{
   val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
   val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
 
-  import PilotedVehicle.createVehicle
   type basicSpatial = ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit))
   it should "do something " in {
     val vehicles = List(
-      createVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), endingSpatial),
-      createVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour), endingSpatial),
-      createVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour), endingSpatial)
+      PilotedVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), endingSpatial),
+      PilotedVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour), endingSpatial),
+      PilotedVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour), endingSpatial)
     )
 
     val vehicleSource = VehicleSourceImpl(Seconds(1), originSpatial, endingSpatial)

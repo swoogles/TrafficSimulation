@@ -36,7 +36,7 @@ sealed trait PilotedVehicle {
 object PilotedVehicle {
 
   val idm: IntelligentDriverModelImpl = new IntelligentDriverModelImpl
-  def createVehicle(
+  def apply(
       pIn1: (Double, Double, Double, LengthUnit),
       vIn1: (Double, Double, Double, VelocityUnit) =
         (0, 0, 0, KilometersPerHour),

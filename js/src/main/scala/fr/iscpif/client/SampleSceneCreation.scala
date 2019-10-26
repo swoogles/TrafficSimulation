@@ -10,18 +10,10 @@ import squants.time.{Milliseconds, Seconds, Time}
 case class NamedScene(name: String, scene: SceneImpl)
 
 class SampleSceneCreation(endingSpatial: SpatialImpl) {
-  import PilotedVehicle.createVehicle
   implicit val DT: Time = Milliseconds(20)
 
-  private def simpleVehicle(
-      pIn1: (Double, Double, Double, LengthUnit),
-      vIn1: (Double, Double, Double, VelocityUnit)
-  ) = {
-    createVehicle(pIn1, vIn1, endingSpatial)
-  }
-
   private def simplerVehicle(xPos: Double, xV: Double) =
-    simpleVehicle((xPos, 0, 0, Meters), (xV, 0, 0, KilometersPerHour))
+    PilotedVehicle((xPos, 0, 0, Meters), (xV, 0, 0, KilometersPerHour))
 
   val emptyScene =
     NamedScene(
