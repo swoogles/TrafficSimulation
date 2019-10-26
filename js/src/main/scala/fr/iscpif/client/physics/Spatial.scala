@@ -1,9 +1,6 @@
-package fr.iscpif.client.previouslySharedCode.physics
+package fr.iscpif.client.physics
 
-import fr.iscpif.client.previouslySharedCode.Orientation
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import fr.iscpif.client.previouslySharedCode.traffic.{PilotedVehicle, PilotedVehicleImpl}
-import play.api.libs.json.{Format, Json}
+import fr.iscpif.client.Orientation
 import squants.motion.{Distance, DistanceUnit, MetersPerSecond, VelocityUnit}
 import squants.space.{LengthUnit, Meters}
 import squants.{Acceleration, Length, QuantityVector, Time, UnitOfMeasure, Velocity}

@@ -1,7 +1,7 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
-import fr.iscpif.client.previouslySharedCode.Orientation
-import fr.iscpif.client.previouslySharedCode.physics.SpatialImpl
+import fr.iscpif.client.Orientation
+import fr.iscpif.client.physics.SpatialImpl
 import squants.{Time, Velocity}
 import squants.space.Meters
 

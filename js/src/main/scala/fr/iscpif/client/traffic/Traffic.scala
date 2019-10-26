@@ -1,10 +1,7 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
 import cats.data.{NonEmptyList, Validated}
-import fr.iscpif.client.previouslySharedCode.physics.{SpatialFor, SpatialImpl}
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import squants.motion._
-import squants.{Length, Mass, QuantityVector, Time, Velocity}
+import squants.{Acceleration, Length, Time, Velocity}
 
 trait Scene {
   val canvasDimensions: (Length, Length) // This probably deserves to be inside a more specific Canvas class

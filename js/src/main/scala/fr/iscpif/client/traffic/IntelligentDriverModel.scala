@@ -1,4 +1,4 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
 import squants.motion.Distance
 import squants.{Acceleration, Time, Velocity}

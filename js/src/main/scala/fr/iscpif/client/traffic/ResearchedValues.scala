@@ -1,4 +1,4 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
 /**
   * Created by bfrasure on 5/11/17.

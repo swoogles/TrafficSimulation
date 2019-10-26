@@ -1,6 +1,6 @@
 package com.billding
 
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
+import fr.iscpif.client.serialization.BillSquants
 import org.scalatest.Matchers._
 import org.scalatest.{Assertion, FlatSpec}
 import play.api.libs.json.{JsString, Json}

@@ -1,4 +1,4 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
 import scala.language.postfixOps
 

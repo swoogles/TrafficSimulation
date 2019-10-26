@@ -1,4 +1,4 @@
-package com.billding.rendering
+package fr.iscpif.client.svgRendering
 
 import squants.motion._
 

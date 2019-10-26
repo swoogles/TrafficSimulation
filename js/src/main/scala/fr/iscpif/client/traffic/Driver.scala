@@ -1,10 +1,6 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
-import fr.iscpif.client.previouslySharedCode.physics.SpatialImpl
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-
-import play.api.libs.json.{Format, Json}
-
+import fr.iscpif.client.physics.SpatialImpl
 import scala.language.postfixOps
 
 import squants.space.LengthConversions._
@@ -68,7 +64,4 @@ case class DriverImpl(
   override def updateSpatial(spatial: SpatialImpl) =
     this.copy(spatial = spatial)
 
-}
-
-object DriverImpl {
 }

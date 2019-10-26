@@ -1,8 +1,6 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
-import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialImpl}
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import play.api.libs.json.{Format, Json}
+import fr.iscpif.client.physics.{Spatial, SpatialImpl}
 import squants.motion.{Acceleration, Distance, DistanceUnit, VelocityUnit}
 import squants.{Length, Mass, QuantityVector, Velocity}
 

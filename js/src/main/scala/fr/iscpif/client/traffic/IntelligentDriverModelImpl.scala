@@ -1,4 +1,4 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
 import play.api.libs.json.{Format, Json}
 import squants.Time

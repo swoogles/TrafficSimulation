@@ -45,7 +45,7 @@ case class ButtonBehaviors(model: Model) {
   }
 
   private def genericSlider: (Int => Unit) => Event => Unit =
-    (theBehavior) =>
+    (theBehavior: Int => Unit) =>
       (e: Event) => {
         val value = e.target match {
           case inputElement: Input => inputElement.value.toInt

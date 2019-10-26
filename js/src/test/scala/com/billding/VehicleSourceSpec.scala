@@ -1,7 +1,7 @@
 package com.billding
 
-import fr.iscpif.client.previouslySharedCode.physics.Spatial
-import fr.iscpif.client.previouslySharedCode.traffic._
+import fr.iscpif.client.physics.Spatial
+import fr.iscpif.client.traffic._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import squants.motion._

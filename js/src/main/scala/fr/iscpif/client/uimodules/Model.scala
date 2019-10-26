@@ -1,7 +1,7 @@
 package fr.iscpif.client.uimodules
 
-import fr.iscpif.client.previouslySharedCode.physics.Spatial
-import fr.iscpif.client.previouslySharedCode.traffic.{
+import fr.iscpif.client.physics.Spatial
+import fr.iscpif.client.traffic.{
   IntelligentDriverModelImpl,
   LaneImpl,
   PilotedVehicle,
@@ -12,7 +12,7 @@ import rx.{Ctx, Rx, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
 import fr.iscpif.client.{NamedScene, SerializationFeatures}
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.Format
 
 trait Serialization {
   val serializeScene: Var[Boolean] = Var(false)

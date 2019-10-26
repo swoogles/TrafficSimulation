@@ -1,13 +1,11 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
 import java.util.UUID
 
 import squants.motion.{Acceleration, Distance, DistanceUnit, KilometersPerHour, VelocityUnit}
-import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialFor, SpatialForDefaults, SpatialImpl}
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import play.api.libs.json.{Format, Json}
+import fr.iscpif.client.physics.{Spatial, SpatialFor, SpatialForDefaults, SpatialImpl}
 import squants.space.LengthUnit
-import squants.{Mass, QuantityVector, Time, Velocity}
+import squants.{QuantityVector, Time, Velocity}
 
 sealed trait PilotedVehicle {
   def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration
@@ -143,25 +141,4 @@ case class PilotedVehicleImpl(
   def target(spatialImpl: SpatialImpl): PilotedVehicleImpl =
     this.copy(destination = spatialImpl)
 
-}
-
-object PilotedVehicleImpl {
-  implicit val tf: Format[Time] = BillSquants.time.format
-  implicit val df: Format[Distance] = BillSquants.distance.format
-  implicit val vf: Format[Velocity] = BillSquants.velocity.format
-  implicit val dQvf: Format[QuantityVector[Distance]] =
-    BillSquants.distance.formatQv
-  implicit val vQvf: Format[QuantityVector[Velocity]] =
-    BillSquants.velocity.formatQv
-  implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
-  implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
-  implicit val mf: Format[Mass] = BillSquants.mass.format
-  implicit val af: Format[Acceleration] = BillSquants.acceleration.format
-
-  implicit val vehicleFormat: Format[VehicleImpl] = Json.format[VehicleImpl]
-  implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
-    case vehicle: PilotedVehicleImpl => vehicle.spatial
-  }
-  implicit val pilotedVehicleFormat: Format[PilotedVehicleImpl] =
-    Json.format[PilotedVehicleImpl]
 }

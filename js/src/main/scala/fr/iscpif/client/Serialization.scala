@@ -1,10 +1,9 @@
 package fr.iscpif.client
 
-import fr.iscpif.client.previouslySharedCode.traffic.SceneImpl
+import fr.iscpif.client.traffic.SceneImpl
 import fr.iscpif.client.uimodules.Model
 
 import org.scalajs.dom.ext.Ajax
-import play.api.libs.json.Json
 import play.api.libs.json.{Format, Json}
 
 import scala.util.{Failure, Success}

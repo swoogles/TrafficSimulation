@@ -1,10 +1,10 @@
 package fr.iscpif.client
 
-import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialImpl}
-import fr.iscpif.client.previouslySharedCode.traffic._
+import fr.iscpif.client.physics.{Spatial, SpatialImpl}
+import fr.iscpif.client.traffic._
 import squants.Length
-import squants.motion.{KilometersPerHour, Velocity, VelocityUnit}
-import squants.space.{Kilometers, LengthUnit, Meters}
+import squants.motion.{KilometersPerHour, Velocity}
+import squants.space.{Kilometers, Meters}
 import squants.time.{Milliseconds, Seconds, Time}
 
 case class NamedScene(name: String, scene: SceneImpl)

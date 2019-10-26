@@ -1,13 +1,13 @@
-package fr.iscpif.client.previouslySharedCode.serialization
+package fr.iscpif.client.serialization
 
 import scala.util.Try
 import squants.mass.{Kilograms, Mass, MassUnit}
 import squants.{Quantity, QuantityVector, UnitOfMeasure}
-import squants.motion._
 import squants.space.{Length, LengthUnit, Meters}
 import squants.time.{Milliseconds, Time, TimeConversions, TimeUnit}
 import play.api.libs.json.Reads.JsStringReads
 import play.api.libs.json._
+import squants.motion.{Acceleration, AccelerationUnit, Distance, KilometersPerHour, MetersPerSecondSquared, Velocity, VelocityUnit}
 
 sealed trait BillSquants[T <: Quantity[T]] {
   def fromJsString: JsString => T // Why you gotta be a def, eh?

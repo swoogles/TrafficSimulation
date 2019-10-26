@@ -1,4 +1,4 @@
-package fr.iscpif.client.previouslySharedCode.physics
+package fr.iscpif.client.physics
 
 import scala.language.postfixOps
 

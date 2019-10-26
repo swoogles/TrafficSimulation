@@ -1,7 +1,7 @@
-package com.billding.rendering
+package fr.iscpif.client.svgRendering
 
-import fr.iscpif.client.previouslySharedCode.traffic.{Lane, Vehicle}
-import fr.iscpif.client.previouslySharedCode.physics.Spatial
+import fr.iscpif.client.physics.Spatial
+import fr.iscpif.client.traffic.{Lane, Vehicle}
 import org.scalajs.dom.ImageData
 
 trait Renderator[T] {

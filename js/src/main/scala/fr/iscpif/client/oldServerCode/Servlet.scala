@@ -1,4 +1,4 @@
-package fr.iscpif.client.previouslySharedCode.server
+package fr.iscpif.client.oldServerCode
 
 //import org.scalatra._
 //import better.files.File

@@ -1,7 +1,7 @@
 package com.billding
 
-import fr.iscpif.client.previouslySharedCode.physics._
-import fr.iscpif.client.previouslySharedCode.traffic.Street
+import fr.iscpif.client.physics._
+import fr.iscpif.client.traffic.Street
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import squants.motion.KilometersPerHour

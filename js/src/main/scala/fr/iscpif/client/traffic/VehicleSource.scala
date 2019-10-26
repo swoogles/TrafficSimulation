@@ -1,10 +1,7 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
-import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialFor, SpatialImpl}
-import play.api.libs.json.{Format, Json}
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import squants.{QuantityVector, Time, Velocity}
-import squants.motion.Distance
+import fr.iscpif.client.physics.{Spatial, SpatialImpl}
+import squants.{Time, Velocity}
 
 trait VehicleSource {
   def produceVehicle(t: Time,
@@ -43,23 +40,4 @@ case class VehicleSourceImpl(
     this.copy(startingVelocitySpacial =
       this.startingVelocitySpacial.copy(v = startingV))
   }
-}
-
-object VehicleSourceImpl {
-  implicit val tf: Format[Time] = BillSquants.time.format
-  implicit val df: Format[Distance] = BillSquants.distance.format
-  implicit val vf: Format[Velocity] = BillSquants.velocity.format
-
-  implicit val driverFormat: Format[DriverImpl] = Json.format[DriverImpl]
-  implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
-    case vehicle: PilotedVehicleImpl => vehicle.spatial
-  }
-
-  implicit val dQvf: Format[QuantityVector[Distance]] =
-    BillSquants.distance.formatQv
-  implicit val vQvf: Format[QuantityVector[Velocity]] =
-    BillSquants.velocity.formatQv
-  implicit val spatialFormat: Format[SpatialImpl] = Json.format[SpatialImpl]
-  implicit val vehicleSourceFormat: Format[VehicleSourceImpl] =
-    Json.format[VehicleSourceImpl]
 }

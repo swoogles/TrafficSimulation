@@ -1,9 +1,9 @@
-package fr.iscpif.client.previouslySharedCode.traffic
+package fr.iscpif.client.traffic
 
 import cats.data.NonEmptyList
 import squants.space.Length
 import squants.Time
-import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialImpl}
+import fr.iscpif.client.physics.{Spatial, SpatialImpl}
 import squants.motion.{Acceleration, Distance}
 import squants.space.Meters
 import squants.{QuantityVector, Velocity}

@@ -1,4 +1,4 @@
-package fr.iscpif.client.previouslySharedCode.server
+package fr.iscpif.client.oldServerCode
 
 case class LocalAndCdnResources(
     localRef: String,
