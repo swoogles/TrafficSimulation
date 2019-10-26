@@ -2,8 +2,6 @@ package fr.iscpif.client.previouslySharedCode.traffic
 
 import fr.iscpif.client.previouslySharedCode.Orientation
 import fr.iscpif.client.previouslySharedCode.physics.SpatialImpl
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import play.api.libs.json.{Format, Json}
 import squants.{Time, Velocity}
 import squants.space.Meters
 
@@ -18,8 +16,6 @@ case class StreetImpl(
 }
 
 object StreetImpl {
-  implicit val tf: Format[Time] = BillSquants.time.format
-  implicit val streetFormat: Format[StreetImpl] = Json.format[StreetImpl]
 }
 
 object Street {

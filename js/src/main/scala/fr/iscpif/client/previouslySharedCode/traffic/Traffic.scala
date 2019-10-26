@@ -58,6 +58,9 @@ object SceneImpl {
   implicit val tf: Format[Time] = BillSquants.time.format
   implicit val vf: Format[Velocity] = BillSquants.velocity.format
 
+  implicit val laneFormat: Format[LaneImpl] = Json.format[LaneImpl]
+  implicit val streetFormat: Format[StreetImpl] = Json.format[StreetImpl]
+
   implicit val sceneFormats: Format[SceneImpl] = Json.format[SceneImpl]
 }
 

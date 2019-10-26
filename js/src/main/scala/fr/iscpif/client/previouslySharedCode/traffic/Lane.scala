@@ -1,10 +1,12 @@
 package fr.iscpif.client.previouslySharedCode.traffic
 
 import cats.data.NonEmptyList
-import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialImpl}
-import squants.motion._
 import squants.space.Length
-import squants.{QuantityVector, Time, Velocity}
+import squants.Time
+import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialImpl}
+import squants.motion.{Acceleration, Distance}
+import squants.space.Meters
+import squants.{QuantityVector, Velocity}
 
 sealed trait Lane {
   val vehicles: List[PilotedVehicleImpl]
@@ -102,11 +104,10 @@ object Lane extends LaneFunctions {
   def getVehicleIndex(pilotedVehicleImpl: PilotedVehicleImpl,
                       lane: LaneImpl): Option[Integer] = {
     val index: Int = lane.vehicles.indexWhere(_.equals(pilotedVehicleImpl))
-    if (index == -1) {
+    if (index == -1)
       Option.empty
-    } else {
+    else
       Some(index)
-    }
   }
 
   def getVehicleBefore(pilotedVehicleImpl: PilotedVehicleImpl,
@@ -146,13 +147,6 @@ object Lane extends LaneFunctions {
     desiredLane.copy(vehicles = desiredLane.vehicles :+ movedVehicle)
   }
 }
-
-import fr.iscpif.client.previouslySharedCode.physics.{Spatial, SpatialImpl}
-import fr.iscpif.client.previouslySharedCode.serialization.BillSquants
-import play.api.libs.json.{Format, Json}
-import squants.motion.Distance
-import squants.space.Meters
-import squants.{QuantityVector, Velocity}
 
 case class LaneImpl(
     vehicles: List[PilotedVehicleImpl],
@@ -229,9 +223,4 @@ case class LaneImpl(
     this.copy(vehicles = vehicleList)
   }
 
-}
-
-object LaneImpl {
-  import BillSquants.velocity.format
-  implicit val laneFormat: Format[LaneImpl] = Json.format[LaneImpl]
 }
