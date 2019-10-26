@@ -11,7 +11,7 @@ import squants.{QuantityVector, Time, Velocity}
 
 case class PilotedVehicle(
                            driver: DriverImpl,
-                           vehicle: VehicleImpl,
+                           vehicle: Vehicle,
                            destination: Spatial,
                            uuid: UUID
 ) {
@@ -97,13 +97,13 @@ object PilotedVehicle {
   val idm: IntelligentDriverModelImpl = new IntelligentDriverModelImpl
 
   def apply(
-     driver: DriverImpl,
-     vehicle: VehicleImpl,
-     destination: Spatial
+             driver: DriverImpl,
+             vehicle: Vehicle,
+             destination: Spatial
    ): PilotedVehicle =
     PilotedVehicle(
       driver: DriverImpl,
-      vehicle: VehicleImpl,
+      vehicle: Vehicle,
       destination: Spatial,
       java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
     )
@@ -124,7 +124,7 @@ object PilotedVehicle {
               ): PilotedVehicle = {
     val spatial = Spatial(pIn, vIn, VehicleStats.Commuter.dimensions)
     PilotedVehicle(Driver.commuter(spatial, idm),
-      VehicleImpl.apply(pIn, vIn),
+      Vehicle.apply(pIn, vIn),
       destination)
   }
   // TODO: Beware of arbitrary spacial. It should be locked down on Commuter.
@@ -134,7 +134,7 @@ object PilotedVehicle {
                  destination: Spatial
               ): PilotedVehicle = {
     PilotedVehicle(Driver.commuter(spatial, idm),
-      VehicleImpl(spatial.r, spatial.v),
+      Vehicle(spatial.r, spatial.v),
       destination)
   }
 
