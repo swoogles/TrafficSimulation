@@ -12,11 +12,11 @@ trait Scene {
 }
 
 case class SceneImpl(
-    streets: List[StreetImpl],
-    t: Time,
-    dt: Time,
-    speedLimit: Velocity,
-    canvasDimensions: (Length, Length)
+                      streets: List[Street],
+                      t: Time,
+                      dt: Time,
+                      speedLimit: Velocity,
+                      canvasDimensions: (Length, Length)
 ) extends Scene {
 
   private val updateLane: (Lane) => Lane =
@@ -24,14 +24,14 @@ case class SceneImpl(
 
   def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl = {
     val nextT = this.t + this.dt
-    val res: List[StreetImpl] = {
+    val res: List[Street] = {
       streets.map(street => street.updateLanes(updateLane))
     }
     SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
   }
 
   def updateAllStreets(func: Lane => Lane): SceneImpl = {
-    val newStreets = streets.map { street: StreetImpl =>
+    val newStreets = streets.map { street: Street =>
       street.updateLanes(func)
     }
     this.copy(streets = newStreets)

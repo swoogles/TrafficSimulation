@@ -1,7 +1,7 @@
 package fr.iscpif.client
 
 import fr.iscpif.client.physics.Spatial
-import fr.iscpif.client.traffic.{DriverImpl, Lane, PilotedVehicle, SceneImpl, StreetImpl, VehicleImpl, VehicleSourceImpl}
+import fr.iscpif.client.traffic.{DriverImpl, Lane, PilotedVehicle, SceneImpl, Street, VehicleImpl, VehicleSourceImpl}
 import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 import org.scalajs.dom.raw.Node
@@ -84,7 +84,7 @@ object Client {
     Json.format[VehicleSourceImpl]
 
   implicit val laneFormat: Format[Lane] = Json.format[Lane]
-  implicit val streetFormat: Format[StreetImpl] = Json.format[StreetImpl]
+  implicit val streetFormat: Format[Street] = Json.format[Street]
 
   implicit val sceneFormats: Format[SceneImpl] = Json.format[SceneImpl]
 

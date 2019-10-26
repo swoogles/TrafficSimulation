@@ -5,13 +5,13 @@ import fr.iscpif.client.physics.SpatialImpl
 import squants.{Time, Velocity}
 import squants.space.Meters
 
-case class StreetImpl(
+case class Street(
                        lanes: List[Lane],
                        beginning: SpatialImpl,
                        end: SpatialImpl
 ) {
 
-  def updateLanes(f: Lane => Lane): StreetImpl =
+  def updateLanes(f: Lane => Lane): Street =
     copy(lanes = lanes map f)
 }
 
@@ -20,7 +20,7 @@ object Street {
             beginning: SpatialImpl,
             end: SpatialImpl,
             speed: Velocity,
-            numLanes: Integer): StreetImpl = {
+            numLanes: Integer): Street = {
 
     val lanes = for (i <- Range(0, numLanes).toList) yield {
       val offset = Meters(6) * i
@@ -29,7 +29,7 @@ object Street {
       val newEnd = end.move(Orientation.South, offset)
       Lane(sourceTiming, newBeginning, newEnd, speed)
     }
-    StreetImpl(lanes, beginning, end)
+    Street(lanes, beginning, end)
   }
 
 }

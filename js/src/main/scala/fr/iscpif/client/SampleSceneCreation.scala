@@ -100,7 +100,7 @@ class SampleSceneCreation(endingSpatial: SpatialImpl) {
                  endingSpatial,
                  speedLimit,
                  vehicles)
-    val street = StreetImpl(List(lane), originSpatial, endingSpatial)
+    val street = Street(List(lane), originSpatial, endingSpatial)
     SceneImpl(
       List(street),
       Seconds(0.2),
