@@ -1,6 +1,5 @@
 package fr.iscpif.client
 
-import fr.iscpif.client.physics.SpatialFor
 import fr.iscpif.client.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
 import org.scalajs.dom.raw.SVGElement

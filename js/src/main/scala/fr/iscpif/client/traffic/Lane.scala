@@ -163,55 +163,55 @@ object Lane {
   }
 
   def attemptVehicleBeforeAndAfter(
-                                    pilotedVehicleImpl: PilotedVehicle,
+                                    pilotedVehicle: PilotedVehicle,
                                     lane: Lane): Option[(PilotedVehicle, PilotedVehicle)] = {
-    for (before <- getVehicleBefore(pilotedVehicleImpl, lane);
-         after <- getVehicleAfter(pilotedVehicleImpl, lane)) yield {
+    for (before <- getVehicleBefore(pilotedVehicle, lane);
+         after <- getVehicleAfter(pilotedVehicle, lane)) yield {
       (before, after)
     }
   }
 
-  def getVehicleIndex(pilotedVehicleImpl: PilotedVehicle,
+  def getVehicleIndex(pilotedVehicle: PilotedVehicle,
                       lane: Lane): Option[Integer] = {
-    val index: Int = lane.vehicles.indexWhere(_.equals(pilotedVehicleImpl))
+    val index: Int = lane.vehicles.indexWhere(_.equals(pilotedVehicle))
     if (index == -1)
       Option.empty
     else
       Some(index)
   }
 
-  def getVehicleBefore(pilotedVehicleImpl: PilotedVehicle,
+  def getVehicleBefore(pilotedVehicle: PilotedVehicle,
                        lane: Lane): Option[PilotedVehicle] = {
-    for (index <- getVehicleIndex(pilotedVehicleImpl, lane)) yield {
+    for (index <- getVehicleIndex(pilotedVehicle, lane)) yield {
       lane.vehicles.lift(index - 1).getOrElse(lane.vehicleAtInfinityForward)
     }
   }
-  def getVehicleAfter(pilotedVehicleImpl: PilotedVehicle,
+  def getVehicleAfter(pilotedVehicle: PilotedVehicle,
                       lane: Lane): Option[PilotedVehicle] = {
-    for (index <- getVehicleIndex(pilotedVehicleImpl, lane)) yield {
+    for (index <- getVehicleIndex(pilotedVehicle, lane)) yield {
       lane.vehicles.lift(index + 1).getOrElse(lane.vehicleAtInfinityBackwards)
     }
   }
 
   /**
-    * TODO : getFractionBetweenEndpoints(pilotedVehicleImpl: PilotedVehicleImpl, lane: LaneImpl): Double
-    *         getFractionalPoint(lane: LaneImpl): Spatial
+    * TODO : getFractionBetweenEndpoints(pilotedVehicle: PilotedVehicle, lane: Lane): Double
+    *         getFractionalPoint(lane: Lane): Spatial
     */
-  def fractionCompleted(pilotedVehicleImpl: PilotedVehicle,
+  def fractionCompleted(pilotedVehicle: PilotedVehicle,
                         lane: Lane): Double = {
-    val vehicleDistance: Distance = pilotedVehicleImpl.distanceTo(lane.end)
+    val vehicleDistance: Distance = pilotedVehicle.distanceTo(lane.end)
     1.0 - vehicleDistance / lane.length
   }
 
   // TODO See if this actually works... Very important to MOBIL algorithm.
-  def moveToNeighboringLane(pilotedVehicleImpl: PilotedVehicle,
+  def moveToNeighboringLane(pilotedVehicle: PilotedVehicle,
                             lane: Lane,
                             desiredLane: Lane): Lane = {
-    val fractionComplete = fractionCompleted(pilotedVehicleImpl, lane)
+    val fractionComplete = fractionCompleted(pilotedVehicle, lane)
     val disruptionPoint: QuantityVector[Distance] =
       desiredLane.end.vectorTo(desiredLane.beginning).times(fractionComplete)
-    val movedVehicle = pilotedVehicleImpl.copy(
-      vehicle = pilotedVehicleImpl.vehicle.copy(
+    val movedVehicle = pilotedVehicle.copy(
+      vehicle = pilotedVehicle.vehicle.copy(
         spatial = Spatial.withVecs(disruptionPoint))
     )
     desiredLane.copy(vehicles = desiredLane.vehicles :+ movedVehicle)

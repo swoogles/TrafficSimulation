@@ -51,10 +51,10 @@ case class PilotedVehicle(
     )
   }
 
-  def updateSpatial(spatialImpl: Spatial): PilotedVehicle = {
+  def updateSpatial(spatial: Spatial): PilotedVehicle = {
     this.copy(
-      driver = driver.updateSpatial(spatialImpl),
-      vehicle = vehicle.updateSpatial(spatialImpl)
+      driver = driver.updateSpatial(spatial),
+      vehicle = vehicle.updateSpatial(spatial)
     )
   }
 
@@ -87,8 +87,8 @@ case class PilotedVehicle(
   def distanceTo(target: PilotedVehicle): Distance =
     distanceTo(target.spatial)
 
-  def target(spatialImpl: Spatial): PilotedVehicle =
-    this.copy(destination = spatialImpl)
+  def target(spatial: Spatial): PilotedVehicle =
+    this.copy(destination = spatial)
 
 }
 

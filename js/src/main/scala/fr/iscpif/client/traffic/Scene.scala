@@ -2,35 +2,26 @@ package fr.iscpif.client.traffic
 
 import squants.{Length, Time, Velocity}
 
-trait Scene {
-  val canvasDimensions: (Length, Length) // This probably deserves to be inside a more specific Canvas class
-
-  def updateAllStreets(func: Lane => Lane): SceneImpl
-
-  def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl
-  def applyToAllVehicles[T](f: PilotedVehicle => T): List[T]
-}
-
-case class SceneImpl(
+case class Scene(
                       streets: List[Street],
                       t: Time,
                       dt: Time,
                       speedLimit: Velocity,
-                      canvasDimensions: (Length, Length)
-) extends Scene {
+                      canvasDimensions: (Length, Length) // TODO This probably deserves to be inside a more specific Canvas class
+) {
 
   private val updateLane: (Lane) => Lane =
     (lane: Lane) => Lane.update(lane, t, dt)
 
-  def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): SceneImpl = {
+  def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): Scene = {
     val nextT = this.t + this.dt
     val res: List[Street] = {
       streets.map(street => street.updateLanes(updateLane))
     }
-    SceneImpl(res, nextT, this.dt, speedLimit, this.canvasDimensions)
+    Scene(res, nextT, this.dt, speedLimit, this.canvasDimensions)
   }
 
-  def updateAllStreets(func: Lane => Lane): SceneImpl = {
+  def updateAllStreets(func: Lane => Lane): Scene = {
     val newStreets = streets.map { street: Street =>
       street.updateLanes(func)
     }

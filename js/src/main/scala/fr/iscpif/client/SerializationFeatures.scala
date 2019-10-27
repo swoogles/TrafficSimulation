@@ -1,6 +1,6 @@
 package fr.iscpif.client
 
-import fr.iscpif.client.traffic.SceneImpl
+import fr.iscpif.client.traffic.Scene
 import fr.iscpif.client.uimodules.Model
 
 import org.scalajs.dom.ext.Ajax
@@ -16,8 +16,8 @@ case class SerializationFeatures(hostName: String,
   val fullHost = s"$protocol://$hostName:$port"
 
   var serializedSceneJson: play.api.libs.json.JsValue = null
-  var volatileScene: SceneImpl = null
-  def deserializeIfNecessary(model: Model)(implicit format: Format[SceneImpl]): Unit = {
+  var volatileScene: Scene = null
+  def deserializeIfNecessary(model: Model)(implicit format: Format[Scene]): Unit = {
     if (model.deserializeScene.now == true) {
       val f = Ajax.get(s"$fullHost/loadScene")
       f.onComplete {
@@ -25,7 +25,7 @@ case class SerializationFeatures(hostName: String,
           val res =
             Json
               .parse(xhr.responseText)
-              .as[SceneImpl] // Might want to use safer .asOpt
+              .as[Scene] // Might want to use safer .asOpt
           model.loadScene(res)
         }
 
@@ -35,7 +35,7 @@ case class SerializationFeatures(hostName: String,
     }
   }
 
-  def serializeIfNecessary(model: Model)(implicit format: Format[SceneImpl]): Unit = {
+  def serializeIfNecessary(model: Model)(implicit format: Format[Scene]): Unit = {
     if (model.serializeScene.now == true) {
       val curScene = model.sceneVar.now
       serializedSceneJson = Json.toJson(curScene)

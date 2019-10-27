@@ -7,8 +7,6 @@ import squants.motion.{KilometersPerHour, Velocity}
 import squants.space.{Kilometers, Meters}
 import squants.time.{Milliseconds, Seconds, Time}
 
-case class NamedScene(name: String, scene: SceneImpl)
-
 class SampleSceneCreation(endingSpatial: Spatial) {
   implicit val DT: Time = Milliseconds(20)
 
@@ -87,7 +85,7 @@ class SampleSceneCreation(endingSpatial: Spatial) {
   val startingScene = scene1
 
   def createWithVehicles(sourceTiming: Time,
-                         vehicles: List[PilotedVehicle]): SceneImpl = {
+                         vehicles: List[PilotedVehicle]): Scene = {
 
     val speedLimit: Velocity = KilometersPerHour(65)
     val originSpatial = Spatial((0, 0, 0, Kilometers))
@@ -101,7 +99,7 @@ class SampleSceneCreation(endingSpatial: Spatial) {
                  speedLimit,
                  vehicles)
     val street = Street(List(lane), originSpatial, endingSpatial)
-    SceneImpl(
+    Scene(
       List(street),
       Seconds(0.2),
       DT,

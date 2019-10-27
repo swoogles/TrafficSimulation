@@ -5,7 +5,7 @@ import fr.iscpif.client.traffic.{
   IntelligentDriverModelImpl,
   Lane,
   PilotedVehicle,
-  SceneImpl
+  Scene
 }
 import rx.{Ctx, Rx, Var}
 import squants.Time
@@ -26,7 +26,7 @@ case class Disruptions(
 trait ModelTrait {
   def togglePause(): Unit
   def pause(): Unit
-  def respondToAllInput()(implicit format: Format[SceneImpl])
+  def respondToAllInput()(implicit format: Format[Scene])
 }
 
 /**
@@ -38,21 +38,21 @@ trait ModelTrait {
     given Scene, which does *not* interact directly with the user. The page model does, not the scene.
   */
 case class Model(
-    originalScene: SceneImpl,
-    preloadedScenes: List[NamedScene] = List(),
-    serializationFeatures: SerializationFeatures,
-    // These should probably be gleaned from the scene itself.
-    speed: Var[Velocity] = Var(KilometersPerHour(50)),
-    paused: Var[Boolean] = Var(false),
-    resetScene: Var[Boolean] = Var(false),
-    vehicleCount: Var[Int] = Var(0),
-    disruptions: Disruptions = Disruptions()
+                  originalScene: Scene,
+                  preloadedScenes: List[NamedScene] = List(),
+                  serializationFeatures: SerializationFeatures,
+                  // These should probably be gleaned from the scene itself.
+                  speed: Var[Velocity] = Var(KilometersPerHour(50)),
+                  paused: Var[Boolean] = Var(false),
+                  resetScene: Var[Boolean] = Var(false),
+                  vehicleCount: Var[Int] = Var(0),
+                  disruptions: Disruptions = Disruptions()
 )(implicit ctx: Ctx.Owner)
     extends Serialization
     with ModelTrait {
   private implicit val DT: Time = originalScene.dt
   // TODO Make this private
-  val sceneVar: Var[SceneImpl] = Var(originalScene)
+  val sceneVar: Var[Scene] = Var(originalScene)
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
   val carTiming: Var[Time] = Var(
@@ -89,7 +89,7 @@ case class Model(
 
   }
 
-  def loadScene(scene: SceneImpl): Unit = {
+  def loadScene(scene: Scene): Unit = {
     sceneVar() = scene
     carTiming() = sceneVar.now.streets
       .flatMap(street =>
@@ -155,7 +155,7 @@ case class Model(
     }
   }
 
-  def respondToAllInput()(implicit format: Format[SceneImpl]): Unit = {
+  def respondToAllInput()(implicit format: Format[Scene]): Unit = {
     this.resetIfNecessary()
     this.updateLanesAndScene()
     serializationFeatures.serializeIfNecessary(this)

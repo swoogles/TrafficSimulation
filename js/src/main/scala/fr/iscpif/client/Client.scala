@@ -1,7 +1,6 @@
 package fr.iscpif.client
 
-import fr.iscpif.client.physics.Spatial
-import fr.iscpif.client.traffic.{Driver, Lane, PilotedVehicle, SceneImpl, Street, Vehicle, VehicleSourceImpl}
+import fr.iscpif.client.traffic.{Driver, Lane, PilotedVehicle, Scene, Street, Vehicle, VehicleSourceImpl}
 import fr.iscpif.client.uimodules.Model
 import org.scalajs.dom
 import org.scalajs.dom.raw.Node
@@ -46,7 +45,7 @@ object Client {
       SerializationFeatures("localhost", 8080, "http")
     )
 
-  val sceneVar: Rx[SceneImpl] = Rx {
+  val sceneVar: Rx[Scene] = Rx {
     model.sceneVar() // Ne
   }
 
@@ -86,7 +85,7 @@ object Client {
   implicit val laneFormat: Format[Lane] = Json.format[Lane]
   implicit val streetFormat: Format[Street] = Json.format[Street]
 
-  implicit val sceneFormats: Format[SceneImpl] = Json.format[SceneImpl]
+  implicit val sceneFormats: Format[Scene] = Json.format[Scene]
 
   @JSExport
   def run() {
