@@ -9,9 +9,16 @@ import play.api.libs.json.Reads.JsStringReads
 import play.api.libs.json._
 import squants.motion.{Acceleration, AccelerationUnit, Distance, KilometersPerHour, MetersPerSecondSquared, Velocity, VelocityUnit}
 
-sealed trait BillSquants[T <: Quantity[T]] {
-  def fromJsString: JsString => T // Why you gotta be a def, eh?
-  val toJsString: T => JsString
+case class BillSquants[T <: Quantity[T]](
+    fromJsStringTry: (String => Try[T]),
+    unit: UnitOfMeasure[T]
+) {
+
+  val toJsString: T => JsString =
+    (amount: T) => JsString((amount to unit) + " " + unit.symbol)
+
+  def fromJsString: JsString => T =
+    (s: JsString) => fromJsStringTry(s.value).get
 
   implicit val singleWrites: Writes[T] = (o: T) => toJsString(o)
 
@@ -39,22 +46,10 @@ sealed trait BillSquants[T <: Quantity[T]] {
         quantityVector.coordinates.map { piece =>
           singleWrites.writes(piece)
         }
-    )
+      )
 
   implicit val formatQv: Format[QuantityVector[T]] =
     Format(generalReads, qvWrites)
-}
-
-case class BillSquantsImpl[T <: Quantity[T]](
-    fromJsStringTry: (String => Try[T]),
-    unit: UnitOfMeasure[T])
-    extends BillSquants[T] {
-
-  val toJsString: T => JsString =
-    (amount: T) => JsString((amount to unit) + " " + unit.symbol)
-
-  def fromJsString: JsString => T =
-    (s: JsString) => fromJsStringTry(s.value).get
 }
 
 /*
@@ -69,16 +64,16 @@ object BillSquants {
   val massUnit: MassUnit = Kilograms
   val timeUnit: TimeUnit = Milliseconds
 
-  implicit val distance: BillSquantsImpl[Distance] =
-    BillSquantsImpl(Length.apply, lengthUnit)
-  implicit val velocity: BillSquantsImpl[Velocity] =
-    BillSquantsImpl(Velocity.apply, velocityUnit)
-  implicit val acceleration: BillSquantsImpl[Acceleration] =
-    BillSquantsImpl(Acceleration.apply, accelerationUnit)
-  implicit val time: BillSquantsImpl[Time] = BillSquantsImpl(
+  implicit val distance: BillSquants[Distance] =
+    BillSquants(Length.apply, lengthUnit)
+  implicit val velocity: BillSquants[Velocity] =
+    BillSquants(Velocity.apply, velocityUnit)
+  implicit val acceleration: BillSquants[Acceleration] =
+    BillSquants(Acceleration.apply, accelerationUnit)
+  implicit val time: BillSquants[Time] = BillSquants(
     (s: String) => new TimeConversions.TimeStringConversions(s).toTime,
     timeUnit)
-  implicit val mass: BillSquantsImpl[Mass] =
-    BillSquantsImpl(Mass.apply, massUnit)
+  implicit val mass: BillSquants[Mass] =
+    BillSquants(Mass.apply, massUnit)
 
 }
