@@ -1,8 +1,8 @@
 package com.billding
 
 import com.billding.SquantsMatchers._
-import fr.iscpif.client.physics.Spatial
-import fr.iscpif.client.traffic.{IntelligentDriverModelImpl, PilotedVehicle, PilotedVehicle}
+import com.billding.physics.Spatial
+import com.billding.traffic.{IntelligentDriverModelImpl, PilotedVehicle, PilotedVehicle}
 import org.scalatest.Matchers._
 import org.scalatest._
 import squants.motion._
