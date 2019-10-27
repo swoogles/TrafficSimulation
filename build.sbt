@@ -1,27 +1,21 @@
 
-val Organization = "fr.iscpif"
+val Organization = "com.billding"
 val Name = "Traffice Simulator"
-val Version = "0.1.0-SNAPSHOT"
+val Version = "0.2.0-SNAPSHOT"
 val ScalaVersion = "2.12.4"
-val scalatraVersion = "2.6.2"
-val jettyVersion = "9.4.8.v20171121"
 val scalatagsVersion = "0.6.7"
 val autowireVersion = "0.2.6"
 val rxVersion = "0.3.2"
 val scaladgetVersion = "0.9.5"
 val scalajsDomVersion = "0.9.4"
 val jqueryVersion = "2.2.1"
-val circeVersion = "0.8.0"
 val scalaCssVersion = "0.5.4"
-val betterFilesVersion = "3.4.0"
 val pprintVersion = "0.5.3"
 val utestVersion = "0.6.3"
 val playJsonVersion = "2.6.8"
 val scalaCheckVersion = "1.13.5"
-val breezeVersion = "0.13.2"
 val scalaTestVersion = "3.0.4"
 val squantsVersion = "1.3.0"
-val servletApiVersion = "4.0.0"
 
 scalacOptions in ThisBuild ++= Seq(
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
@@ -78,8 +72,6 @@ val Resolvers = Seq(
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 )
 
-val jqueryPath = s"META-INF/resources/webjars/jquery/$jqueryVersion/jquery.js"
-
 def copy(clientTarget: Attributed[File], resources: File, webappServerTarget: File) = {
   clientTarget.map { ct =>
     // TODO Do both these replacements unconditionally in a safe way.
@@ -108,66 +100,44 @@ def recursiveCopy(from: File, to: File): Unit = {
 }
 
 lazy val root = project.in(file(".")).
-  aggregate(trafficJS, trafficJVM).
+  aggregate(trafficJS).
   settings(
     publish := {},
     publishLocal := {}
-  ) enablePlugins (JettyPlugin)
+  )
 
-lazy val traffic = CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file(".")).
-  settings(
-    name := "traffic",
-    scalaVersion := ScalaVersion,
-    resolvers ++= Resolvers,
-    version := "0.1-SNAPSHOT",
-    testFrameworks += new TestFramework("utest.runner.Framework"),
+lazy val traffic = 
+  CrossPlugin.autoImport.crossProject(JSPlatform).in(file("."))
+    .settings(
+      name := "traffic",
+      scalaVersion := ScalaVersion,
+      resolvers ++= Resolvers,
+      version := Version,
+      testFrameworks += new TestFramework("utest.runner.Framework"),
 
-    libraryDependencies ++= Seq(
-      "com.lihaoyi" %%% "autowire" % autowireVersion,
-      "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
-      "com.lihaoyi" %%% "scalarx" % rxVersion,
-      "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
-      "org.scalanlp" %% "breeze" % breezeVersion,
-      "com.github.japgolly.scalacss" %%% "core" % scalaCssVersion,
-      "com.github.japgolly.scalacss" %%% "ext-scalatags" % scalaCssVersion,
-      "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
+      libraryDependencies ++= Seq(
+        "com.lihaoyi" %%% "autowire" % autowireVersion,
+        "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
+        "com.lihaoyi" %%% "scalarx" % rxVersion,
+        "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
+        "com.github.japgolly.scalacss" %%% "core" % scalaCssVersion,
+        "com.github.japgolly.scalacss" %%% "ext-scalatags" % scalaCssVersion,
+        "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
 
-      // Native libraries are not included by default. add this if you want them (as of 0.7)
-      // Native libraries greatly improve performance, but increase jar sizes.
-      // It also packages various blas implementations, which have licenses that may or may not
-      // be compatible with the Apache License. No GPL code, as best I know.
-      "org.scalanlp" %% "breeze-natives" % breezeVersion,
+        "com.typesafe.play" %%% "play-json" % playJsonVersion,
 
-      "com.typesafe.play" %%% "play-json" % playJsonVersion,
-
-    // The visualization library is distributed separately as well.
-      // It depends on LGPL code
-      "org.scalanlp" %% "breeze-viz" % breezeVersion,
-      "org.typelevel" %%% "cats" % "0.9.0",
-      "org.typelevel"  %%% "squants"  % squantsVersion,
-      "org.scalatest" %%% "scalatest" % scalaTestVersion % "test",
-      "com.lihaoyi" %%% "pprint" % pprintVersion,
-      "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test",
-      "com.lihaoyi" %%% "utest" % utestVersion % "test"
-    )
-  ).
-  jvmSettings(
-    libraryDependencies ++= Seq(
-      "com.github.pureconfig" %%% "pureconfig" % "0.8.0",
-      "com.github.pureconfig" %%% "pureconfig-squants" % "0.8.0",
-      "org.scalatra" %% "scalatra" % scalatraVersion,
-      "javax.servlet" % "javax.servlet-api" % servletApiVersion % "provided",
-      "org.eclipse.jetty" % "jetty-webapp" % jettyVersion,
-      "org.eclipse.jetty" % "jetty-server" % jettyVersion,
-      "com.github.pathikrit" %% "better-files" % betterFilesVersion
-    )
-  ).
-  jsSettings(
+        "org.typelevel" %%% "cats" % "0.9.0",
+        "org.typelevel"  %%% "squants"  % squantsVersion,
+        "org.scalatest" %%% "scalatest" % scalaTestVersion % "test",
+        "com.lihaoyi" %%% "pprint" % pprintVersion,
+        "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test",
+        "com.lihaoyi" %%% "utest" % utestVersion % "test"
+      )
+    ).jsSettings(
     skip in packageJSDependencies := false,
     jsDependencies += "org.webjars" % "d3js" % "3.5.12" / "d3.min.js"
   )
 
-lazy val trafficJVM = traffic.jvm enablePlugins (JettyPlugin)
 lazy val trafficJS = traffic.js enablePlugins (ScalaJSPlugin)
 
 lazy val bootstrap = project.in(file("target/bootstrap")) settings(
@@ -177,12 +147,9 @@ lazy val bootstrap = project.in(file("target/bootstrap")) settings(
     /*val clientTarget = (fullOptJS in trafficJS in Compile).value*/
     val clientTarget = (fastOptJS in trafficJS in Compile).value
     val clientResource = (resourceDirectory in trafficJS in Compile).value
-    val serverTarget = (target in trafficJVM in Compile).value
 
-    copy(clientTarget, clientResource, new File(serverTarget, "webapp"))
   }
-) dependsOn(trafficJS, trafficJVM)
-
+) dependsOn(trafficJS)
 
 lazy val go = taskKey[Unit]("go")
 
