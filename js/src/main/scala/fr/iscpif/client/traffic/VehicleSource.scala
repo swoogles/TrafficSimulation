@@ -13,9 +13,9 @@ case class VehicleSourceImpl(
                               spacingInTime: Time,
                               spatial: Spatial,
                               startingVelocitySpacial: Spatial
-) extends VehicleSource {
+) {
 
-  override def produceVehicle(
+  def produceVehicle(
       t: Time,
       dt: Time,
       destination: Spatial): Option[PilotedVehicle] = {

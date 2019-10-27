@@ -12,7 +12,7 @@ import scaladget.tools.JsRxTags._
 import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
 import scalatags.JsDom.all._
-import fr.iscpif.client.physics.SpatialForDefaults
+import fr.iscpif.client.physics.SpatialFor
 import fr.iscpif.client.svgRendering.SpatialCanvas
 
 /*
@@ -68,7 +68,7 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = { // TODO This should be a parameter to this method or the class constructor
       case vehicle: PilotedVehicle => vehicle.spatial
     }
-    val spatial = SpatialForDefaults.disect(vehicle)
+    val spatial = SpatialFor.disect(vehicle)
     val x = spatial.x / spatialCanvas.widthDistancePerPixel
     val y = spatial.y / spatialCanvas.heightDistancePerPixel
     val renderedWidth = vehicle.width / spatialCanvas.widthDistancePerPixel

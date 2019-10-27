@@ -164,13 +164,3 @@ object Spatial {
     Spatial(p, v, d)
 
 }
-
-trait SpatialFor[A] {
-  def makeSpatial(a: A): Spatial
-}
-
-object SpatialForDefaults {
-  def disect[T: SpatialFor](t: T): Spatial =
-    implicitly[SpatialFor[T]].makeSpatial(t)
-
-}

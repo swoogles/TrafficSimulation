@@ -5,7 +5,7 @@ import java.util.UUID
 import squants.motion.{DistanceUnit, KilometersPerHour, VelocityUnit}
 import squants.space.LengthUnit
 
-import fr.iscpif.client.physics.{Spatial, SpatialFor, SpatialForDefaults}
+import fr.iscpif.client.physics.{Spatial, SpatialFor}
 import squants.motion.{Acceleration, Distance}
 import squants.{QuantityVector, Time, Velocity}
 
@@ -38,7 +38,7 @@ case class PilotedVehicle(
     implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
       case vehicle: PilotedVehicle => vehicle.spatial
     }
-    this.reactTo(SpatialForDefaults.disect(obstacle), speedLimit)
+    this.reactTo(SpatialFor.disect(obstacle), speedLimit)
   }
 
   def accelerateAlongCurrentDirection(dt: Time,
