@@ -1,5 +1,6 @@
 package com.billding
 
+import com.billding.Orientation.{East, North, South, West}
 import com.billding.physics._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

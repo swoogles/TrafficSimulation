@@ -138,6 +138,12 @@ lazy val traffic =
     jsDependencies += "org.webjars" % "d3js" % "3.5.12" / "d3.min.js"
   )
 
+// ScalaJS
+scalaJSUseMainModuleInitializer := true // this is an application with a main method
+mainClass in Compile := Some("hello.Hello3") // must be Hello3 for this tutorial
+enablePlugins(ScalaJSPlugin)
+
+
 lazy val trafficJS = traffic.js enablePlugins (ScalaJSPlugin)
 
 lazy val bootstrap = project.in(file("target/bootstrap")) settings(

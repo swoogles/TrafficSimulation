@@ -1,5 +1,6 @@
 package com.billding
 
+import com.billding.Orientation.East
 import com.billding.physics._
 import com.billding.traffic.Street
 import org.scalatest.FlatSpec

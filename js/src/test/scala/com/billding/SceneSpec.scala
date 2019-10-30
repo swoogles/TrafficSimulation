@@ -5,7 +5,7 @@ import com.billding.traffic._
 import org.scalatest.FlatSpec
 import squants.Length
 import squants.motion._
-import squants.space.{Kilometers, Meters}
+import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.{Milliseconds, Seconds}
 
 /**
@@ -22,13 +22,14 @@ class SceneSpec extends  FlatSpec{
 
   val originSpatial = Spatial((0, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour))
   val endingSpatial = Spatial((100, 0, 0, Kilometers), (0.1, 0, 0, KilometersPerHour))
+  val lengthUnit: LengthUnit = Meters
+  val velocityUnit: VelocityUnit = KilometersPerHour
 
-  type basicSpatial = ((Double, Double, Double, DistanceUnit), (Double, Double, Double, VelocityUnit))
   it should "do something " in {
     val vehicles = List(
-      PilotedVehicle((100, 0, 0, Meters), (0.1, 0, 0, KilometersPerHour), endingSpatial),
-      PilotedVehicle((80, 0, 0, Meters), (70, 0, 0, KilometersPerHour), endingSpatial),
-      PilotedVehicle((60, 0, 0, Meters), (140, 0, 0, KilometersPerHour), endingSpatial)
+      PilotedVehicle((100.0, 0.0, 0.0, lengthUnit), (0.1, 0.0, 0.0, velocityUnit), endingSpatial),
+      PilotedVehicle((80.0, 0.0, 0.0, lengthUnit), (70.0, 0.0, 0.0, velocityUnit), endingSpatial),
+      PilotedVehicle((60.0, 0.0, 0.0, lengthUnit), (140.0, 0.0, 0.0, velocityUnit), endingSpatial)
     )
 
     val vehicleSource = VehicleSourceImpl(Seconds(1), originSpatial, endingSpatial)

@@ -1,6 +1,6 @@
 package com.billding
 
-import com.billding.serialization.{BillSquants, BillSquants}
+import com.billding.serialization.BillSquants
 import org.scalatest.Matchers._
 import org.scalatest.{Assertion, FlatSpec}
 import play.api.libs.json.{JsString, Json}
