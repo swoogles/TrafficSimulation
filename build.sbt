@@ -85,7 +85,6 @@ version := Version
 //      testFrameworks += new TestFramework("utest.runner.Framework"),
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" %%% "autowire" % autowireVersion,
   "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
   "com.lihaoyi" %%% "scalarx" % rxVersion,
   "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,

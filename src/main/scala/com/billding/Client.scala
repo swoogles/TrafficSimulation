@@ -81,7 +81,7 @@ object Client {
 
   @JSExport
   def run() {
-    println("Running with a simple non-cross-build!!!!")
+    println("No autowire")
     dom.document.body.appendChild(controlElements.createLayout())
 
     val canvasHeight = 800

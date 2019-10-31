@@ -22,7 +22,6 @@ It uses powerful scala tools to construct a fully typed and reactive Web applica
 - [scalajs](https://github.com/scala-js/scala-js)
 - [scalatags](https://github.com/lihaoyi/scalatags) for UI.
 - [scala.rx](https://github.com/lihaoyi/scala.rx) for tracking changes in the UI.
-<!-- - [autowire](https://github.com/lihaoyi/autowire) -->
 - [scaladget](https://github.com/mathieuleclaire/scaladget) to draw some svg.
 
 ## Build & Run ##
