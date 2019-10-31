@@ -1,7 +1,7 @@
 package com.billding.physics
 
 import com.billding.Orientation
-import squants.motion.{Distance, DistanceUnit, MetersPerSecond, VelocityUnit}
+import squants.motion.{Distance, DistanceUnit, MetersPerSecond, MetersPerSecondSquared, VelocityUnit}
 import squants.space.{LengthUnit, Meters}
 import squants.{Acceleration, Length, QuantityVector, Time, UnitOfMeasure, Velocity}
 
@@ -107,15 +107,24 @@ object Spatial {
       accelerationAlongDirectionOfTravel.map(_ * dt)
 
     val newV: QuantityVector[Velocity] = spatial.v.plus(changeInVelocity)
+    println("spatial.v: " + spatial.v)
+    println("spatial.v.normalize: " + spatial.v.normalize)
+    val normalizedVelocity =
+      if (spatial.v.magnitude == MetersPerSecond(0))
+        ZERO_VELOCITY_VECTOR
+      else
+        spatial.v
+    println("Normalized velocity: " + spatial.v)
+    println("normalizedVelocity: " + normalizedVelocity)
     val newVNoReverse: QuantityVector[Velocity] =
-      if (newV.normalize.dotProduct(unitVec).value == -1)
+      if (normalizedVelocity.dotProduct(unitVec).value == -1 || spatial.v.magnitude == MetersPerSecond(0))
         ZERO_VELOCITY_VECTOR
       else
         newV
 
     val changeInPositionViaVelocity: QuantityVector[Length] =
       if (spatial.v.normalize.dotProduct(unitVec).value == -1)
-        ZERO_DIMENSIONS_VECTOR
+        spatial.r.plus(ZERO_DIMENSIONS_VECTOR)
       else
         spatial
           .v
