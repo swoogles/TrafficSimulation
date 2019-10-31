@@ -82,7 +82,19 @@ class SampleSceneCreation(endingSpatial: Spatial) {
       )
     )
 
-  val startingScene = scene1
+  val singleCarApproachingAStoppedCar =
+    NamedScene(
+      "group encountering a stopped vehicle",
+      createWithVehicles(
+        Seconds(300),
+        List(
+          simplerVehicle(120, 0.1),
+          simplerVehicle(60, 100),
+        )
+      )
+    )
+
+  val startingScene = singleCarApproachingAStoppedCar
 
   def createWithVehicles(sourceTiming: Time,
                          vehicles: List[PilotedVehicle]): Scene = {

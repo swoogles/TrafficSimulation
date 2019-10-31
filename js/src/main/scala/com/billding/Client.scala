@@ -23,15 +23,6 @@ object Client {
   val originSpatial = Spatial((0, 0, 0, Kilometers))
   val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
 
-//  override def main(args: Array[String]): Unit = {
-//    println("Hello world!")
-//  }
-//
-//  override def delayedInit(body: => Unit) = {
-//    println("dummy text, printed before initialization of C")
-//    body // evaluates the initialization code of C
-//  }
-
   implicit val DT: Time = Milliseconds(20)
   val scenes = new SampleSceneCreation(endingSpatial)
   val model: Model =
