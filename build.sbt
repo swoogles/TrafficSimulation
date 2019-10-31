@@ -1,4 +1,12 @@
 
+// ScalaJS
+//scalaJSUseMainModuleInitializer := true // this is an application with a main method
+//mainClass in Compile := Some("hello.Hello3") // must be Hello3 for this tutorial
+enablePlugins(ScalaJSPlugin)
+requiresDOM in Test := true
+//jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv
+//requireJsDomEnv in Test := true
+
 val Organization = "com.billding"
 val Name = "Traffice Simulator"
 val Version = "0.2.0-SNAPSHOT"
@@ -66,96 +74,36 @@ scalacOptions in ThisBuild ++= Seq(
 )
 import java.io.File
 
-val Resolvers = Seq(
+name := "traffic"
+scalaVersion := "2.12.8"
+resolvers ++= Seq(
   Resolver.sonatypeRepo("snapshots"),
   Resolver.sonatypeRepo("releases"),
   "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 )
+version := Version
+//      testFrameworks += new TestFramework("utest.runner.Framework"),
 
-def copy(clientTarget: Attributed[File], resources: File, webappServerTarget: File) = {
-  clientTarget.map { ct =>
-    // TODO Do both these replacements unconditionally in a safe way.
-//    val depName = ct.getName.replace("opt.js", "jsdeps.min.js")
-    val depName = ct.getName.replace("fastopt.js", "jsdeps.js")
-    /*val depName = ct.getName.replace("opt.js", "jsdeps.js")*/
-    recursiveCopy(new File(resources, "webapp"), webappServerTarget)
-    recursiveCopy(ct, new File(webappServerTarget, "js/" + ct.getName))
-    recursiveCopy(new File(ct.getParent, depName), new File(webappServerTarget, "js/" + depName))
-  }
-}
+libraryDependencies ++= Seq(
+  "com.lihaoyi" %%% "autowire" % autowireVersion,
+  "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
+  "com.lihaoyi" %%% "scalarx" % rxVersion,
+  "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
+  "com.github.japgolly.scalacss" %%% "core" % scalaCssVersion,
+  "com.github.japgolly.scalacss" %%% "ext-scalatags" % scalaCssVersion,
+  "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
 
+  "com.typesafe.play" %%% "play-json" % playJsonVersion,
 
-def recursiveCopy(from: File, to: File): Unit = {
-  if (from.isDirectory) {
-    to.mkdirs()
-    for {
-      f ← from.listFiles()
-    } recursiveCopy(f, new File(to, f.getName))
-  }
-  else if (!to.exists() || from.lastModified() > to.lastModified) {
-    println(s"Copy file $from to $to ")
-    from.getParentFile.mkdirs
-    IO.copyFile(from, to, preserveLastModified = true)
-  }
-}
+  "org.typelevel" %%% "cats" % "0.9.0",
+  "org.typelevel" %%% "squants" % squantsVersion,
+  "org.scalatest" %%% "scalatest" % scalaTestVersion % "test",
+  "com.lihaoyi" %%% "pprint" % pprintVersion,
+  "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test",
+  //        "com.lihaoyi" %%% "utest" % utestVersion % "test"
+)
 
-lazy val root = project.in(file(".")).
-  aggregate(trafficJS).
-  settings(
-    publish := {},
-    publishLocal := {}
-  )
+skip in packageJSDependencies := false
+jsDependencies += "org.webjars" % "d3js" % "3.5.12" / "d3.min.js"
 
-lazy val traffic = 
-  CrossPlugin.autoImport.crossProject(JSPlatform).in(file("."))
-    .settings(
-      name := "traffic",
-      scalaVersion := ScalaVersion,
-      resolvers ++= Resolvers,
-      version := Version,
-      testFrameworks += new TestFramework("utest.runner.Framework"),
-
-      libraryDependencies ++= Seq(
-        "com.lihaoyi" %%% "autowire" % autowireVersion,
-        "com.lihaoyi" %%% "scalatags" % scalatagsVersion,
-        "com.lihaoyi" %%% "scalarx" % rxVersion,
-        "org.scala-js" % "scalajs-dom_sjs0.6_2.12" % scalajsDomVersion,
-        "com.github.japgolly.scalacss" %%% "core" % scalaCssVersion,
-        "com.github.japgolly.scalacss" %%% "ext-scalatags" % scalaCssVersion,
-        "fr.iscpif" % "scaladget_sjs0.6_2.12" % scaladgetVersion,
-
-        "com.typesafe.play" %%% "play-json" % playJsonVersion,
-
-        "org.typelevel" %%% "cats" % "0.9.0",
-        "org.typelevel"  %%% "squants"  % squantsVersion,
-        "org.scalatest" %%% "scalatest" % scalaTestVersion % "test",
-        "com.lihaoyi" %%% "pprint" % pprintVersion,
-        "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test",
-        "com.lihaoyi" %%% "utest" % utestVersion % "test"
-      )
-    ).jsSettings(
-    skip in packageJSDependencies := false,
-    jsDependencies += "org.webjars" % "d3js" % "3.5.12" / "d3.min.js"
-  )
-
-// ScalaJS
-scalaJSUseMainModuleInitializer := true // this is an application with a main method
-mainClass in Compile := Some("hello.Hello3") // must be Hello3 for this tutorial
-enablePlugins(ScalaJSPlugin)
-
-
-lazy val trafficJS = traffic.js enablePlugins (ScalaJSPlugin)
-
-lazy val bootstrap = project.in(file("target/bootstrap")) settings(
-  version := Version,
-  scalaVersion := ScalaVersion,
-  go := {
-    /*val clientTarget = (fullOptJS in trafficJS in Compile).value*/
-    val clientTarget = (fastOptJS in trafficJS in Compile).value
-    val clientResource = (resourceDirectory in trafficJS in Compile).value
-
-  }
-) dependsOn(trafficJS)
-
-lazy val go = taskKey[Unit]("go")
 
