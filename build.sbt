@@ -97,6 +97,7 @@ libraryDependencies ++= Seq(
   "org.typelevel" %%% "cats" % "0.9.0",
   "org.typelevel" %%% "squants" % squantsVersion,
   "org.scalatest" %%% "scalatest" % scalaTestVersion % "test",
+  "org.scalatest" %% "scalatest" % scalaTestVersion % "test", // 2nd entry needed for testing in Intellij. Weird.
   "com.lihaoyi" %%% "pprint" % pprintVersion,
   "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test",
   //        "com.lihaoyi" %%% "utest" % utestVersion % "test"
