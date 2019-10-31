@@ -20,7 +20,6 @@ Features so far:
 It uses powerful scala tools to construct a fully typed and reactive Web applications. Among them:
 
 - [scalajs](https://github.com/scala-js/scala-js)
-- [scalatra](http://scalatra.org/)
 - [scalatags](https://github.com/lihaoyi/scalatags) for UI.
 - [scala.rx](https://github.com/lihaoyi/scala.rx) for tracking changes in the UI.
 <!-- - [autowire](https://github.com/lihaoyi/autowire) -->
@@ -28,22 +27,13 @@ It uses powerful scala tools to construct a fully typed and reactive Web applica
 
 ## Build & Run ##
 First, build the javascript:
-```sh
-$ cd scalaWUI
-$ sbt
-> bootstrap /go// Build the client JS files and move them to the right place
-> go  // Not currently working with the new build.sbt
 ```
-
-Then, start the server:
-```sh
-> jetty:start // Not currently working with the new build.sbt
-> fooJVM/jetty:start
+sbt fastOptJS
 ```
 
 ## Play with the Simulation ##
 
-Open [http://localhost:8080/](http://localhost:8080/) in your browser.
+    firefox ./webapp/simpleLocalSimulation.html
 
 
 ![](https://i.imgur.com/Cw1YIO7.png)
