@@ -1,3 +1,6 @@
+.bloop/
+.metals/
+node_modules/
 *.log
 target/
 target/*
