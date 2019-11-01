@@ -4,6 +4,7 @@ import com.billding.Orientation.{East, North, South, West}
 import com.billding.physics._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
+import squants.{DoubleVector, QuantityVector, Velocity}
 import squants.motion._
 import squants.space.{Kilometers, Meters}
 import squants.time.TimeConversions._
@@ -64,6 +65,17 @@ class SpatialTest extends FlatSpec {
     val startingSpatial = Spatial((100, 0, 0, Meters))
     val updatedSpatial: Spatial = Spatial.accelerateAlongCurrentDirection(startingSpatial, 1.seconds, -MetersPerSecondSquared(1), goalSpatial)
     updatedSpatial shouldBe startingSpatial
+  }
+
+  it should "determine if 2 vectors are pointed in opposite directions" in {
+    val vec1: QuantityVector[Velocity] =
+      Spatial.convertToSVector(1.0, 0.0, 0.0, MetersPerSecond)
+
+    val vec2 = DoubleVector(-1, 0, 0)
+    println("Vectors are in opposite directions: " + Spatial.vectorsAreInOppositeDirections(vec1, vec2))
+    println(s"Vec1 : $vec1 \nVec2 :$vec2")
+
+
   }
 
   it should "deccelerate a moving Spatial" in {

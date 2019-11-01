@@ -1,10 +1,9 @@
 package com.billding.physics
 
 import com.billding.Orientation
-import squants.motion
+import squants.{Acceleration, DoubleVector, Length, QuantityVector, Time, UnitOfMeasure, Velocity, motion}
 import squants.motion.{Distance, DistanceUnit, MetersPerSecond, MetersPerSecondSquared, VelocityUnit}
 import squants.space.{LengthUnit, Meters}
-import squants.{Acceleration, Length, QuantityVector, Time, UnitOfMeasure, Velocity, motion}
 
 import scala.language.postfixOps
 
@@ -68,6 +67,11 @@ object Spatial {
                       measurementUnit(z))
   }
 
+  def vectorsAreInOppositeDirections(vec1: QuantityVector[Velocity], vec2: DoubleVector): Boolean = {
+    vec1.dotProduct(vec2).value == -1
+  }
+
+
   /*
   A bunch of future posibilities:
   def vecBetween(observer: Spatial, target: Spatial): DenseVector[Distance] = ???
@@ -93,8 +97,10 @@ object Spatial {
                                       dt: Time,
                                       dV: Acceleration,
                                       destination: Spatial): Spatial = {
-    if (spatial.v.magnitude == MetersPerSecond(0)) throw new IllegalArgumentException("spatial needs to be moving")
-    val unitVec =
+    //    if (spatial.v.magnitude == MetersPerSecond(0)) throw new IllegalArgumentException("spatial needs to be moving")
+    println(s"Spatial.r!: ${spatial.r}")
+    println(s"destination.r: ${destination.r}")
+    val unitVecToDestination: DoubleVector =
       spatial
         .vectorTo(destination)
         .map { r: Distance =>
@@ -103,7 +109,7 @@ object Spatial {
         .normalize
 
     val accelerationAlongDirectionOfTravel: QuantityVector[Acceleration] =
-      unitVec.map { unitVecComponent =>
+      unitVecToDestination.map { unitVecComponent =>
         dV * unitVecComponent
       }
 
@@ -111,23 +117,15 @@ object Spatial {
       accelerationAlongDirectionOfTravel.map(_ * dt)
 
     val newV: QuantityVector[Velocity] = spatial.v.plus(changeInVelocity)
-    println("spatial.v: " + spatial.v)
-    println("spatial.v.normalize: " + spatial.v.normalize)
-    val normalizedVelocity =
-      if (spatial.v.magnitude == MetersPerSecond(0))
-        ZERO_VELOCITY_VECTOR
-      else
-        spatial.v
-    println("Normalized velocity: " + spatial.v)
-    println("normalizedVelocity: " + normalizedVelocity)
+
     val newVNoReverse: QuantityVector[Velocity] =
-      if (normalizedVelocity.dotProduct(unitVec).value == -1 || spatial.v.magnitude == MetersPerSecond(0))
+      if (vectorsAreInOppositeDirections(newV.normalize, unitVecToDestination))
         ZERO_VELOCITY_VECTOR
       else
         newV
 
     val changeInPositionViaVelocity: QuantityVector[Length] =
-      if (spatial.v.normalize.dotProduct(unitVec).value == -1)
+      if (spatial.v.normalize.dotProduct(unitVecToDestination).value == -1)
         spatial.r.plus(ZERO_DIMENSIONS_VECTOR)
       else
         spatial
