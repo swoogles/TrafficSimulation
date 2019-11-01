@@ -89,7 +89,7 @@ class SampleSceneCreation(endingSpatial: Spatial) {
         Seconds(300),
         List(
           simplerVehicle(120, 0.1),
-          simplerVehicle(60, 100),
+          simplerVehicle(60, 10),
         )
       )
     )

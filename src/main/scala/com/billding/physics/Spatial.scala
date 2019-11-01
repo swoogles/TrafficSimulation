@@ -1,9 +1,12 @@
 package com.billding.physics
 
 import com.billding.Orientation
+import squants.motion
 import squants.motion.{Distance, DistanceUnit, MetersPerSecond, MetersPerSecondSquared, VelocityUnit}
 import squants.space.{LengthUnit, Meters}
-import squants.{Acceleration, Length, QuantityVector, Time, UnitOfMeasure, Velocity}
+import squants.{Acceleration, Length, QuantityVector, Time, UnitOfMeasure, Velocity, motion}
+
+import scala.language.postfixOps
 
 case class Spatial(
     r: QuantityVector[Distance],
@@ -90,6 +93,7 @@ object Spatial {
                                       dt: Time,
                                       dV: Acceleration,
                                       destination: Spatial): Spatial = {
+    if (spatial.v.magnitude == MetersPerSecond(0)) throw new IllegalArgumentException("spatial needs to be moving")
     val unitVec =
       spatial
         .vectorTo(destination)
