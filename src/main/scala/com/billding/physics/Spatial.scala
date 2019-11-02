@@ -87,6 +87,27 @@ object Spatial {
     ???
   }
    */
+  def unitVecTo(spatial: Spatial, destination: Spatial): DoubleVector =
+    spatial
+      .vectorTo(destination)
+      .map { r: Distance =>
+        r.toMeters
+      }
+      .normalize
+
+  def accelerationAlongDirectionOfTravelWithoutPreventingBackwardsTravel(spatial: Spatial, dV: Acceleration, destination: Spatial): QuantityVector[Acceleration] = {
+    unitVecTo(spatial, destination).map { unitVecComponent =>
+      dV * unitVecComponent
+    }
+  }
+
+  def newVelocityAfterAcceleration(spatial: Spatial, accelerationAlongDirectionOfTravel: QuantityVector[Acceleration], dt: Time): QuantityVector[Velocity] = {
+    val changeInVelocity: QuantityVector[Velocity] =
+      accelerationAlongDirectionOfTravel.map(_ * dt)
+
+    spatial.v.plus(changeInVelocity)
+
+  }
 
   /*
   new speed:	v(t+Δt) = v(t) + (dv/dt) Δt,
@@ -98,47 +119,28 @@ object Spatial {
                                       dV: Acceleration,
                                       destination: Spatial): Spatial = {
     //    if (spatial.v.magnitude == MetersPerSecond(0)) throw new IllegalArgumentException("spatial needs to be moving")
-    println(s"Spatial.r!: ${spatial.r}")
-    println(s"destination.r: ${destination.r}")
-    val unitVecToDestination: DoubleVector =
-      spatial
-        .vectorTo(destination)
-        .map { r: Distance =>
-          r.toMeters
-        }
-        .normalize
 
     val accelerationAlongDirectionOfTravel: QuantityVector[Acceleration] =
-      unitVecToDestination.map { unitVecComponent =>
-        dV * unitVecComponent
-      }
+      accelerationAlongDirectionOfTravelWithoutPreventingBackwardsTravel(spatial, dV, destination)
 
-    val changeInVelocity: QuantityVector[Velocity] =
-      accelerationAlongDirectionOfTravel.map(_ * dt)
+    val newV: QuantityVector[Velocity] = newVelocityAfterAcceleration(spatial, accelerationAlongDirectionOfTravel, dt)
 
-    val newV: QuantityVector[Velocity] = spatial.v.plus(changeInVelocity)
-
-    val newVNoReverse: QuantityVector[Velocity] =
-      if (vectorsAreInOppositeDirections(newV.normalize, unitVecToDestination))
-        ZERO_VELOCITY_VECTOR
-      else
+    if (vectorsAreInOppositeDirections(newV.normalize, unitVecTo(spatial, destination)))
+      spatial.copy(v = ZERO_VELOCITY_VECTOR) // No reversing allowed. Return a stopped car.
+    else {
+      val changeInPositionViaVelocity: QuantityVector[Length] =
         newV
-
-    val changeInPositionViaVelocity: QuantityVector[Length] =
-      if (spatial.v.normalize.dotProduct(unitVecToDestination).value == -1)
-        spatial.r.plus(ZERO_DIMENSIONS_VECTOR)
-      else
-        spatial
-          .v
           .map { v: Velocity => v * dt }
 
-    val changeInPositionViaAcceleration: QuantityVector[Distance] =
-      accelerationAlongDirectionOfTravel.map { p: Acceleration =>
-        .5 * p * dt.squared
+      val changeInPositionViaAcceleration: QuantityVector[Distance] =
+        accelerationAlongDirectionOfTravel.map { p: Acceleration =>
+          .5 * p * dt.squared
+        }
+
+      val newP = spatial.r + changeInPositionViaVelocity + changeInPositionViaAcceleration
+      spatial.copy(r = newP, v = newV)
       }
 
-    val newP = spatial.r + changeInPositionViaVelocity + changeInPositionViaAcceleration
-    Spatial(newP, newVNoReverse, spatial.dimensions)
   }
 
   def apply(

@@ -54,6 +54,17 @@ class SpatialTest extends FlatSpec {
 
   val goalSpatial = Spatial.apply((1, 0, 0, Kilometers))
 
+  it should "accelerate along direction of travel" in {
+    val spatial = Spatial(0.0, 0.0, 0.0, Meters)
+    val destination = Spatial(100.0, 0.0, 0.0, Meters)
+    val acceleration = MetersPerSecondSquared(1)
+    val expectedResult = QuantityVector(MetersPerSecondSquared(1.0), MetersPerSecondSquared(0.0), MetersPerSecondSquared(0.0))
+    val result = Spatial.accelerationAlongDirectionOfTravelWithoutPreventingBackwardsTravel(spatial, acceleration, destination)
+    println("acceleration result: " + result)
+    assert(result == expectedResult)
+
+  }
+
   // FINALLY got a test that contains this damn NaN issue
   it should "accelerate a Spatial from rest" in {
     val startingSpatial = Spatial((100, 0, 0, Meters))
