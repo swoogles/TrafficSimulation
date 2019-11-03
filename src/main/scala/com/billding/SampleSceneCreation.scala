@@ -2,16 +2,20 @@ package com.billding
 
 import com.billding.physics.Spatial
 import com.billding.traffic._
+import scalacss.internal.LengthUnit
 import squants.Length
-import squants.motion.{KilometersPerHour, Velocity}
+import squants.motion.{DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
 import squants.space.{Kilometers, Meters}
 import squants.time.{Milliseconds, Seconds, Time}
 
 class SampleSceneCreation(endingSpatial: Spatial) {
   implicit val DT: Time = Milliseconds(20)
 
-  private def simplerVehicle(xPos: Double, xV: Double) =
-    PilotedVehicle((xPos, 0, 0, Meters), (xV, 0, 0, KilometersPerHour))
+  private def simplerVehicle(xPos: Double, xV: Double) = {
+    val lengthUnit: DistanceUnit = Meters
+    val velocityUnit: VelocityUnit = KilometersPerHour
+    PilotedVehicle((xPos, 0.0, 0.0, lengthUnit), endingSpatial, (xV, 0.0, 0.0, velocityUnit))
+  }
 
   val emptyScene =
     NamedScene(

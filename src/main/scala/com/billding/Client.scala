@@ -81,7 +81,7 @@ object Client {
 
   @JSExport
   def run() {
-    println("No autowire")
+    println("With an ending spatial")
     dom.document.body.appendChild(controlElements.createLayout())
 
     val canvasHeight = 800

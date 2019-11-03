@@ -27,9 +27,9 @@ class SceneSpec extends  FlatSpec{
 
   it should "do something " in {
     val vehicles = List(
-      PilotedVehicle((100.0, 0.0, 0.0, lengthUnit), (0.1, 0.0, 0.0, velocityUnit), endingSpatial),
-      PilotedVehicle((80.0, 0.0, 0.0, lengthUnit), (70.0, 0.0, 0.0, velocityUnit), endingSpatial),
-      PilotedVehicle((60.0, 0.0, 0.0, lengthUnit), (140.0, 0.0, 0.0, velocityUnit), endingSpatial)
+      PilotedVehicle((100.0, 0.0, 0.0, lengthUnit), endingSpatial, (0.1, 0.0, 0.0, velocityUnit)),
+      PilotedVehicle((80.0, 0.0, 0.0, lengthUnit), endingSpatial, (70.0, 0.0, 0.0, velocityUnit)),
+      PilotedVehicle((60.0, 0.0, 0.0, lengthUnit), endingSpatial, (140.0, 0.0, 0.0, velocityUnit))
     )
 
     val vehicleSource = VehicleSourceImpl(Seconds(1), originSpatial, endingSpatial)
@@ -46,5 +46,10 @@ class SceneSpec extends  FlatSpec{
     )
 
     val updatedLane: Lane = Lane.update(lane, Seconds(1), Milliseconds(100))
+  }
+
+  it should "simulate one car encountering a stopped car" in {
+    SampleSceneCreation
+
   }
 }

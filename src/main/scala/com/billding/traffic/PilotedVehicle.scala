@@ -108,11 +108,9 @@ object PilotedVehicle {
       java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
     )
 
-  def apply(
-             pIn1: (Double, Double, Double, LengthUnit),
-             vIn1: (Double, Double, Double, VelocityUnit) =
-             (0, 0, 0, KilometersPerHour),
-             endingSpatial: Spatial = Spatial.BLANK): PilotedVehicle = {
+  def apply(pIn1: (Double, Double, Double, DistanceUnit),
+            endingSpatial: Spatial,
+            vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour)): PilotedVehicle = {
     PilotedVehicle.commuter2(Spatial(pIn1, vIn1), idm, endingSpatial)
   }
 

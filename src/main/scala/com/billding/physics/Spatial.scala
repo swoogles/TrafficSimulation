@@ -68,7 +68,10 @@ object Spatial {
   }
 
   def vectorsAreInOppositeDirections(vec1: QuantityVector[Velocity], vec2: DoubleVector): Boolean = {
-    vec1.dotProduct(vec2).value == -1
+    val difference = (vec1.normalize.to(MetersPerSecond).normalize + vec2.normalize).magnitude
+    difference < 0.1 && difference > -0.1
+    //    println("dotProduct: " + vec1.dotProduct(vec2).value)
+    //    vec1.dotProduct(vec2).value <= -0.9 && vec1.dotProduct(vec2).value > -1.1
   }
 
 

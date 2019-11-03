@@ -83,9 +83,16 @@ class SpatialTest extends FlatSpec {
       Spatial.convertToSVector(1.0, 0.0, 0.0, MetersPerSecond)
 
     val vec2 = DoubleVector(-1, 0, 0)
-    println("Vectors are in opposite directions: " + Spatial.vectorsAreInOppositeDirections(vec1, vec2))
-    println(s"Vec1 : $vec1 \nVec2 :$vec2")
-
+    assert(Spatial.vectorsAreInOppositeDirections(vec1, vec2) == true)
+    println(Spatial.vectorsAreInOppositeDirections(
+      Spatial.convertToSVector(1.0, 0.0, 0.0, MetersPerSecond)
+      , DoubleVector(-1, 0, 0)))
+    assert(Spatial.vectorsAreInOppositeDirections(
+      Spatial.convertToSVector(5.0, 0.0, 0.0, MetersPerSecond)
+      , DoubleVector(-5, 0, 0)) == true)
+    assert(Spatial.vectorsAreInOppositeDirections(
+      Spatial.convertToSVector(10.0, 0.0, 0.0, MetersPerSecond)
+      , DoubleVector(-1, 0, 0)) == true)
 
   }
 
