@@ -3474,7 +3474,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
   var num$5 = $m_s_math_Numeric$IntIsIntegral$();
   var jsx$5 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(12, this$22, num$5);
   $m_sci_List$();
-  var array$4 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.1), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 80.0)];
+  var array$4 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 80.0)];
   var i$4 = (((-1) + $uI(array$4.length)) | 0);
   var result$4 = $m_sci_Nil$();
   while ((i$4 >= 0)) {
@@ -12223,6 +12223,9 @@ function $f_s_math_Ordered__$$less$eq__O__Z($thiz, that) {
 function $f_s_math_Ordered__$$greater$eq__O__Z($thiz, that) {
   return ($thiz.compare__O__I(that) >= 0)
 }
+function $f_s_math_Ordered__$$greater__O__Z($thiz, that) {
+  return ($thiz.compare__O__I(that) > 0)
+}
 /** @constructor */
 function $c_s_math_Ordered$() {
   $c_O.call(this)
@@ -19674,7 +19677,7 @@ $c_Lcom_billding_traffic_Lane$.prototype.responsesInOneLanePrep__Lcom_billding_t
   }
 });
 $c_Lcom_billding_traffic_Lane$.prototype.update__Lcom_billding_traffic_Lane__Lsquants_time_Time__Lsquants_time_Time__Lcom_billding_traffic_Lane = (function(lane, t, dt) {
-  var newVehicleOption = lane.vehicleSource$1.produceVehicle__Lsquants_time_Time__Lsquants_time_Time__Lcom_billding_physics_Spatial__s_Option(t, dt, lane.infinitySpatial$1);
+  var newVehicleOption = lane.vehicleSource$1.produceVehicle__Lsquants_time_Time__Lsquants_time_Time__Lcom_billding_physics_Spatial__s_Option(t, dt, lane.end$1);
   var rc6 = false;
   var x2 = null;
   matchEnd7: {
@@ -19760,11 +19763,28 @@ $c_Lcom_billding_traffic_Lane$.prototype.update__Lcom_billding_traffic_Lane__Lsq
     var jsx$2 = b.result__O()
   };
   var newVehicles = $as_sci_List(jsx$2);
+  $m_sci_List$();
+  var b$1 = new $c_scm_ListBuffer().init___();
+  var these$1 = newVehicles;
+  while ((!these$1.isEmpty__Z())) {
+    var arg1$3 = these$1.head__O();
+    var vehicle$1 = $as_Lcom_billding_traffic_PilotedVehicle(arg1$3);
+    var target = vehicle$1.destination$1;
+    var this$12 = vehicle$1.vehicle$1.spatial$1.distanceTo__Lcom_billding_physics_Spatial__Lsquants_space_Length(target);
+    var this$11 = $m_Lsquants_space_Meters$();
+    var num = $m_s_math_Numeric$IntIsIntegral$();
+    var that = $m_Lsquants_space_Length$().apply__O__Lsquants_space_LengthUnit__s_math_Numeric__Lsquants_space_Length(40, this$11, num);
+    if (($f_s_math_Ordered__$$greater__O__Z(this$12, that) !== false)) {
+      b$1.$$plus$eq__O__scm_ListBuffer(arg1$3)
+    };
+    these$1 = $as_sci_List(these$1.tail__O())
+  };
+  var vehiclesThatHaveNotReachedDestination = b$1.toList__sci_List();
   var vehicleSource$1 = laneWithNewVehicle.vehicleSource$1;
   var beginning$1 = laneWithNewVehicle.beginning$1;
   var end$1 = laneWithNewVehicle.end$1;
   var speedLimit$1 = laneWithNewVehicle.speedLimit$1;
-  return new $c_Lcom_billding_traffic_Lane().init___sci_List__Lcom_billding_traffic_VehicleSourceImpl__Lcom_billding_physics_Spatial__Lcom_billding_physics_Spatial__Lsquants_motion_Velocity(newVehicles, vehicleSource$1, beginning$1, end$1, speedLimit$1)
+  return new $c_Lcom_billding_traffic_Lane().init___sci_List__Lcom_billding_traffic_VehicleSourceImpl__Lcom_billding_physics_Spatial__Lcom_billding_physics_Spatial__Lsquants_motion_Velocity(vehiclesThatHaveNotReachedDestination, vehicleSource$1, beginning$1, end$1, speedLimit$1)
 });
 $c_Lcom_billding_traffic_Lane$.prototype.apply__Lsquants_time_Time__Lcom_billding_physics_Spatial__Lcom_billding_physics_Spatial__Lsquants_motion_Velocity__sci_List__Lcom_billding_traffic_Lane = (function(sourceTiming, beginning, end, speedLimit, vehicles) {
   var directionForSource = beginning.vectorTo__Lcom_billding_physics_Spatial__Lsquants_QuantityVector(end);
@@ -31631,7 +31651,10 @@ $c_Lcom_billding_traffic_Scene.prototype.productElement__I__O = (function(x$1) {
     }
   }
 });
-$c_Lcom_billding_traffic_Scene.prototype.updateSpeedLimit__Lsquants_motion_Velocity__Lsquants_time_Time__Lcom_billding_traffic_Scene = (function(speedLimit, dt) {
+$c_Lcom_billding_traffic_Scene.prototype.toString__T = (function() {
+  return $m_sr_ScalaRunTime$().$$undtoString__s_Product__T(this)
+});
+$c_Lcom_billding_traffic_Scene.prototype.updateWithSpeedLimit__Lsquants_motion_Velocity__Lsquants_time_Time__Lcom_billding_traffic_Scene = (function(speedLimit, dt) {
   var this$1 = this.t$1;
   var that = this.dt$1;
   var nextT = $as_Lsquants_time_Time(this$1.plus__Lsquants_Quantity__Lsquants_Quantity(that));
@@ -31673,9 +31696,6 @@ $c_Lcom_billding_traffic_Scene.prototype.updateSpeedLimit__Lsquants_motion_Veloc
   };
   var res = $as_sci_List(jsx$1);
   return new $c_Lcom_billding_traffic_Scene().init___sci_List__Lsquants_time_Time__Lsquants_time_Time__Lsquants_motion_Velocity__T2(res, nextT, this.dt$1, speedLimit, this.canvasDimensions$1)
-});
-$c_Lcom_billding_traffic_Scene.prototype.toString__T = (function() {
-  return $m_sr_ScalaRunTime$().$$undtoString__s_Product__T(this)
 });
 $c_Lcom_billding_traffic_Scene.prototype.init___sci_List__Lsquants_time_Time__Lsquants_time_Time__Lsquants_motion_Velocity__T2 = (function(streets, t, dt, speedLimit, canvasDimensions) {
   this.streets$1 = streets;
@@ -47598,7 +47618,85 @@ $c_Lcom_billding_uimodules_Model.prototype.disruptLane__Lcom_billding_traffic_La
 $c_Lcom_billding_uimodules_Model.prototype.updateScene__p1__Lsquants_motion_Velocity__V = (function(speedLimit) {
   var jsx$1 = this.sceneVar$1;
   var this$1 = this.sceneVar$1;
-  jsx$1.update__O__V($as_Lcom_billding_traffic_Scene(this$1.Internal__Lrx_Var$Internal$().value$1).updateSpeedLimit__Lsquants_motion_Velocity__Lsquants_time_Time__Lcom_billding_traffic_Scene(speedLimit, this.DT$1))
+  jsx$1.update__O__V($as_Lcom_billding_traffic_Scene(this$1.Internal__Lrx_Var$Internal$().value$1).updateWithSpeedLimit__Lsquants_motion_Velocity__Lsquants_time_Time__Lcom_billding_traffic_Scene(speedLimit, this.DT$1));
+  var this$2 = this.sceneVar$1;
+  var this$7 = $as_Lcom_billding_traffic_Scene(this$2.Internal__Lrx_Var$Internal$().value$1).streets$1;
+  var f$1 = (function($this) {
+    return (function(x$1$2) {
+      var x$1 = $as_Lcom_billding_traffic_Street(x$1$2);
+      var this$5 = x$1.lanes$1;
+      var f = (function($this$1) {
+        return (function(x$2$2) {
+          var x$2 = $as_Lcom_billding_traffic_Lane(x$2$2);
+          var this$3 = x$2.vehicles$1;
+          return $f_sc_LinearSeqOptimized__length__I(this$3)
+        })
+      })($this);
+      var this$4 = $m_sci_List$();
+      var bf = this$4.ReusableCBFInstance$2;
+      if ((bf === $m_sci_List$().ReusableCBFInstance$2)) {
+        if ((this$5 === $m_sci_Nil$())) {
+          var jsx$2 = $m_sci_Nil$()
+        } else {
+          var arg1 = this$5.head__O();
+          var h = new $c_sci_$colon$colon().init___O__sci_List(f(arg1), $m_sci_Nil$());
+          var t = h;
+          var rest = $as_sci_List(this$5.tail__O());
+          while ((rest !== $m_sci_Nil$())) {
+            var arg1$1 = rest.head__O();
+            var nx = new $c_sci_$colon$colon().init___O__sci_List(f(arg1$1), $m_sci_Nil$());
+            t.tl$5 = nx;
+            t = nx;
+            rest = $as_sci_List(rest.tail__O())
+          };
+          var jsx$2 = h
+        }
+      } else {
+        var b = $f_sc_TraversableLike__builder$1__psc_TraversableLike__scg_CanBuildFrom__scm_Builder(this$5, bf);
+        var these = this$5;
+        while ((!these.isEmpty__Z())) {
+          var arg1$2 = these.head__O();
+          b.$$plus$eq__O__scm_Builder(f(arg1$2));
+          these = $as_sci_List(these.tail__O())
+        };
+        var jsx$2 = b.result__O()
+      };
+      return $uI($as_sc_TraversableOnce(jsx$2).sum__s_math_Numeric__O($m_s_math_Numeric$IntIsIntegral$()))
+    })
+  })(this);
+  var this$6 = $m_sci_List$();
+  var bf$1 = this$6.ReusableCBFInstance$2;
+  if ((bf$1 === $m_sci_List$().ReusableCBFInstance$2)) {
+    if ((this$7 === $m_sci_Nil$())) {
+      var jsx$3 = $m_sci_Nil$()
+    } else {
+      var arg1$3 = this$7.head__O();
+      var h$1 = new $c_sci_$colon$colon().init___O__sci_List(f$1(arg1$3), $m_sci_Nil$());
+      var t$1 = h$1;
+      var rest$1 = $as_sci_List(this$7.tail__O());
+      while ((rest$1 !== $m_sci_Nil$())) {
+        var arg1$4 = rest$1.head__O();
+        var nx$1 = new $c_sci_$colon$colon().init___O__sci_List(f$1(arg1$4), $m_sci_Nil$());
+        t$1.tl$5 = nx$1;
+        t$1 = nx$1;
+        rest$1 = $as_sci_List(rest$1.tail__O())
+      };
+      var jsx$3 = h$1
+    }
+  } else {
+    var b$1 = $f_sc_TraversableLike__builder$1__psc_TraversableLike__scg_CanBuildFrom__scm_Builder(this$7, bf$1);
+    var these$1 = this$7;
+    while ((!these$1.isEmpty__Z())) {
+      var arg1$5 = these$1.head__O();
+      b$1.$$plus$eq__O__scm_Builder(f$1(arg1$5));
+      these$1 = $as_sci_List(these$1.tail__O())
+    };
+    var jsx$3 = b$1.result__O()
+  };
+  var x = ("NumVehicles after update: " + $as_sc_TraversableOnce(jsx$3).sum__s_math_Numeric__O($m_s_math_Numeric$IntIsIntegral$()));
+  var this$9 = $m_s_Console$();
+  var this$10 = $as_Ljava_io_PrintStream(this$9.outVar$2.v$1);
+  this$10.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x + "\n"))
 });
 $c_Lcom_billding_uimodules_Model.prototype.disrupt__p1__Lcom_billding_traffic_Lane__Lcom_billding_traffic_Lane = (function(lane) {
   this.disruptions$1.disruptLane$1.update__O__V(false);

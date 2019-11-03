@@ -13,7 +13,7 @@ case class Scene(
   private val updateLane: (Lane) => Lane =
     (lane: Lane) => Lane.update(lane, t, dt)
 
-  def updateSpeedLimit(speedLimit: Velocity)(implicit dt: Time): Scene = {
+  def updateWithSpeedLimit(speedLimit: Velocity)(implicit dt: Time): Scene = {
     val nextT = this.t + this.dt
     val res: List[Street] = {
       streets.map(street => street.updateLanes(updateLane))

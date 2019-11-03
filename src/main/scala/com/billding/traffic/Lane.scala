@@ -130,7 +130,7 @@ object Lane {
 
   def update(lane: Lane, t: Time, dt: Time): Lane = {
     val newVehicleOption: Option[PilotedVehicle] =
-      lane.vehicleSource.produceVehicle(t, dt, lane.infinitySpatial)
+      lane.vehicleSource.produceVehicle(t, dt, lane.end)
 
     val newVehicleList: List[PilotedVehicle] =
       newVehicleOption match {
@@ -148,8 +148,10 @@ object Lane {
         case (vehicle, dMomentum) =>
           vehicle.accelerateAlongCurrentDirection(dt, dMomentum)
       }
+    val vehiclesThatHaveNotReachedDestination =
+      newVehicles.filter(vehicle => vehicle.distanceTo(vehicle.destination) > Meters(40))
 
-    laneWithNewVehicle.copy(vehicles = newVehicles)
+    laneWithNewVehicle.copy(vehicles = vehiclesThatHaveNotReachedDestination)
   }
 
   def responsesInOneLanePrep(lane: Lane): List[Acceleration] = {

@@ -139,8 +139,9 @@ case class Model(
     laneAfterDisruptionExisting.copy(vehicleSource = newSource)
   }
 
-  private def updateScene(speedLimit: Velocity) =
-    sceneVar() = sceneVar.now.updateSpeedLimit(speedLimit)
+  private def updateScene(speedLimit: Velocity) = {
+    sceneVar() = sceneVar.now.updateWithSpeedLimit(speedLimit)
+  }
 
   private def updateLanesAndScene(): Unit = {
     if (this.paused.now == false) {
