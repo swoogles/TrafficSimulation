@@ -30168,34 +30168,28 @@ $c_Lcom_billding_ControlElements.prototype.init___Lcom_billding_ButtonBehaviors 
   };
   this.sceneSelections$1 = $as_sci_List(jsx$1);
   var this$3 = $m_Lscalatags_JsDom$all$();
-  var jsx$8 = this$3.div__Lscalatags_JsDom$TypedTag();
+  var jsx$6 = this$3.div__Lscalatags_JsDom$TypedTag();
   var array = [$m_Lscalatags_JsDom$all$().cls__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("col-md-6 text-center", $m_Lscalatags_JsDom$all$().stringAttr$1)];
-  var jsx$7 = jsx$8.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array));
+  var jsx$5 = jsx$6.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array));
   var this$6 = $m_Lscalatags_JsDom$all$();
   var e = $m_Lcom_billding_OutterStyles$().normalButton$1.apply__O__O__O("Pause", buttonBehaviors.togglePause$1);
-  var jsx$6 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$6, e);
+  var jsx$4 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$6, e);
   var this$7 = $m_Lscalatags_JsDom$all$();
   var e$1 = $m_Lcom_billding_OutterStyles$().normalButton$1.apply__O__O__O("Reset the scene!", buttonBehaviors.initiateSceneReset$1);
-  var jsx$5 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$7, e$1);
+  var jsx$3 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$7, e$1);
   var this$8 = $m_Lscalatags_JsDom$all$();
-  var e$3 = $m_Lcom_billding_OutterStyles$().normalButton$1.apply__O__O__O("Save the scene", buttonBehaviors.initiateSceneSerialization$1);
-  var jsx$4 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$8, e$3);
+  var e$3 = $m_Lcom_billding_OutterStyles$().dangerButton$1.apply__O__O__O("Disrupt the flow", buttonBehaviors.toggleDisrupt$1);
+  var jsx$2 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$8, e$3);
   var this$9 = $m_Lscalatags_JsDom$all$();
-  var e$4 = $m_Lcom_billding_OutterStyles$().normalButton$1.apply__O__O__O("Load the scene", buttonBehaviors.initiateSceneDeserialization$1);
-  var jsx$3 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$9, e$4);
-  var this$10 = $m_Lscalatags_JsDom$all$();
-  var e$5 = $m_Lcom_billding_OutterStyles$().dangerButton$1.apply__O__O__O("Disrupt the flow", buttonBehaviors.toggleDisrupt$1);
-  var jsx$2 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$10, e$5);
-  var this$11 = $m_Lscalatags_JsDom$all$();
-  var e$6 = $m_Lcom_billding_OutterStyles$().dangerButton$1.apply__O__O__O("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting$1);
-  var array$1 = [jsx$6, jsx$5, jsx$4, jsx$3, jsx$2, new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$11, e$6)];
-  this.buttons$1 = jsx$7.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1)).render__Lorg_scalajs_dom_raw_Element();
-  var this$14 = $m_Lscalatags_JsDom$all$();
-  var jsx$31 = this$14.div__Lscalatags_JsDom$TypedTag();
+  var e$4 = $m_Lcom_billding_OutterStyles$().dangerButton$1.apply__O__O__O("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting$1);
+  var array$1 = [jsx$4, jsx$3, jsx$2, new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$9, e$4)];
+  this.buttons$1 = jsx$5.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1)).render__Lorg_scalajs_dom_raw_Element();
+  var this$12 = $m_Lscalatags_JsDom$all$();
+  var jsx$29 = this$12.div__Lscalatags_JsDom$TypedTag();
   var array$2 = [$m_Lscalatags_JsDom$all$().cls__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("col-md-6 text-center", $m_Lscalatags_JsDom$all$().stringAttr$1)];
-  var jsx$30 = jsx$31.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$2));
-  var this$17 = $m_Lscalatags_JsDom$all$();
-  var jsx$29 = this$17.button__Lscalatags_JsDom$TypedTag();
+  var jsx$28 = jsx$29.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$2));
+  var this$15 = $m_Lscalatags_JsDom$all$();
+  var jsx$27 = this$15.button__Lscalatags_JsDom$TypedTag();
   var array$3 = [$m_Lscaladget_tools_JsRxTags$().RxStr__Lrx_Rx__F1__Lscalatags_generic_Modifier(buttonBehaviors.model$1.carTimingText$1, new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$1) {
     return (function(v$2) {
       var v = $as_T(v$2);
@@ -30203,16 +30197,16 @@ $c_Lcom_billding_ControlElements.prototype.init___Lcom_billding_ButtonBehaviors 
       return new $c_Lscalatags_JsDom$StringFrag().init___T(v)
     })
   })(this)))];
-  var jsx$28 = jsx$29.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$3));
-  var this$21 = $m_Lscalatags_JsDom$all$();
-  var jsx$27 = this$21.input__Lscalatags_JsDom$TypedTag();
-  var jsx$26 = $m_Lscalatags_JsDom$all$().tpe__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("range", $m_Lscalatags_JsDom$all$().stringAttr$1);
-  var jsx$25 = $m_Lscalatags_JsDom$all$().min__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(10, $m_Lscalatags_JsDom$all$().intAttr$1);
-  var jsx$24 = $m_Lscalatags_JsDom$all$().max__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(50, $m_Lscalatags_JsDom$all$().intAttr$1);
-  var jsx$23 = $m_Lscalatags_JsDom$all$().value__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(30, $m_Lscalatags_JsDom$all$().intAttr$1);
-  var jsx$22 = $m_Lscalatags_JsDom$all$().oninput__Lscalatags_generic_Attr();
-  var jsx$21 = buttonBehaviors.updateSlider$1;
-  var this$22 = $m_Lscalatags_JsDom$all$();
+  var jsx$26 = jsx$27.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$3));
+  var this$19 = $m_Lscalatags_JsDom$all$();
+  var jsx$25 = this$19.input__Lscalatags_JsDom$TypedTag();
+  var jsx$24 = $m_Lscalatags_JsDom$all$().tpe__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("range", $m_Lscalatags_JsDom$all$().stringAttr$1);
+  var jsx$23 = $m_Lscalatags_JsDom$all$().min__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(10, $m_Lscalatags_JsDom$all$().intAttr$1);
+  var jsx$22 = $m_Lscalatags_JsDom$all$().max__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(50, $m_Lscalatags_JsDom$all$().intAttr$1);
+  var jsx$21 = $m_Lscalatags_JsDom$all$().value__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(30, $m_Lscalatags_JsDom$all$().intAttr$1);
+  var jsx$20 = $m_Lscalatags_JsDom$all$().oninput__Lscalatags_generic_Attr();
+  var jsx$19 = buttonBehaviors.updateSlider$1;
+  var this$20 = $m_Lscalatags_JsDom$all$();
   var ev = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$3$1) {
     return (function(f$2) {
       var f$1 = $as_F1(f$2);
@@ -30223,10 +30217,10 @@ $c_Lcom_billding_ControlElements.prototype.init___Lcom_billding_ButtonBehaviors 
       })(f$1)
     })
   })(this));
-  var array$4 = [jsx$26, jsx$25, jsx$24, jsx$23, jsx$22.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$21, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$22, ev))];
-  var jsx$20 = jsx$27.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$4));
-  var this$25 = $m_Lscalatags_JsDom$all$();
-  var jsx$19 = this$25.button__Lscalatags_JsDom$TypedTag().apply__sc_Seq__Lscalatags_JsDom$TypedTag($m_sci_Nil$());
+  var array$4 = [jsx$24, jsx$23, jsx$22, jsx$21, jsx$20.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$19, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$20, ev))];
+  var jsx$18 = jsx$25.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$4));
+  var this$23 = $m_Lscalatags_JsDom$all$();
+  var jsx$17 = this$23.button__Lscalatags_JsDom$TypedTag().apply__sc_Seq__Lscalatags_JsDom$TypedTag($m_sci_Nil$());
   var array$5 = [$m_Lscaladget_tools_JsRxTags$().RxStr__Lrx_Rx__F1__Lscalatags_generic_Modifier(buttonBehaviors.model$1.carSpeedText$1, new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$4$1) {
     return (function(v$3$2) {
       var v$3 = $as_T(v$3$2);
@@ -30234,18 +30228,18 @@ $c_Lcom_billding_ControlElements.prototype.init___Lcom_billding_ButtonBehaviors 
       return new $c_Lscalatags_JsDom$StringFrag().init___T(v$3)
     })
   })(this)))];
-  var jsx$18 = jsx$19.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$5));
-  var this$29 = $m_Lscalatags_JsDom$all$();
-  var jsx$17 = this$29.input__Lscalatags_JsDom$TypedTag();
-  var jsx$16 = $m_Lscalatags_JsDom$all$().id__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("speedSlider", $m_Lscalatags_JsDom$all$().stringAttr$1);
-  var jsx$15 = $m_Lscalatags_JsDom$all$().tpe__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("range", $m_Lscalatags_JsDom$all$().stringAttr$1);
-  var jsx$14 = $m_Lscalatags_JsDom$all$().min__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(20, $m_Lscalatags_JsDom$all$().intAttr$1);
-  var jsx$13 = $m_Lscalatags_JsDom$all$().max__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(80, $m_Lscalatags_JsDom$all$().intAttr$1);
-  var jsx$12 = $m_Lscalatags_JsDom$all$().value__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(65, $m_Lscalatags_JsDom$all$().intAttr$1);
-  var jsx$11 = $m_Lscalatags_JsDom$all$().step__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(5, $m_Lscalatags_JsDom$all$().intAttr$1);
-  var jsx$10 = $m_Lscalatags_JsDom$all$().oninput__Lscalatags_generic_Attr();
-  var jsx$9 = buttonBehaviors.speedSliderUpdate$1;
-  var this$30 = $m_Lscalatags_JsDom$all$();
+  var jsx$16 = jsx$17.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$5));
+  var this$27 = $m_Lscalatags_JsDom$all$();
+  var jsx$15 = this$27.input__Lscalatags_JsDom$TypedTag();
+  var jsx$14 = $m_Lscalatags_JsDom$all$().id__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("speedSlider", $m_Lscalatags_JsDom$all$().stringAttr$1);
+  var jsx$13 = $m_Lscalatags_JsDom$all$().tpe__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("range", $m_Lscalatags_JsDom$all$().stringAttr$1);
+  var jsx$12 = $m_Lscalatags_JsDom$all$().min__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(20, $m_Lscalatags_JsDom$all$().intAttr$1);
+  var jsx$11 = $m_Lscalatags_JsDom$all$().max__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(80, $m_Lscalatags_JsDom$all$().intAttr$1);
+  var jsx$10 = $m_Lscalatags_JsDom$all$().value__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(65, $m_Lscalatags_JsDom$all$().intAttr$1);
+  var jsx$9 = $m_Lscalatags_JsDom$all$().step__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(5, $m_Lscalatags_JsDom$all$().intAttr$1);
+  var jsx$8 = $m_Lscalatags_JsDom$all$().oninput__Lscalatags_generic_Attr();
+  var jsx$7 = buttonBehaviors.speedSliderUpdate$1;
+  var this$28 = $m_Lscalatags_JsDom$all$();
   var ev$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$5$1) {
     return (function(f$3$2) {
       var f$3$1 = $as_F1(f$3$2);
@@ -30256,9 +30250,9 @@ $c_Lcom_billding_ControlElements.prototype.init___Lcom_billding_ButtonBehaviors 
       })(f$3$1)
     })
   })(this));
-  var array$6 = [jsx$16, jsx$15, jsx$14, jsx$13, jsx$12, jsx$11, jsx$10.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$9, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$30, ev$1))];
-  var array$7 = [jsx$28, jsx$20, jsx$18, jsx$17.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$6))];
-  this.sliders$1 = jsx$30.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$7));
+  var array$6 = [jsx$14, jsx$13, jsx$12, jsx$11, jsx$10, jsx$9, jsx$8.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$7, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$28, ev$1))];
+  var array$7 = [jsx$26, jsx$18, jsx$16, jsx$15.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$6))];
+  this.sliders$1 = jsx$28.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$7));
   return this
 });
 $c_Lcom_billding_ControlElements.prototype.toString__T = (function() {

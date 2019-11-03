@@ -39,10 +39,13 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
     )(
       normalButton("Pause", buttonBehaviors.togglePause),
       normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset),
+      /*
       normalButton("Save the scene",
                    buttonBehaviors.initiateSceneSerialization),
       normalButton("Load the scene",
                    buttonBehaviors.initiateSceneDeserialization),
+
+       */
       dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
       dangerButton("Disrupt the flow Existing",
                    buttonBehaviors.toggleDisruptExisting)
