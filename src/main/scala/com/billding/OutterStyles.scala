@@ -18,7 +18,7 @@ object OutterStyles {
     val green = c"#00FF00"
 
     val standardButton = style(
-      addClassNames("bttn-simple", "bttn-xs", "lightly-padded"), // Bootstrap classes
+      addClassNames("bttn-simple", "bttn-lg", "lightly-padded"), // Bootstrap classes
       textAlign.center // Optional customisation
     )
   }

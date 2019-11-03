@@ -24666,7 +24666,7 @@ $c_Lcom_billding_OutterStyles$TrafficStyles$.prototype.init___ = (function() {
   var this$20 = new $c_Lscalacss_internal_mutable_StyleSheet$Inline$MStyle().init___Lscalacss_internal_mutable_StyleSheet$Inline__T(this, "standardButton");
   this.dsl__Lscalacss_internal_mutable_StyleSheet$Base$dsl$();
   var this$6 = this.dsl__Lscalacss_internal_mutable_StyleSheet$Base$dsl$();
-  var array = ["bttn-simple", "bttn-xs", "lightly-padded"];
+  var array = ["bttn-simple", "bttn-lg", "lightly-padded"];
   var this$7 = $m_s_package$().Vector$1;
   var z = this$7.NIL$6;
   var start = 0;
