@@ -12,14 +12,11 @@ val Name = "Traffice Simulator"
 val Version = "0.2.0-SNAPSHOT"
 val ScalaVersion = "2.12.4"
 val scalatagsVersion = "0.6.7"
-val autowireVersion = "0.2.6"
 val rxVersion = "0.3.2"
 val scaladgetVersion = "0.9.5"
 val scalajsDomVersion = "0.9.4"
-val jqueryVersion = "2.2.1"
 val scalaCssVersion = "0.5.4"
 val pprintVersion = "0.5.3"
-val utestVersion = "0.6.3"
 val playJsonVersion = "2.6.8"
 val scalaCheckVersion = "1.13.5"
 val scalaTestVersion = "3.0.4"
@@ -100,7 +97,6 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % scalaTestVersion % "test", // 2nd entry needed for testing in Intellij. Weird.
   "com.lihaoyi" %%% "pprint" % pprintVersion,
   "org.scalacheck" %%% "scalacheck" % scalaCheckVersion % "test",
-  //        "com.lihaoyi" %%% "utest" % utestVersion % "test"
 )
 
 skip in packageJSDependencies := false
