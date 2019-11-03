@@ -1,13 +1,11 @@
 # Embouteillage #
 
 The project is a traffic simulator that runs in your browser, powered by ScalaJS.
-It is a client / server application that is about 25% client, 25% server, and
-50% code that is shared and available for both of them.
+It is now 100% client code, meaning it can be hosted simply as a static site.
 Features so far:
 
     * Single-lane, 1-dimensional traffic.
     * Intelligent Driving Model to determine vehicle behavior.
-    * Save/Load full Scenes from the server.
     * Pause and reset Scene.
     * Adjustable Parameters
         * Timing in between vehicles
