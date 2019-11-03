@@ -90,10 +90,10 @@ class SampleSceneCreation(endingSpatial: Spatial) {
     NamedScene(
       "group encountering a stopped vehicle",
       createWithVehicles(
-        Seconds(300),
+        Seconds(12),
         List(
           simplerVehicle(120, 0.1),
-          simplerVehicle(60, 10),
+          simplerVehicle(60, 80),
         )
       )
     )

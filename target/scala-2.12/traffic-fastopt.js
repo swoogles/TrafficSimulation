@@ -3472,9 +3472,9 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
   this.multipleStoppedGroups$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("multiple stopped groups getting back up to speed", this.createWithVehicles__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$4, result$3));
   var this$22 = $m_Lsquants_time_Seconds$();
   var num$5 = $m_s_math_Numeric$IntIsIntegral$();
-  var jsx$5 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(300, this$22, num$5);
+  var jsx$5 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(12, this$22, num$5);
   $m_sci_List$();
-  var array$4 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.1), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 10.0)];
+  var array$4 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.1), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 80.0)];
   var i$4 = (((-1) + $uI(array$4.length)) | 0);
   var result$4 = $m_sci_Nil$();
   while ((i$4 >= 0)) {
