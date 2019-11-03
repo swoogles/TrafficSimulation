@@ -44,7 +44,6 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm")
     val accelerationTerm = pow(v / v0, aExp)
     val brakingTerm = pow(desiredDistance / s, 2)
 
-    println(a * (1 - accelerationTerm - brakingTerm))
     a * (1 - accelerationTerm - brakingTerm)
   }
 

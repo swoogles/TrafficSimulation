@@ -19,7 +19,6 @@ import scalatags.JsDom.{svgAttrs, svgTags}
   */
 class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     implicit ctx: Ctx.Owner) {
-  println("making a new Window")
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
   val spatialCanvas = SpatialCanvas(scene.canvasDimensions._1,
