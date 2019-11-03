@@ -12,15 +12,18 @@ case class Street(
 ) {
 
   def updateLanes(f: Lane => Lane): Street =
-    copy(lanes = lanes map f)
+    copy(lanes = lanes.map(f))
 }
 
 object Street {
-  def apply(sourceTiming: Time,
-            beginning: Spatial,
-            end: Spatial,
-            speed: Velocity,
-            numLanes: Integer): Street = {
+
+  def apply(
+             sourceTiming: Time,
+             beginning: Spatial,
+             end: Spatial,
+             speed: Velocity,
+             numLanes: Integer
+           ): Street = {
 
     val lanes = for (i <- Range(0, numLanes).toList) yield {
       val offset = Meters(6) * i

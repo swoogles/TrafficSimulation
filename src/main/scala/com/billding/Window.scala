@@ -14,17 +14,14 @@ import scalatags.JsDom.all._
 import scalatags.JsDom.{svgAttrs, svgTags}
 
 /*
-  * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
-  * and canvas dimensions to not muck around with anything specific to the scene.
-  */
-class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
-    implicit ctx: Ctx.Owner) {
+ * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
+ * and canvas dimensions to not muck around with anything specific to the scene.
+ */
+class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ctx.Owner) {
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
-  val spatialCanvas = SpatialCanvas(scene.canvasDimensions._1,
-                                        scene.canvasDimensions._2,
-                                        canvasHeight,
-                                        canvasWidth)
+  val spatialCanvas =
+    SpatialCanvas(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
 
   val svgNode: JsDom.TypedTag[SVG] =
     svgTags
@@ -47,8 +44,9 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
           )
       )
 
-  private def createSvgReps(drawables: Seq[JsDom.TypedTag[SVGElement]])
-    : JsDom.TypedTag[SVGElement] = {
+  private def createSvgReps(
+                             drawables: Seq[JsDom.TypedTag[SVGElement]]
+                           ): JsDom.TypedTag[SVGElement] =
     svgTags.g(
       for {
         t <- drawables
@@ -56,13 +54,13 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
         t
       }
     )
-  }
 
   // TODO This should go somewhere else, on its own.
   private def carReal(vehicle: PilotedVehicle) = {
     val CIRCLE: String = "conceptG"
 
-    implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = { // TODO This should be a parameter to this method or the class constructor
+    implicit val spatialForPilotedVehicle
+    : SpatialFor[PilotedVehicle] = { // TODO This should be a parameter to this method or the class constructor
       case vehicle: PilotedVehicle => vehicle.spatial
     }
     val spatial = SpatialFor.disect(vehicle)

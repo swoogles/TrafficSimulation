@@ -51,7 +51,7 @@ case class ButtonBehaviors(model: Model) {
           case inputElement: Input => inputElement.value.toInt
         }
         theBehavior(value)
-    }
+      }
 
   val updateSlider: (Event) => Unit =
     genericSlider(

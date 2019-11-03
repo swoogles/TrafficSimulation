@@ -2,7 +2,15 @@ package com.billding
 
 import com.billding.physics.{Spatial, SpatialFor}
 import com.billding.serialization.BillSquants
-import com.billding.traffic.{Driver, Lane, PilotedVehicle, Scene, Street, Vehicle, VehicleSourceImpl}
+import com.billding.traffic.{
+  Driver,
+  Lane,
+  PilotedVehicle,
+  Scene,
+  Street,
+  Vehicle,
+  VehicleSourceImpl
+}
 import com.billding.uimodules.Model
 import squants.motion.{Acceleration, Distance}
 
@@ -25,6 +33,7 @@ object Client {
 
   implicit val DT: Time = Milliseconds(20)
   val scenes = new SampleSceneCreation(endingSpatial)
+
   val model: Model =
     Model(
       scenes.startingScene.scene,
@@ -57,6 +66,7 @@ object Client {
 
   implicit val dQvf: Format[QuantityVector[Distance]] =
     BillSquants.distance.formatQv
+
   implicit val vQvf: Format[QuantityVector[Velocity]] =
     BillSquants.velocity.formatQv
   implicit val spatialFormat: Format[Spatial] = Json.format[Spatial]
@@ -65,9 +75,11 @@ object Client {
   implicit val af: Format[Acceleration] = BillSquants.acceleration.format
 
   implicit val vehicleFormat: Format[Vehicle] = Json.format[Vehicle]
+
   implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
     case vehicle: PilotedVehicle => vehicle.spatial
   }
+
   implicit val pilotedVehicleFormat: Format[PilotedVehicle] =
     Json.format[PilotedVehicle]
 
@@ -99,9 +111,12 @@ object Client {
       dom.document.body.appendChild(windowLocal.now.svgNode.render)
     }
 
-    val x: Int = dom.window.setInterval(() => {
-      model.respondToAllInput()
-    }, DT.toMilliseconds / 5) // TODO Make this understandable and easily modified. Just some simple algebra.
+    val x: Int = dom.window.setInterval(
+      () => {
+        model.respondToAllInput()
+      },
+      DT.toMilliseconds / 5
+    ) // TODO Make this understandable and easily modified. Just some simple algebra.
   }
 
 }

@@ -11,6 +11,7 @@ import scalatags.JsDom.all._
 import scalacss.ScalatagsCss._
 
 object OutterStyles {
+
   object TrafficStyles extends StyleSheet.Inline {
     import dsl._
 
@@ -24,6 +25,7 @@ object OutterStyles {
   }
 
   import TrafficStyles.standardButton
+
   def buttonBill(styleClasses: String): (String, (Event) => Unit) => Input =
     (content, behavior) =>
       input(
@@ -33,8 +35,7 @@ object OutterStyles {
         onclick := behavior
       )(standardButton).render
 
-  val normalButton: (String, Event => Unit) => Input = buttonBill(
-    "bttn-primary")
+  val normalButton: (String, Event => Unit) => Input = buttonBill("bttn-primary")
   val dangerButton: (String, Event => Unit) => Input = buttonBill("bttn-danger")
 
 }

@@ -1,6 +1,6 @@
 package com.billding.oldServerCode
 
 case class LocalAndCdnResources(
-    localRef: String,
-    cdnRef: String
+                                 localRef: String,
+                                 cdnRef: String
 )

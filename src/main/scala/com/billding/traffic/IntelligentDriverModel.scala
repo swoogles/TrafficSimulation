@@ -26,14 +26,14 @@ trait IntelligentDriverModel {
     * @return the acceleration to apply to the following vehicle.
     */
   def deltaVDimensionallySafe(
-      v: Velocity,
-      v0: Velocity,
-      dV: Velocity,
-      T: Time,
-      a: Acceleration,
-      b: Acceleration,
-      s: Distance,
-      s0: Distance
+                               v: Velocity,
+                               v0: Velocity,
+                               dV: Velocity,
+                               T: Time,
+                               a: Acceleration,
+                               b: Acceleration,
+                               s: Distance,
+                               s0: Distance
   ): Acceleration
 
 }

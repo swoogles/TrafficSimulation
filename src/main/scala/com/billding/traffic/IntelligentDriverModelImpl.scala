@@ -7,8 +7,7 @@ import squants.space.Meters
 
 import scala.math.{max, pow}
 
-case class IntelligentDriverModelImpl(name: String = "simpleIdm")
-    extends IntelligentDriverModel {
+case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends IntelligentDriverModel {
   // Acceleration Exponent. Don't really understand the significance of this.
   // It's basically a magic value via research done by others.
   val aExp: Int = 4
@@ -30,14 +29,14 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm")
     * @return the acceleration to apply to the following vehicle.
     */
   def deltaVDimensionallySafe(
-      v: Velocity,
-      v0: Velocity,
-      dV: Velocity,
-      T: Time,
-      a: Acceleration,
-      b: Acceleration,
-      s: Distance,
-      s0: Distance
+                               v: Velocity,
+                               v0: Velocity,
+                               dV: Velocity,
+                               T: Time,
+                               a: Acceleration,
+                               b: Acceleration,
+                               s: Distance,
+                               s0: Distance
   ): Acceleration = {
 
     val desiredDistance = sStar(v, dV, T, a, b, s0)
@@ -48,12 +47,12 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm")
   }
 
   private def sStar(
-      v: Velocity,
-      dV: Velocity,
-      T: Time,
-      a: Acceleration,
-      b: Acceleration,
-      s0: Distance
+                     v: Velocity,
+                     dV: Velocity,
+                     T: Time,
+                     a: Acceleration,
+                     b: Acceleration,
+                     s0: Distance
   ): Distance = {
     /*
     If the desired distance is negative, that means:
@@ -71,6 +70,7 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm")
 }
 
 object IntelligentDriverModelImpl {
+
   implicit val idmFormat: Format[IntelligentDriverModelImpl] =
     Json.format[IntelligentDriverModelImpl]
 }

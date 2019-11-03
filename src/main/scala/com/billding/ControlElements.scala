@@ -1,17 +1,6 @@
 package com.billding
 
-import scalatags.JsDom.all.{
-  cls,
-  div,
-  id,
-  input,
-  max,
-  min,
-  oninput,
-  step,
-  tpe,
-  value
-}
+import scalatags.JsDom.all.{cls, div, id, input, max, min, oninput, step, tpe, value}
 import org.scalajs.dom.html.Div
 
 import scalatags.JsDom.all._
@@ -25,13 +14,12 @@ import scaladget.tools.JsRxTags._
 
 case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
-  val sceneSelections = for (scene <- buttonBehaviors.model.preloadedScenes)
-    yield {
-      normalButton(
-        scene.name,
-        (e: dom.Event) => buttonBehaviors.model.loadNamedScene(scene.name))
+  val sceneSelections =
+    for (scene <- buttonBehaviors.model.preloadedScenes)
+      yield {
+        normalButton(scene.name, (e: dom.Event) => buttonBehaviors.model.loadNamedScene(scene.name))
 
-    }
+      }
 
   val buttons: Div =
     div(
@@ -47,8 +35,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
        */
       dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
-      dangerButton("Disrupt the flow Existing",
-                   buttonBehaviors.toggleDisruptExisting)
+      dangerButton("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting)
     ).render
 
   val sliders =

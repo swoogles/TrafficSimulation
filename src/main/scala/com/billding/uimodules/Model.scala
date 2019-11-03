@@ -14,8 +14,8 @@ trait Serialization {
 }
 
 case class Disruptions(
-    disruptLane: Var[Boolean] = Var(false),
-    disruptLaneExisting: Var[Boolean] = Var(false)
+                        disruptLane: Var[Boolean] = Var(false),
+                        disruptLaneExisting: Var[Boolean] = Var(false)
 )
 
 trait ModelTrait {
@@ -45,20 +45,18 @@ case class Model(
 )(implicit ctx: Ctx.Owner)
     extends Serialization
     with ModelTrait {
-  private implicit val DT: Time = originalScene.dt
+  implicit private val DT: Time = originalScene.dt
   // TODO Make this private
   val sceneVar: Var[Scene] = Var(originalScene)
   val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
 
   val carTiming: Var[Time] = Var(
     originalScene.streets
-      .flatMap(street =>
-        street.lanes.map(lane => lane.vehicleSource.spacingInTime))
+      .flatMap(street => street.lanes.map(lane => lane.vehicleSource.spacingInTime))
       .head
   )
 
-  val carTimingText: Rx.Dynamic[String] = Rx(
-    s"Current car timing ${carTiming()} ")
+  val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
 
   val pauseText = Rx {
     if (paused())
@@ -87,8 +85,7 @@ case class Model(
   def loadScene(scene: Scene): Unit = {
     sceneVar() = scene
     carTiming() = sceneVar.now.streets
-      .flatMap(street =>
-        street.lanes.map(lane => lane.vehicleSource.spacingInTime))
+      .flatMap(street => street.lanes.map(lane => lane.vehicleSource.spacingInTime))
       .head
     paused() = true
   }
@@ -139,17 +136,15 @@ case class Model(
     laneAfterDisruptionExisting.copy(vehicleSource = newSource)
   }
 
-  private def updateScene(speedLimit: Velocity) = {
+  private def updateScene(speedLimit: Velocity) =
     sceneVar() = sceneVar.now.updateWithSpeedLimit(speedLimit)
-  }
 
-  private def updateLanesAndScene(): Unit = {
+  private def updateLanesAndScene(): Unit =
     if (this.paused.now == false) {
       val newScene = this.sceneVar.now.updateAllStreets(this.updateLane)
       this.sceneVar() = newScene
       this.updateScene(this.sceneVar.now.speedLimit)
     }
-  }
 
   def respondToAllInput()(implicit format: Format[Scene]): Unit = {
     this.resetIfNecessary()

@@ -17,6 +17,7 @@ Acceleration a	  0.3 m/s2	  0.3 m/s2	  Very low values to enhance the formation 
 Deceleration b	  3.0 m/s2	  2.0 m/s2	  Very high values to enhance the formation of stop-and go traffic. Realistic values are 1-2 m/s2
  */
 object VehicleStats {
+
   object Commuter {
     val minimumGap: Length = 2 meters
     val acceleration: Acceleration = 2.meters.per((1 seconds).squared)

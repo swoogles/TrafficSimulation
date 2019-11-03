@@ -5,6 +5,7 @@ trait SpatialFor[A] {
 }
 
 object SpatialFor {
+
   def disect[T: SpatialFor](t: T): Spatial =
     implicitly[SpatialFor[T]].makeSpatial(t)
 }

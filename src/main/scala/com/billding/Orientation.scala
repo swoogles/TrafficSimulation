@@ -5,6 +5,7 @@ import squants.DoubleVector
 sealed trait Orientation {
   val vec: DoubleVector
 }
+
 object Orientation {
 
   case object North extends Orientation {

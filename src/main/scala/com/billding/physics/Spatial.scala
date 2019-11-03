@@ -1,16 +1,31 @@
 package com.billding.physics
 
 import com.billding.Orientation
-import squants.{Acceleration, DoubleVector, Length, QuantityVector, Time, UnitOfMeasure, Velocity, motion}
-import squants.motion.{Distance, DistanceUnit, MetersPerSecond, MetersPerSecondSquared, VelocityUnit}
+import squants.{
+  motion,
+  Acceleration,
+  DoubleVector,
+  Length,
+  QuantityVector,
+  Time,
+  UnitOfMeasure,
+  Velocity
+}
+import squants.motion.{
+  Distance,
+  DistanceUnit,
+  MetersPerSecond,
+  MetersPerSecondSquared,
+  VelocityUnit
+}
 import squants.space.{LengthUnit, Meters}
 
 import scala.language.postfixOps
 
 case class Spatial(
-    r: QuantityVector[Distance],
-    v: QuantityVector[Velocity],
-    dimensions: QuantityVector[Distance]
+                    r: QuantityVector[Distance],
+                    v: QuantityVector[Velocity],
+                    dimensions: QuantityVector[Distance]
 ) {
   val numberOfDimensions = 3
   val x: Distance = r.coordinates.head
@@ -24,9 +39,8 @@ case class Spatial(
   def relativeVelocity(obstacle: Spatial): QuantityVector[Velocity] =
     this.v - obstacle.v
 
-  def relativeVelocityMag(obstacle: Spatial): Velocity = {
-    relativeVelocity _ andThen (_.magnitude) apply obstacle
-  }
+  def relativeVelocityMag(obstacle: Spatial): Velocity =
+    (relativeVelocity _).andThen(_.magnitude).apply(obstacle)
 
   def vectorTo(obstacle: Spatial): QuantityVector[Distance] =
     obstacle.r - this.r
@@ -35,7 +49,7 @@ case class Spatial(
     vectorTo.magnitude
 
   def distanceTo(obstacle: Spatial): Distance =
-    vectorTo _ andThen (_.magnitude) apply obstacle
+    (vectorTo _).andThen(_.magnitude).apply(obstacle)
 
   def move(orientation: Orientation, distance: Distance) = {
     val displacement = orientation.vec.map { x: Double =>
@@ -49,31 +63,30 @@ case class Spatial(
 }
 
 object Spatial {
+
   val ZERO_VELOCITY: (Double, Double, Double, VelocityUnit) =
     (0, 0, 0, MetersPerSecond)
-  val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = convertToSVector(
-    ZERO_VELOCITY)
+  val ZERO_VELOCITY_VECTOR: QuantityVector[Velocity] = convertToSVector(ZERO_VELOCITY)
 
   val ZERO_DIMENSIONS: (Double, Double, Double, LengthUnit) = (0, 2, 0, Meters)
-  val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = convertToSVector(
-    ZERO_DIMENSIONS)
+  val ZERO_DIMENSIONS_VECTOR: QuantityVector[Length] = convertToSVector(ZERO_DIMENSIONS)
 
   def convertToSVector[T <: squants.Quantity[T]](
-      input: (Double, Double, Double, UnitOfMeasure[T])
+                                                  input: (Double, Double, Double, UnitOfMeasure[T])
   ): QuantityVector[T] = {
     val (x, y, z, measurementUnit) = input
-    QuantityVector[T](measurementUnit(x),
-                      measurementUnit(y),
-                      measurementUnit(z))
+    QuantityVector[T](measurementUnit(x), measurementUnit(y), measurementUnit(z))
   }
 
-  def vectorsAreInOppositeDirections(vec1: QuantityVector[Velocity], vec2: DoubleVector): Boolean = {
+  def vectorsAreInOppositeDirections(
+                                      vec1: QuantityVector[Velocity],
+                                      vec2: DoubleVector
+                                    ): Boolean = {
     val difference = (vec1.normalize.to(MetersPerSecond).normalize + vec2.normalize).magnitude
     difference < 0.1 && difference > -0.1
     //    println("dotProduct: " + vec1.dotProduct(vec2).value)
     //    vec1.dotProduct(vec2).value <= -0.9 && vec1.dotProduct(vec2).value > -1.1
   }
-
 
   /*
   A bunch of future posibilities:
@@ -98,13 +111,20 @@ object Spatial {
       }
       .normalize
 
-  def accelerationAlongDirectionOfTravelWithoutPreventingBackwardsTravel(spatial: Spatial, dV: Acceleration, destination: Spatial): QuantityVector[Acceleration] = {
+  def accelerationAlongDirectionOfTravelWithoutPreventingBackwardsTravel(
+                                                                          spatial: Spatial,
+                                                                          dV: Acceleration,
+                                                                          destination: Spatial
+                                                                        ): QuantityVector[Acceleration] =
     unitVecTo(spatial, destination).map { unitVecComponent =>
       dV * unitVecComponent
     }
-  }
 
-  def newVelocityAfterAcceleration(spatial: Spatial, accelerationAlongDirectionOfTravel: QuantityVector[Acceleration], dt: Time): QuantityVector[Velocity] = {
+  def newVelocityAfterAcceleration(
+                                    spatial: Spatial,
+                                    accelerationAlongDirectionOfTravel: QuantityVector[Acceleration],
+                                    dt: Time
+                                  ): QuantityVector[Velocity] = {
     val changeInVelocity: QuantityVector[Velocity] =
       accelerationAlongDirectionOfTravel.map(_ * dt)
 
@@ -117,23 +137,28 @@ object Spatial {
   new position:   	x(t+Δt) = x(t) + v(t)Δt + 1/2 (dv/dt) (Δt)2,
   new gap:	s(t+Δt) = xl(t+Δt) − x(t+Δt)− Ll.
    */
-  def accelerateAlongCurrentDirection(spatial: Spatial,
-                                      dt: Time,
-                                      dV: Acceleration,
-                                      destination: Spatial): Spatial = {
+  def accelerateAlongCurrentDirection(
+                                       spatial: Spatial,
+                                       dt: Time,
+                                       dV: Acceleration,
+                                       destination: Spatial
+                                     ): Spatial = {
     //    if (spatial.v.magnitude == MetersPerSecond(0)) throw new IllegalArgumentException("spatial needs to be moving")
 
     val accelerationAlongDirectionOfTravel: QuantityVector[Acceleration] =
       accelerationAlongDirectionOfTravelWithoutPreventingBackwardsTravel(spatial, dV, destination)
 
-    val newV: QuantityVector[Velocity] = newVelocityAfterAcceleration(spatial, accelerationAlongDirectionOfTravel, dt)
+    val newV: QuantityVector[Velocity] =
+      newVelocityAfterAcceleration(spatial, accelerationAlongDirectionOfTravel, dt)
 
     if (vectorsAreInOppositeDirections(newV.normalize, unitVecTo(spatial, destination)))
       spatial.copy(v = ZERO_VELOCITY_VECTOR) // No reversing allowed. Return a stopped car.
     else {
       val changeInPositionViaVelocity: QuantityVector[Length] =
         newV
-          .map { v: Velocity => v * dt }
+          .map { v: Velocity =>
+            v * dt
+          }
 
       val changeInPositionViaAcceleration: QuantityVector[Distance] =
         accelerationAlongDirectionOfTravel.map { p: Acceleration =>
@@ -142,14 +167,14 @@ object Spatial {
 
       val newP = spatial.r + changeInPositionViaVelocity + changeInPositionViaAcceleration
       spatial.copy(r = newP, v = newV)
-      }
+    }
 
   }
 
   def apply(
-      pIn: (Double, Double, Double, DistanceUnit),
-      vIn: (Double, Double, Double, VelocityUnit),
-      dIn: (Double, Double, Double, LengthUnit)
+             pIn: (Double, Double, Double, DistanceUnit),
+             vIn: (Double, Double, Double, VelocityUnit),
+             dIn: (Double, Double, Double, LengthUnit)
   ): Spatial =
     Spatial(
       convertToSVector(pIn),
@@ -158,24 +183,22 @@ object Spatial {
     )
 
   def apply(
-      pIn: (Double, Double, Double, DistanceUnit),
-      vIn: (Double, Double, Double, VelocityUnit)
-  ): Spatial = {
+             pIn: (Double, Double, Double, DistanceUnit),
+             vIn: (Double, Double, Double, VelocityUnit)
+           ): Spatial =
     apply(pIn, vIn, ZERO_DIMENSIONS)
-  }
 
   def apply(
-      pIn: (Double, Double, Double, DistanceUnit)
-  ): Spatial = {
+             pIn: (Double, Double, Double, DistanceUnit)
+           ): Spatial =
     apply(pIn, ZERO_VELOCITY, ZERO_DIMENSIONS)
-  }
 
   val BLANK = Spatial.apply((0, 0, 0, Meters))
 
   def withVecs(
-      p: QuantityVector[Distance],
-      v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
-      d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
+                p: QuantityVector[Distance],
+                v: QuantityVector[Velocity] = Spatial.ZERO_VELOCITY_VECTOR,
+                d: QuantityVector[Length] = Spatial.ZERO_DIMENSIONS_VECTOR
   ): Spatial =
     Spatial(p, v, d)
 

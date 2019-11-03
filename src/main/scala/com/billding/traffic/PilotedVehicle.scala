@@ -21,7 +21,7 @@ case class PilotedVehicle(
   val width: Distance = vehicle.width
   val height: Distance = vehicle.height
 
-  def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration = {
+  def reactTo(obstacle: Spatial, speedLimit: Velocity): Acceleration =
     driver.idm.deltaVDimensionallySafe(
       spatial.v.magnitude, // TODO Make a Spatial function
       speedLimit,
@@ -32,7 +32,6 @@ case class PilotedVehicle(
       spatial.distanceTo(obstacle),
       driver.minimumDistance
     )
-  }
 
   def reactTo(obstacle: PilotedVehicle, speedLimit: Velocity): Acceleration = {
     implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle] = {
@@ -41,8 +40,7 @@ case class PilotedVehicle(
     this.reactTo(SpatialFor.disect(obstacle), speedLimit)
   }
 
-  def accelerateAlongCurrentDirection(dt: Time,
-                                      dP: Acceleration): PilotedVehicle = {
+  def accelerateAlongCurrentDirection(dt: Time, dP: Acceleration): PilotedVehicle = {
     val updatedSpatial: Spatial =
       Spatial.accelerateAlongCurrentDirection(spatial, dt, dP, destination)
     this.copy(
@@ -51,12 +49,11 @@ case class PilotedVehicle(
     )
   }
 
-  def updateSpatial(spatial: Spatial): PilotedVehicle = {
+  def updateSpatial(spatial: Spatial): PilotedVehicle =
     this.copy(
       driver = driver.updateSpatial(spatial),
       vehicle = vehicle.updateSpatial(spatial)
     )
-  }
 
   def tooClose(pilotedVehicle: PilotedVehicle): Boolean = {
     val bumperToBumperOffset = this.spatial.dimensions.coordinates.head + pilotedVehicle.spatial.dimensions.coordinates
@@ -74,12 +71,11 @@ case class PilotedVehicle(
     )
   }
 
-  def move(betterVec: QuantityVector[Distance]): PilotedVehicle = {
+  def move(betterVec: QuantityVector[Distance]): PilotedVehicle =
     this.copy(
       driver = driver.move(betterVec),
       vehicle = vehicle.move(betterVec)
     )
-  }
 
   def distanceTo(target: Spatial): Distance =
     spatial.distanceTo(target)
@@ -100,7 +96,7 @@ object PilotedVehicle {
              driver: Driver,
              vehicle: Vehicle,
              destination: Spatial
-   ): PilotedVehicle =
+           ): PilotedVehicle =
     PilotedVehicle(
       driver: Driver,
       vehicle: Vehicle,
@@ -108,11 +104,12 @@ object PilotedVehicle {
       java.util.UUID.randomUUID // Make this pure again. Random defaults are bad juju.
     )
 
-  def apply(pIn1: (Double, Double, Double, DistanceUnit),
-            endingSpatial: Spatial,
-            vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour)): PilotedVehicle = {
+  def apply(
+             pIn1: (Double, Double, Double, DistanceUnit),
+             endingSpatial: Spatial,
+             vIn1: (Double, Double, Double, VelocityUnit) = (0, 0, 0, KilometersPerHour)
+           ): PilotedVehicle =
     PilotedVehicle.commuter2(Spatial(pIn1, vIn1), idm, endingSpatial)
-  }
 
   def commuter(
                 pIn: (Double, Double, Double, DistanceUnit),
@@ -121,19 +118,15 @@ object PilotedVehicle {
                 destination: Spatial
               ): PilotedVehicle = {
     val spatial = Spatial(pIn, vIn, VehicleStats.Commuter.dimensions)
-    PilotedVehicle(Driver.commuter(spatial, idm),
-      Vehicle.apply(pIn, vIn),
-      destination)
+    PilotedVehicle(Driver.commuter(spatial, idm), Vehicle.apply(pIn, vIn), destination)
   }
+
   // TODO: Beware of arbitrary spacial. It should be locked down on Commuter.
   def commuter2(
                  spatial: Spatial,
                  idm: IntelligentDriverModelImpl,
                  destination: Spatial
-              ): PilotedVehicle = {
-    PilotedVehicle(Driver.commuter(spatial, idm),
-      Vehicle(spatial.r, spatial.v),
-      destination)
-  }
+               ): PilotedVehicle =
+    PilotedVehicle(Driver.commuter(spatial, idm), Vehicle(spatial.r, spatial.v), destination)
 
 }

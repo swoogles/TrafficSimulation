@@ -24,15 +24,10 @@ class Servlet {
       tags.head(
         ExternalResources.localResources,
 //        ExternalResources.externalResources,
-        tags.meta(tags.httpEquiv := "Content-Type",
-                  tags.content := "text/html; charset=UTF-8"),
-        tags.link(tags.rel := "stylesheet",
-                  tags.`type` := "text/css",
-                  href := "css/styleWUI.css"),
-        tags.script(tags.`type` := "text/javascript",
-                    tags.src := "js/" + clientJs),
-        tags.script(tags.`type` := "text/javascript",
-                    tags.src := "js/" + jsDeps)
+        tags.meta(tags.httpEquiv := "Content-Type", tags.content := "text/html; charset=UTF-8"),
+        tags.link(tags.rel := "stylesheet", tags.`type` := "text/css", href := "css/styleWUI.css"),
+        tags.script(tags.`type` := "text/javascript", tags.src := "js/" + clientJs),
+        tags.script(tags.`type` := "text/javascript", tags.src := "js/" + jsDeps)
       ),
       tags.body(tags.onload := "Client.run();")
     )
@@ -47,6 +42,6 @@ class Servlet {
     Json.parse(file.contentAsString)
   }
 
-   */
+ */
 
 }

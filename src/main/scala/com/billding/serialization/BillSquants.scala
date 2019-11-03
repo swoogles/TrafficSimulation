@@ -7,11 +7,19 @@ import squants.space.{Length, LengthUnit, Meters}
 import squants.time.{Milliseconds, Time, TimeConversions, TimeUnit}
 import play.api.libs.json.Reads.JsStringReads
 import play.api.libs.json._
-import squants.motion.{Acceleration, AccelerationUnit, Distance, KilometersPerHour, MetersPerSecondSquared, Velocity, VelocityUnit}
+import squants.motion.{
+  Acceleration,
+  AccelerationUnit,
+  Distance,
+  KilometersPerHour,
+  MetersPerSecondSquared,
+  Velocity,
+  VelocityUnit
+}
 
 case class BillSquants[T <: Quantity[T]](
-    fromJsStringTry: (String => Try[T]),
-    unit: UnitOfMeasure[T]
+                                          fromJsStringTry: (String => Try[T]),
+                                          unit: UnitOfMeasure[T]
 ) {
 
   val toJsString: T => JsString =
@@ -66,13 +74,16 @@ object BillSquants {
 
   implicit val distance: BillSquants[Distance] =
     BillSquants(Length.apply, lengthUnit)
+
   implicit val velocity: BillSquants[Velocity] =
     BillSquants(Velocity.apply, velocityUnit)
+
   implicit val acceleration: BillSquants[Acceleration] =
     BillSquants(Acceleration.apply, accelerationUnit)
-  implicit val time: BillSquants[Time] = BillSquants(
-    (s: String) => new TimeConversions.TimeStringConversions(s).toTime,
-    timeUnit)
+
+  implicit val time: BillSquants[Time] =
+    BillSquants((s: String) => new TimeConversions.TimeStringConversions(s).toTime, timeUnit)
+
   implicit val mass: BillSquants[Mass] =
     BillSquants(Mass.apply, massUnit)
 

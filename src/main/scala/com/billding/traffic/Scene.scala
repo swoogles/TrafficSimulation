@@ -3,11 +3,11 @@ package com.billding.traffic
 import squants.{Length, Time, Velocity}
 
 case class Scene(
-                      streets: List[Street],
-                      t: Time,
-                      dt: Time,
-                      speedLimit: Velocity,
-                      canvasDimensions: (Length, Length) // TODO This probably deserves to be inside a more specific Canvas class
+                  streets: List[Street],
+                  t: Time,
+                  dt: Time,
+                  speedLimit: Velocity,
+                  canvasDimensions: (Length, Length) // TODO This probably deserves to be inside a more specific Canvas class
 ) {
 
   private val updateLane: (Lane) => Lane =
@@ -32,10 +32,9 @@ case class Scene(
     _.lanes.flatMap(_.vehicles)
   )
 
-  def applyToAllVehicles[T](f: PilotedVehicle => T): List[T] = {
+  def applyToAllVehicles[T](f: PilotedVehicle => T): List[T] =
     for (vehicle <- allVehicles) yield {
       f(vehicle)
     }
-  }
 
 }
