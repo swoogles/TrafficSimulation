@@ -30,7 +30,7 @@ sbt fastOptJS
 
 ## Play with the Simulation ##
 
-    firefox ./webapp/simpleLocalSimulation.html
+    firefox ./index.html
 
 
 ![](https://i.imgur.com/Cw1YIO7.png)
