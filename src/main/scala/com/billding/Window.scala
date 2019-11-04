@@ -17,8 +17,10 @@ import scalatags.JsDom.{svgAttrs, svgTags}
  * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
  * and canvas dimensions to not muck around with anything specific to the scene.
  */
-class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ctx.Owner, implicit val spatialForPilotedVehicle
-: SpatialFor[PilotedVehicle]) {
+class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
+  implicit ctx: Ctx.Owner,
+  implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle]
+) {
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
   val spatialCanvas =
@@ -27,15 +29,13 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(implicit ctx: Ct
   val svgNode: JsDom.TypedTag[SVG] =
     svgTags
       .svg(
-        width := canvasWidth,
-        height := canvasHeight,
+        attr("viewBox") := "0 0 500 500",
+        //        width := canvasWidth,
+        //        height := canvasHeight,
         onclick := { (e: dom.MouseEvent) =>
           println(e)
         },
-        onwheel := { (wheelEvent: dom.MouseEvent) =>
-          println("we want to zoom in/out here." + wheelEvent)
-        // Add mousewheel behavior here?
-        }
+        onwheel := { wheelEvent: dom.MouseEvent => println("we want to zoom in/out here." + wheelEvent) }
       )(
         svgTags
           .g(

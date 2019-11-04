@@ -94,7 +94,8 @@ object Client {
   @JSExport
   def run() {
     println("With an ending spatial")
-    dom.document.body.appendChild(controlElements.createLayout())
+    val controlsContainer = dom.document.getElementById("controls-container")
+    controlsContainer.appendChild(controlElements.createLayout())
 
     val canvasHeight = 800
     val canvasWidth = 1500
@@ -103,20 +104,27 @@ object Client {
       new Window(sceneVar(), canvasHeight, canvasWidth)
     }
 
-    windowLocal.trigger {
-      val previousSvg: Node = dom.document.getElementsByTagName("svg").item(0)
-      if (previousSvg != null) {
-        dom.document.body.removeChild(previousSvg)
+    val svgContainer = dom.document.getElementById("svg-container")
+    println("svgContainer: " + svgContainer)
+    val failedContainer = dom.document.getElementById("svg-containerFAIL")
+    println("failedContainer: " + failedContainer)
+    if (svgContainer == null) {
+      println("We can't do any svg setup on a page that doesn't have a container to hold it.");
+    } else {
+      windowLocal.trigger {
+        val previousSvg: Node = svgContainer.getElementsByTagName("svg").item(0)
+        if (previousSvg != null) {
+          svgContainer.removeChild(previousSvg)
+        }
+        //      windowLocal.now.svgNode
+        svgContainer.appendChild(windowLocal.now.svgNode.render)
       }
-      dom.document.body.appendChild(windowLocal.now.svgNode.render)
-    }
 
-    val x: Int = dom.window.setInterval(
-      () => {
-        model.respondToAllInput()
-      },
-      DT.toMilliseconds / 5
-    ) // TODO Make this understandable and easily modified. Just some simple algebra.
+      dom.window.setInterval(
+        () => model.respondToAllInput(),
+        DT.toMilliseconds / 5
+      ) // TODO Make this understandable and easily modified. Just some simple algebra.
+    }
   }
 
 }
