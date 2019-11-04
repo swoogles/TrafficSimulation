@@ -29,12 +29,8 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
   val svgNode: JsDom.TypedTag[SVG] =
     svgTags
       .svg(
-        attr("viewBox") := "0 0 500 500",
-        //        width := canvasWidth,
-        //        height := canvasHeight,
-        onclick := { (e: dom.MouseEvent) =>
-          println(e)
-        },
+        attr("viewBox") := s"0 0 $canvasWidth $canvasHeight", // TODO double check order here
+        onclick := println,
         onwheel := { wheelEvent: dom.MouseEvent => println("we want to zoom in/out here." + wheelEvent) }
       )(
         svgTags

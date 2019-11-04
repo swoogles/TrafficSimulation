@@ -3613,23 +3613,36 @@ $c_Lcom_billding_Window.prototype.init___Lcom_billding_traffic_Scene__I__I__Lrx_
   this.spatialForPilotedVehicle$1 = spatialForPilotedVehicle;
   this.spatialCanvas$1 = new $c_Lcom_billding_svgRendering_SpatialCanvas().init___Lsquants_space_Length__Lsquants_space_Length__I__I($as_Lsquants_space_Length(scene.canvasDimensions$1.$$und1__O()), $as_Lsquants_space_Length(scene.canvasDimensions$1.$$und2__O()), canvasHeight, canvasWidth);
   var this$1 = $m_Lscalatags_JsDom$svgTags$();
-  var jsx$9 = this$1.svg__Lscalatags_JsDom$TypedTag();
+  var jsx$8 = this$1.svg__Lscalatags_JsDom$TypedTag();
   var this$4 = $m_Lscalatags_JsDom$all$();
   $m_Lscalatags_JsDom$all$();
   var ns = null;
   $m_Lscalatags_JsDom$all$();
   var raw = false;
-  var jsx$8 = $f_Lscalatags_generic_Util__attr__T__Lscalatags_generic_Namespace__Z__Lscalatags_generic_Attr(this$4, "viewBox", ns, raw).$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("0 0 500 500", $m_Lscalatags_JsDom$all$().stringAttr$1);
-  var jsx$7 = $m_Lscalatags_JsDom$all$().onclick__Lscalatags_generic_Attr();
-  var jsx$6 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this) {
-    return (function(e$2) {
-      var this$6 = $m_s_Console$();
-      var this$7 = $as_Ljava_io_PrintStream(this$6.outVar$2.v$1);
-      this$7.java$lang$JSConsoleBasedPrintStream$$printString__T__V((e$2 + "\n"))
+  var jsx$7 = $f_Lscalatags_generic_Util__attr__T__Lscalatags_generic_Namespace__Z__Lscalatags_generic_Attr(this$4, "viewBox", ns, raw).$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(((("0 0 " + canvasWidth) + " ") + canvasHeight), $m_Lscalatags_JsDom$all$().stringAttr$1);
+  var jsx$6 = $m_Lscalatags_JsDom$all$().onclick__Lscalatags_generic_Attr();
+  var this$6 = $m_s_Console$();
+  var this$7 = $as_Ljava_io_PrintStream(this$6.outVar$2.v$1);
+  this$7.java$lang$JSConsoleBasedPrintStream$$printString__T__V("\n");
+  var this$9 = $m_Lscalatags_JsDom$all$();
+  var ev = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this) {
+    return (function(value$2) {
+      var value = $asUnit(value$2);
+      return value
     })
   })(this));
-  var this$8 = $m_Lscalatags_JsDom$all$();
-  var ev = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$1) {
+  var jsx$5 = jsx$6.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair((void 0), new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$9, ev));
+  var jsx$4 = $m_Lscalatags_JsDom$all$().onwheel__Lscalatags_generic_Attr();
+  var jsx$3 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$1) {
+    return (function(wheelEvent$2) {
+      var x = ("we want to zoom in/out here." + wheelEvent$2);
+      var this$11 = $m_s_Console$();
+      var this$12 = $as_Ljava_io_PrintStream(this$11.outVar$2.v$1);
+      this$12.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x + "\n"))
+    })
+  })(this));
+  var this$13 = $m_Lscalatags_JsDom$all$();
+  var ev$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$3$1) {
     return (function(f$2) {
       var f = $as_F1(f$2);
       return (function(f$1) {
@@ -3639,35 +3652,14 @@ $c_Lcom_billding_Window.prototype.init___Lcom_billding_traffic_Scene__I__I__Lrx_
       })(f)
     })
   })(this));
-  var jsx$5 = jsx$7.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$6, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$8, ev));
-  var jsx$4 = $m_Lscalatags_JsDom$all$().onwheel__Lscalatags_generic_Attr();
-  var jsx$3 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$3$1) {
-    return (function(wheelEvent$2) {
-      var x = ("we want to zoom in/out here." + wheelEvent$2);
-      var this$10 = $m_s_Console$();
-      var this$11 = $as_Ljava_io_PrintStream(this$10.outVar$2.v$1);
-      this$11.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x + "\n"))
-    })
-  })(this));
-  var this$12 = $m_Lscalatags_JsDom$all$();
-  var ev$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$4$1) {
-    return (function(f$3$2) {
-      var f$3 = $as_F1(f$3$2);
-      return (function(f$4) {
-        return (function(arg1$1) {
-          return f$4.apply__O__O(arg1$1)
-        })
-      })(f$3)
-    })
-  })(this));
-  var array = [jsx$8, jsx$5, jsx$4.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$3, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$12, ev$1))];
-  var jsx$2 = jsx$9.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array));
-  var this$15 = $m_Lscalatags_JsDom$svgTags$();
-  var jsx$1 = this$15.g__Lscalatags_JsDom$TypedTag();
-  var array$1 = [this.createSvgReps__p1__sc_Seq__Lscalatags_JsDom$TypedTag(scene.applyToAllVehicles__F1__sci_List(new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$5$1) {
+  var array = [jsx$7, jsx$5, jsx$4.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$3, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$13, ev$1))];
+  var jsx$2 = jsx$8.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array));
+  var this$16 = $m_Lscalatags_JsDom$svgTags$();
+  var jsx$1 = this$16.g__Lscalatags_JsDom$TypedTag();
+  var array$1 = [this.createSvgReps__p1__sc_Seq__Lscalatags_JsDom$TypedTag(scene.applyToAllVehicles__F1__sci_List(new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$4$1) {
     return (function(vehicle$2) {
       var vehicle = $as_Lcom_billding_traffic_PilotedVehicle(vehicle$2);
-      return this$5$1.createCarSvgRepresentation__p1__Lcom_billding_traffic_PilotedVehicle__Lscalatags_JsDom$TypedTag(vehicle)
+      return this$4$1.createCarSvgRepresentation__p1__Lcom_billding_traffic_PilotedVehicle__Lscalatags_JsDom$TypedTag(vehicle)
     })
   })(this))))];
   var array$2 = [jsx$1.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1))];
