@@ -31,7 +31,9 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
       .svg(
         attr("viewBox") := s"0 0 $canvasWidth $canvasHeight", // TODO double check order here
         onclick := println,
-        onwheel := { wheelEvent: dom.MouseEvent => println("we want to zoom in/out here." + wheelEvent) }
+        onwheel := { wheelEvent: dom.MouseEvent =>
+          println("we want to zoom in/out here." + wheelEvent)
+        }
       )(
         svgTags
           .g(
@@ -52,6 +54,12 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
       }
     )
 
+  private def renderedWidthInPixels(vehicle: PilotedVehicle): String =
+    (vehicle.width / (spatialCanvas.widthDistancePerPixel / 2)).px
+
+  private def renderedHeightInPixels(vehicle: PilotedVehicle): String =
+    (vehicle.height / (spatialCanvas.heightDistancePerPixel / 2)).px
+
   // TODO This should go somewhere else, on its own.
   private def createCarSvgRepresentation(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
     val CIRCLE: String = "conceptG"
@@ -59,8 +67,6 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     val spatial = SpatialFor.disect(vehicle)
     val x = spatial.x / spatialCanvas.widthDistancePerPixel
     val y = spatial.y / spatialCanvas.heightDistancePerPixel
-    val renderedWidth = vehicle.width / (spatialCanvas.widthDistancePerPixel / 2)
-    val renderedHeight = vehicle.height / (spatialCanvas.heightDistancePerPixel / 2)
 
     val element: SVGElement =
       Rx {
@@ -71,9 +77,9 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
         )(
           svgTags.image(
             href := "images/sedan.svg",
-            width := renderedWidth.px,
-            height := renderedHeight.px,
-            onclick := { (e: dom.MouseEvent) =>
+            width := renderedWidthInPixels(vehicle),
+            height := renderedHeightInPixels(vehicle),
+            onclick := { _: dom.MouseEvent =>
               println(vehicle.uuid)
             }
           )
