@@ -28,7 +28,7 @@ object Vehicle {
 
   def apply(p: QuantityVector[Distance], v: QuantityVector[Velocity]): Vehicle = {
     val d: QuantityVector[Length] =
-      Spatial.convertToSVector(VehicleStats.Commuter.dimensions)
+      Spatial.convertToSVector(VehicleStats.Commuter.dimensions) // TODO This needs to be higher up and obvious.
     val spatial = Spatial.withVecs(p, v, d)
     Vehicle(
       spatial,

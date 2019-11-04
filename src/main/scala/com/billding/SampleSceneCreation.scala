@@ -66,20 +66,20 @@ class SampleSceneCreation(endingSpatial: Spatial) {
       createWithVehicles(
         Seconds(3),
         List(
+          simplerVehicle(250, 0),
+          simplerVehicle(240, 0),
+          simplerVehicle(230, 0),
+          simplerVehicle(220, 0),
+          simplerVehicle(210, 0),
+          simplerVehicle(200, 0),
+          simplerVehicle(190, 0),
           simplerVehicle(180, 0),
-          simplerVehicle(175, 0),
-          simplerVehicle(170, 0),
-          simplerVehicle(165, 0),
-          simplerVehicle(160, 0),
-          simplerVehicle(155, 0),
           simplerVehicle(150, 0),
-          simplerVehicle(125, 0),
+          simplerVehicle(140, 0),
+          simplerVehicle(130, 0),
           simplerVehicle(120, 0),
-          simplerVehicle(115, 0),
           simplerVehicle(110, 0),
-          simplerVehicle(105, 0),
           simplerVehicle(100, 0),
-          simplerVehicle(95, 0),
           simplerVehicle(90, 0)
         )
       )
@@ -92,7 +92,7 @@ class SampleSceneCreation(endingSpatial: Spatial) {
         Seconds(12),
         List(
           simplerVehicle(120, 0),
-          simplerVehicle(60, 80)
+          simplerVehicle(60, 60)
         )
       )
     )

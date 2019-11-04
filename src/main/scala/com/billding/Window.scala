@@ -55,10 +55,10 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     )
 
   private def renderedWidthInPixels(vehicle: PilotedVehicle): String =
-    (vehicle.width / (spatialCanvas.widthDistancePerPixel / 2)).px
+    (vehicle.width / (spatialCanvas.widthDistancePerPixel)).px
 
   private def renderedHeightInPixels(vehicle: PilotedVehicle): String =
-    (vehicle.height / (spatialCanvas.heightDistancePerPixel / 2)).px
+    (vehicle.height / (spatialCanvas.heightDistancePerPixel)).px
 
   // TODO This should go somewhere else, on its own.
   private def createCarSvgRepresentation(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
