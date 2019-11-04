@@ -13,9 +13,8 @@ import com.billding.traffic.{
 }
 import com.billding.uimodules.Model
 import squants.motion.{Acceleration, Distance}
-
 import org.scalajs.dom
-import org.scalajs.dom.raw.Node
+import org.scalajs.dom.raw.{Element, Node}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import rx.Rx
@@ -100,31 +99,37 @@ object Client {
     val canvasHeight = 800
     val canvasWidth = 1500
 
+    val svgContainerAttempt: Option[Element] = Option(dom.document.getElementById("svg-container"))
+    svgContainerAttempt match {
+      case Some(svgContainer) => setupSvgAndButtonResponses(svgContainer, canvasHeight, canvasWidth)
+      case None =>
+        println("We can't do any svg setup on a page that doesn't have a container to hold it.");
+    }
+  }
+
+  // Currently this needs access to the window
+  def setupSvgAndButtonResponses(
+    svgContainer: Element,
+    canvasHeight: Int,
+    canvasWidth: Int
+  ) = {
     val windowLocal: Rx[Window] = Rx {
       new Window(sceneVar(), canvasHeight, canvasWidth)
     }
 
-    val svgContainer = dom.document.getElementById("svg-container")
-    println("svgContainer: " + svgContainer)
-    val failedContainer = dom.document.getElementById("svg-containerFAIL")
-    println("failedContainer: " + failedContainer)
-    if (svgContainer == null) {
-      println("We can't do any svg setup on a page that doesn't have a container to hold it.");
-    } else {
-      windowLocal.trigger {
-        val previousSvg: Node = svgContainer.getElementsByTagName("svg").item(0)
-        if (previousSvg != null) {
-          svgContainer.removeChild(previousSvg)
-        }
-        //      windowLocal.now.svgNode
-        svgContainer.appendChild(windowLocal.now.svgNode.render)
+    windowLocal.trigger {
+      val previousSvg: Node = svgContainer.getElementsByTagName("svg").item(0)
+      if (previousSvg != null) {
+        svgContainer.removeChild(previousSvg)
       }
-
-      dom.window.setInterval(
-        () => model.respondToAllInput(),
-        DT.toMilliseconds / 5
-      ) // TODO Make this understandable and easily modified. Just some simple algebra.
+      svgContainer.appendChild(windowLocal.now.svgNode.render)
     }
+
+    dom.window.setInterval(
+      () => model.respondToAllInput(),
+      DT.toMilliseconds / 5
+    ) // TODO Make this understandable and easily modified. Just some simple algebra.
+
   }
 
 }
