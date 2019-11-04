@@ -3690,45 +3690,47 @@ $c_Lcom_billding_Window.prototype.createCarSvgRepresentation__p1__Lcom_billding_
   var this$2 = spatial.y$1;
   var that$1 = this.spatialCanvas$1.heightDistancePerPixel$1;
   var y = this$2.divide__Lsquants_Quantity__D(that$1);
-  var this$3 = vehicle.width$1;
-  var that$2 = this.spatialCanvas$1.widthDistancePerPixel$1;
-  var renderedWidth = this$3.divide__Lsquants_Quantity__D(that$2);
-  var this$4 = vehicle.height$1;
-  var that$3 = this.spatialCanvas$1.heightDistancePerPixel$1;
-  var renderedHeight = this$4.divide__Lsquants_Quantity__D(that$3);
+  var this$4 = vehicle.width$1;
+  var this$3 = this.spatialCanvas$1.widthDistancePerPixel$1;
+  var that$2 = this$3.divide__D__Lsquants_Quantity(2.0);
+  var renderedWidth = this$4.divide__Lsquants_Quantity__D(that$2);
+  var this$6 = vehicle.height$1;
+  var this$5 = this.spatialCanvas$1.heightDistancePerPixel$1;
+  var that$3 = this$5.divide__D__Lsquants_Quantity(2.0);
+  var renderedHeight = this$6.divide__Lsquants_Quantity__D(that$3);
   var element = $m_Lscaladget_tools_JsRxTags$().rxSVGMod__Lrx_Rx__Lorg_scalajs_dom_raw_SVGElement($m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function($this, CIRCLE, x$1, y$1, renderedWidth$1, renderedHeight$1, vehicle$1) {
     return (function(rxOwnerCtx$macro$2$2, rxDataCtx$macro$1$2) {
       $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$2$2);
       $as_Lrx_Ctx$Data(rxDataCtx$macro$1$2);
-      var this$5 = $m_Lscalatags_JsDom$svgTags$();
-      var jsx$11 = this$5.g__Lscalatags_JsDom$TypedTag();
-      var this$7 = $m_Lscalatags_JsDom$all$();
-      var this$6 = $m_Lscaladget_stylesheet_all_package$();
-      var xs = $f_Lscaladget_stylesheet_stylesheetbase_BasePackage__ms__T__sc_Seq(this$6, CIRCLE);
+      var this$7 = $m_Lscalatags_JsDom$svgTags$();
+      var jsx$11 = this$7.g__Lscalatags_JsDom$TypedTag();
+      var this$9 = $m_Lscalatags_JsDom$all$();
+      var this$8 = $m_Lscaladget_stylesheet_all_package$();
+      var xs = $f_Lscaladget_stylesheet_stylesheetbase_BasePackage__ms__T__sc_Seq(this$8, CIRCLE);
       var ev = $m_s_Predef$().singleton$und$less$colon$less$2;
-      var array = [new $c_Lscalatags_generic_Util$SeqNode().init___Lscalatags_generic_Util__sc_Seq__F1(this$7, xs, ev)];
+      var array = [new $c_Lscalatags_generic_Util$SeqNode().init___Lscalatags_generic_Util__sc_Seq__F1(this$9, xs, ev)];
       var jsx$10 = jsx$11.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array));
       var array$1 = [$m_Lscalatags_JsDom$svgAttrs$().transform__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair((((("translate(" + x$1) + ", ") + y$1) + ")"), $m_Lscalatags_JsDom$all$().stringAttr$1)];
       var jsx$9 = jsx$10.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1));
-      var this$12 = $m_Lscalatags_JsDom$svgTags$();
-      var jsx$8 = this$12.image__Lscalatags_JsDom$TypedTag();
+      var this$14 = $m_Lscalatags_JsDom$svgTags$();
+      var jsx$8 = this$14.image__Lscalatags_JsDom$TypedTag();
       var jsx$7 = $m_Lscalatags_JsDom$all$().href__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("images/sedan.svg", $m_Lscalatags_JsDom$all$().stringAttr$1);
       var jsx$6 = $m_Lscalatags_JsDom$all$().width__Lscalatags_generic_StyleMisc$PixelAutoStyle();
-      var this$13 = $m_Lscalatags_JsDom$all$();
-      var jsx$5 = jsx$6.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$13, renderedWidth$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
+      var this$15 = $m_Lscalatags_JsDom$all$();
+      var jsx$5 = jsx$6.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$15, renderedWidth$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
       var jsx$4 = $m_Lscalatags_JsDom$all$().height__Lscalatags_generic_StyleMisc$PixelAutoStyle();
-      var this$14 = $m_Lscalatags_JsDom$all$();
-      var jsx$3 = jsx$4.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$14, renderedHeight$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
+      var this$16 = $m_Lscalatags_JsDom$all$();
+      var jsx$3 = jsx$4.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$16, renderedHeight$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
       var jsx$2 = $m_Lscalatags_JsDom$all$().onclick__Lscalatags_generic_Attr();
       var jsx$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this$1, vehicle$1$1) {
         return (function(e$2) {
           var x$2 = vehicle$1$1.uuid$1;
-          var this$16 = $m_s_Console$();
-          var this$17 = $as_Ljava_io_PrintStream(this$16.outVar$2.v$1);
-          this$17.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x$2 + "\n"))
+          var this$18 = $m_s_Console$();
+          var this$19 = $as_Ljava_io_PrintStream(this$18.outVar$2.v$1);
+          this$19.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x$2 + "\n"))
         })
       })($this, vehicle$1));
-      var this$18 = $m_Lscalatags_JsDom$all$();
+      var this$20 = $m_Lscalatags_JsDom$all$();
       var ev$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$1) {
         return (function(f$2) {
           var f = $as_F1(f$2);
@@ -3739,15 +3741,15 @@ $c_Lcom_billding_Window.prototype.createCarSvgRepresentation__p1__Lcom_billding_
           })(f)
         })
       })($this));
-      var array$2 = [jsx$7, jsx$5, jsx$3, jsx$2.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$1, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$18, ev$1))];
+      var array$2 = [jsx$7, jsx$5, jsx$3, jsx$2.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$1, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$20, ev$1))];
       var array$3 = [jsx$8.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$2))];
       return jsx$9.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$3))
     })
   })(this, "conceptG", x, y, renderedWidth, renderedHeight, vehicle)), this.ctx$1));
-  var this$23 = $m_Lscalatags_JsDom$svgTags$();
-  var jsx$12 = this$23.g__Lscalatags_JsDom$TypedTag();
-  var this$24 = $m_Lscalatags_JsDom$all$();
-  var array$4 = [new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$24, element)];
+  var this$25 = $m_Lscalatags_JsDom$svgTags$();
+  var jsx$12 = this$25.g__Lscalatags_JsDom$TypedTag();
+  var this$26 = $m_Lscalatags_JsDom$all$();
+  var array$4 = [new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$26, element)];
   return jsx$12.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$4))
 });
 function $as_Lcom_billding_Window(obj) {

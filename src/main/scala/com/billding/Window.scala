@@ -59,8 +59,8 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     val spatial = SpatialFor.disect(vehicle)
     val x = spatial.x / spatialCanvas.widthDistancePerPixel
     val y = spatial.y / spatialCanvas.heightDistancePerPixel
-    val renderedWidth = vehicle.width / spatialCanvas.widthDistancePerPixel
-    val renderedHeight = vehicle.height / spatialCanvas.heightDistancePerPixel
+    val renderedWidth = vehicle.width / (spatialCanvas.widthDistancePerPixel / 2)
+    val renderedHeight = vehicle.height / (spatialCanvas.heightDistancePerPixel / 2)
 
     val element: SVGElement =
       Rx {
