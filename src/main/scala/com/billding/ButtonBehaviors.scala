@@ -11,14 +11,16 @@ import squants.time.Seconds
 
 case class ButtonBehaviors(model: Model) {
 
-  val togglePause: (Event) => Unit = (e: dom.Event) => {
-    val elementClicked =
-      e.target.asInstanceOf[HTMLInputElement]
+  def togglePauseMethod(e: dom.Event): Unit =
+    e.target match {
+      case elementClicked: HTMLInputElement => {
+        println("paused status: " + model.paused.now) // why is this fuggin true??
+        model.togglePause()
+        elementClicked.value = model.pauseText.now
+      }
+      case unrecognizedClickedElement => throw new RuntimeException("Must be an input element to toggle pausing. e.target: " + unrecognizedClickedElement)
+    }
 
-    println("paused status: " + model.paused.now) // why is this fuggin true??
-    model.togglePause()
-    elementClicked.value = model.pauseText.now
-  }
 
   // TODO make mousewheel behavior
   private val onMouseWheelUp: (WheelEvent) => Unit =

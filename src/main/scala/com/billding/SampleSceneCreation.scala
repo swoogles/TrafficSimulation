@@ -64,7 +64,7 @@ class SampleSceneCreation(endingSpatial: Spatial) {
     NamedScene(
       "multiple stopped groups getting back up to speed",
       createWithVehicles(
-        Seconds(100),
+        Seconds(3),
         List(
           simplerVehicle(180, 0),
           simplerVehicle(175, 0),

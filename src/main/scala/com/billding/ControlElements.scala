@@ -25,7 +25,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
     div(
       cls := "col-md-6 text-center"
     )(
-      normalButton("Pause", buttonBehaviors.togglePause),
+      normalButton("Pause", buttonBehaviors.togglePauseMethod),
       normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset),
       /*
       normalButton("Save the scene",

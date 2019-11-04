@@ -9,8 +9,8 @@ import scala.util.{Failure, Success}
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-case class SerializationFeatures(hostName: String, port: Int, protocol: String) {
-  val fullHost = s"$protocol://$hostName:$port"
+class SerializationFeatures(hostName: String, port: Int, protocol: String) {
+  private val fullHost = s"$protocol://$hostName:$port"
 
   private var volatileScene: Scene = null
 

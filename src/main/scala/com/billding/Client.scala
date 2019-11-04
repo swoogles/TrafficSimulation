@@ -42,7 +42,7 @@ object Client {
         scenes.scene2,
         scenes.multipleStoppedGroups
       ),
-      SerializationFeatures("localhost", 8080, "http")
+      new SerializationFeatures("localhost", 8080, "http")
     )
 
   val sceneVar: Rx[Scene] = Rx {
