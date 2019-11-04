@@ -34,7 +34,6 @@ case class Lane(
     val spatial = Spatial.withVecs(infinityPointBackwards)
     PilotedVehicle.commuter2(spatial, new IntelligentDriverModelImpl, spatial)
   }
-  val infinitySpatial: Spatial = vehicleAtInfinityForward.spatial
 
   /*
     Look at reusing this for finding leading/following cars in neighboring lane.

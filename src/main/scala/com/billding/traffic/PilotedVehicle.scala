@@ -3,7 +3,6 @@ package com.billding.traffic
 import java.util.UUID
 
 import squants.motion.{DistanceUnit, KilometersPerHour, VelocityUnit}
-import squants.space.LengthUnit
 
 import com.billding.physics.{Spatial, SpatialFor}
 import squants.motion.{Acceleration, Distance}

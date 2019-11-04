@@ -2581,7 +2581,7 @@ $c_Lcom_billding_Client$.prototype.init___ = (function() {
   var num$6 = $m_s_math_Numeric$IntIsIntegral$();
   this.DT$1 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(20, this$7, num$6);
   this.scenes$1 = new $c_Lcom_billding_SampleSceneCreation().init___Lcom_billding_physics_Spatial(this.endingSpatial$1);
-  var jsx$5 = this.scenes$1.startingScene$1.scene$1;
+  var jsx$5 = this.scenes$1.singleCarApproachingAStoppedCar$1.scene$1;
   $m_sci_List$();
   var array$2 = [this.scenes$1.emptyScene$1, this.scenes$1.scene1$1, this.scenes$1.scene2$1, this.scenes$1.multipleStoppedGroups$1];
   var i = (((-1) + $uI(array$2.length)) | 0);
@@ -3280,7 +3280,7 @@ $c_Lcom_billding_Client$.prototype.run__V = (function() {
       var rxOwnerCtx$macro$2 = $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$2$2);
       var rxDataCtx$macro$1 = $as_Lrx_Ctx$Data(rxDataCtx$macro$1$2);
       var this$4 = $m_Lcom_billding_Client$().sceneVar$1;
-      return new $c_Lcom_billding_Window().init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner($as_Lcom_billding_traffic_Scene($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$4, rxDataCtx$macro$1)), canvasHeight, canvasWidth, rxOwnerCtx$macro$2)
+      return new $c_Lcom_billding_Window().init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner__Lcom_billding_physics_SpatialFor($as_Lcom_billding_traffic_Scene($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$4, rxDataCtx$macro$1)), canvasHeight, canvasWidth, rxOwnerCtx$macro$2, $m_Lcom_billding_Client$().spatialForPilotedVehicle$1)
     })
   })(this, 800, 1500)), $m_Lscaladget_tools_JsRxTags$().ctx$1);
   var thunk = new $c_sjsr_AnonFunction0().init___sjs_js_Function0((function(this$2$1, windowLocal$1) {
@@ -3395,8 +3395,7 @@ function $c_Lcom_billding_SampleSceneCreation() {
   this.scene1$1 = null;
   this.scene2$1 = null;
   this.multipleStoppedGroups$1 = null;
-  this.singleCarApproachingAStoppedCar$1 = null;
-  this.startingScene$1 = null
+  this.singleCarApproachingAStoppedCar$1 = null
 }
 $c_Lcom_billding_SampleSceneCreation.prototype = new $h_O();
 $c_Lcom_billding_SampleSceneCreation.prototype.constructor = $c_Lcom_billding_SampleSceneCreation;
@@ -3424,7 +3423,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
     result = new $c_sci_$colon$colon().init___O__sci_List(x, this$6);
     i = (((-1) + i) | 0)
   };
-  this.emptyScene$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("Empty Scene", this.createWithVehicles__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$1, result));
+  this.emptyScene$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("Empty Scene", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$1, result));
   var this$7 = $m_Lsquants_time_Seconds$();
   var num$2 = $m_s_math_Numeric$IntIsIntegral$();
   var jsx$2 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(300, this$7, num$2);
@@ -3439,7 +3438,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
     result$1 = new $c_sci_$colon$colon().init___O__sci_List(x$1, this$11);
     i$1 = (((-1) + i$1) | 0)
   };
-  this.scene1$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("group encountering a stopped vehilce", this.createWithVehicles__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$2, result$1));
+  this.scene1$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("group encountering a stopped vehilce", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$2, result$1));
   var this$12 = $m_Lsquants_time_Seconds$();
   var num$3 = $m_s_math_Numeric$IntIsIntegral$();
   var jsx$3 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(100, this$12, num$3);
@@ -3454,7 +3453,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
     result$2 = new $c_sci_$colon$colon().init___O__sci_List(x$2, this$16);
     i$2 = (((-1) + i$2) | 0)
   };
-  this.scene2$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("stopped group getting back up to speed", this.createWithVehicles__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$3, result$2));
+  this.scene2$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("stopped group getting back up to speed", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$3, result$2));
   var this$17 = $m_Lsquants_time_Seconds$();
   var num$4 = $m_s_math_Numeric$IntIsIntegral$();
   var jsx$4 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(100, this$17, num$4);
@@ -3469,7 +3468,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
     result$3 = new $c_sci_$colon$colon().init___O__sci_List(x$3, this$21);
     i$3 = (((-1) + i$3) | 0)
   };
-  this.multipleStoppedGroups$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("multiple stopped groups getting back up to speed", this.createWithVehicles__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$4, result$3));
+  this.multipleStoppedGroups$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("multiple stopped groups getting back up to speed", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$4, result$3));
   var this$22 = $m_Lsquants_time_Seconds$();
   var num$5 = $m_s_math_Numeric$IntIsIntegral$();
   var jsx$5 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(12, this$22, num$5);
@@ -3484,11 +3483,10 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
     result$4 = new $c_sci_$colon$colon().init___O__sci_List(x$4, this$26);
     i$4 = (((-1) + i$4) | 0)
   };
-  this.singleCarApproachingAStoppedCar$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("group encountering a stopped vehicle", this.createWithVehicles__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$5, result$4));
-  this.startingScene$1 = this.singleCarApproachingAStoppedCar$1;
+  this.singleCarApproachingAStoppedCar$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("single car encountering a stopped vehicle", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$5, result$4));
   return this
 });
-$c_Lcom_billding_SampleSceneCreation.prototype.createWithVehicles__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene = (function(sourceTiming, vehicles) {
+$c_Lcom_billding_SampleSceneCreation.prototype.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene = (function(sourceTiming, vehicles) {
   var this$1 = $m_Lsquants_motion_KilometersPerHour$();
   var num = $m_s_math_Numeric$IntIsIntegral$();
   var speedLimit = $m_Lsquants_motion_Velocity$().apply__O__Lsquants_motion_VelocityUnit__s_math_Numeric__Lsquants_motion_Velocity(65, this$1, num);
@@ -3583,6 +3581,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.$classData = $d_Lcom_billding_Sam
 function $c_Lcom_billding_Window() {
   $c_O.call(this);
   this.ctx$1 = null;
+  this.spatialForPilotedVehicle$1 = null;
   this.spatialCanvas$1 = null;
   this.svgNode$1 = null
 }
@@ -3593,24 +3592,9 @@ function $h_Lcom_billding_Window() {
   /*<skip>*/
 }
 $h_Lcom_billding_Window.prototype = $c_Lcom_billding_Window.prototype;
-$c_Lcom_billding_Window.prototype.createSvgReps__p1__sc_Seq__Lscalatags_JsDom$TypedTag = (function(drawables) {
-  var this$1 = $m_Lscalatags_JsDom$svgTags$();
-  var jsx$2 = this$1.g__Lscalatags_JsDom$TypedTag();
-  var this$3 = $m_Lscalatags_JsDom$all$();
-  var jsx$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this) {
-    return (function(t$2) {
-      var t = $as_Lscalatags_JsDom$TypedTag(t$2);
-      return t
-    })
-  })(this));
-  var this$2 = $m_sc_Seq$();
-  var xs = $as_sc_Seq(drawables.map__F1__scg_CanBuildFrom__O(jsx$1, this$2.ReusableCBFInstance$2));
-  var ev = $m_s_Predef$().singleton$und$less$colon$less$2;
-  var array = [new $c_Lscalatags_JsDom$Cap$SeqFrag().init___Lscalatags_JsDom$Cap__sc_Seq__F1(this$3, xs, ev)];
-  return jsx$2.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array))
-});
-$c_Lcom_billding_Window.prototype.init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner = (function(scene, canvasHeight, canvasWidth, ctx) {
+$c_Lcom_billding_Window.prototype.init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner__Lcom_billding_physics_SpatialFor = (function(scene, canvasHeight, canvasWidth, ctx, spatialForPilotedVehicle) {
   this.ctx$1 = ctx;
+  this.spatialForPilotedVehicle$1 = spatialForPilotedVehicle;
   this.spatialCanvas$1 = new $c_Lcom_billding_svgRendering_SpatialCanvas().init___Lsquants_space_Length__Lsquants_space_Length__I__I($as_Lsquants_space_Length(scene.canvasDimensions$1.$$und1__O()), $as_Lsquants_space_Length(scene.canvasDimensions$1.$$und2__O()), canvasHeight, canvasWidth);
   var this$1 = $m_Lscalatags_JsDom$svgTags$();
   var jsx$10 = this$1.svg__Lscalatags_JsDom$TypedTag();
@@ -3663,64 +3647,77 @@ $c_Lcom_billding_Window.prototype.init___Lcom_billding_traffic_Scene__I__I__Lrx_
   var array$1 = [this.createSvgReps__p1__sc_Seq__Lscalatags_JsDom$TypedTag(scene.applyToAllVehicles__F1__sci_List(new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$5$1) {
     return (function(vehicle$2) {
       var vehicle = $as_Lcom_billding_traffic_PilotedVehicle(vehicle$2);
-      return this$5$1.carReal__p1__Lcom_billding_traffic_PilotedVehicle__Lscalatags_JsDom$TypedTag(vehicle)
+      return this$5$1.createCarSvgRepresentation__p1__Lcom_billding_traffic_PilotedVehicle__Lscalatags_JsDom$TypedTag(vehicle)
     })
   })(this))))];
   var array$2 = [jsx$1.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1))];
   this.svgNode$1 = jsx$2.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$2));
   return this
 });
-$c_Lcom_billding_Window.prototype.carReal__p1__Lcom_billding_traffic_PilotedVehicle__Lscalatags_JsDom$TypedTag = (function(vehicle) {
-  if ((vehicle === null)) {
-    throw new $c_s_MatchError().init___O(vehicle)
-  };
-  var spatial = vehicle.vehicle$1.spatial$1;
-  var this$3 = spatial.x$1;
+$c_Lcom_billding_Window.prototype.createSvgReps__p1__sc_Seq__Lscalatags_JsDom$TypedTag = (function(drawables) {
+  var this$1 = $m_Lscalatags_JsDom$svgTags$();
+  var jsx$2 = this$1.g__Lscalatags_JsDom$TypedTag();
+  var this$3 = $m_Lscalatags_JsDom$all$();
+  var jsx$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this) {
+    return (function(t$2) {
+      var t = $as_Lscalatags_JsDom$TypedTag(t$2);
+      return t
+    })
+  })(this));
+  var this$2 = $m_sc_Seq$();
+  var xs = $as_sc_Seq(drawables.map__F1__scg_CanBuildFrom__O(jsx$1, this$2.ReusableCBFInstance$2));
+  var ev = $m_s_Predef$().singleton$und$less$colon$less$2;
+  var array = [new $c_Lscalatags_JsDom$Cap$SeqFrag().init___Lscalatags_JsDom$Cap__sc_Seq__F1(this$3, xs, ev)];
+  return jsx$2.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array))
+});
+$c_Lcom_billding_Window.prototype.createCarSvgRepresentation__p1__Lcom_billding_traffic_PilotedVehicle__Lscalatags_JsDom$TypedTag = (function(vehicle) {
+  var spatial = $m_Lcom_billding_physics_SpatialFor$().disect__O__Lcom_billding_physics_SpatialFor__Lcom_billding_physics_Spatial(vehicle, this.spatialForPilotedVehicle$1);
+  var this$1 = spatial.x$1;
   var that = this.spatialCanvas$1.widthDistancePerPixel$1;
-  var x = this$3.divide__Lsquants_Quantity__D(that);
-  var this$4 = spatial.y$1;
+  var x = this$1.divide__Lsquants_Quantity__D(that);
+  var this$2 = spatial.y$1;
   var that$1 = this.spatialCanvas$1.heightDistancePerPixel$1;
-  var y = this$4.divide__Lsquants_Quantity__D(that$1);
-  var this$5 = vehicle.width$1;
+  var y = this$2.divide__Lsquants_Quantity__D(that$1);
+  var this$3 = vehicle.width$1;
   var that$2 = this.spatialCanvas$1.widthDistancePerPixel$1;
-  var renderedWidth = this$5.divide__Lsquants_Quantity__D(that$2);
-  var this$6 = vehicle.height$1;
+  var renderedWidth = this$3.divide__Lsquants_Quantity__D(that$2);
+  var this$4 = vehicle.height$1;
   var that$3 = this.spatialCanvas$1.heightDistancePerPixel$1;
-  var renderedHeight = this$6.divide__Lsquants_Quantity__D(that$3);
-  var element = $m_Lscaladget_tools_JsRxTags$().rxSVGMod__Lrx_Rx__Lorg_scalajs_dom_raw_SVGElement($m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function(this$2$1, CIRCLE, x$1, y$1, renderedWidth$1, renderedHeight$1, vehicle$1) {
+  var renderedHeight = this$4.divide__Lsquants_Quantity__D(that$3);
+  var element = $m_Lscaladget_tools_JsRxTags$().rxSVGMod__Lrx_Rx__Lorg_scalajs_dom_raw_SVGElement($m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function($this, CIRCLE, x$1, y$1, renderedWidth$1, renderedHeight$1, vehicle$1) {
     return (function(rxOwnerCtx$macro$2$2, rxDataCtx$macro$1$2) {
       $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$2$2);
       $as_Lrx_Ctx$Data(rxDataCtx$macro$1$2);
-      var this$7 = $m_Lscalatags_JsDom$svgTags$();
-      var jsx$11 = this$7.g__Lscalatags_JsDom$TypedTag();
-      var this$9 = $m_Lscalatags_JsDom$all$();
-      var this$8 = $m_Lscaladget_stylesheet_all_package$();
-      var xs = $f_Lscaladget_stylesheet_stylesheetbase_BasePackage__ms__T__sc_Seq(this$8, CIRCLE);
+      var this$5 = $m_Lscalatags_JsDom$svgTags$();
+      var jsx$11 = this$5.g__Lscalatags_JsDom$TypedTag();
+      var this$7 = $m_Lscalatags_JsDom$all$();
+      var this$6 = $m_Lscaladget_stylesheet_all_package$();
+      var xs = $f_Lscaladget_stylesheet_stylesheetbase_BasePackage__ms__T__sc_Seq(this$6, CIRCLE);
       var ev = $m_s_Predef$().singleton$und$less$colon$less$2;
-      var array = [new $c_Lscalatags_generic_Util$SeqNode().init___Lscalatags_generic_Util__sc_Seq__F1(this$9, xs, ev)];
+      var array = [new $c_Lscalatags_generic_Util$SeqNode().init___Lscalatags_generic_Util__sc_Seq__F1(this$7, xs, ev)];
       var jsx$10 = jsx$11.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array));
       var array$1 = [$m_Lscalatags_JsDom$svgAttrs$().transform__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair((((("translate(" + x$1) + ", ") + y$1) + ")"), $m_Lscalatags_JsDom$all$().stringAttr$1)];
       var jsx$9 = jsx$10.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1));
-      var this$14 = $m_Lscalatags_JsDom$svgTags$();
-      var jsx$8 = this$14.image__Lscalatags_JsDom$TypedTag();
+      var this$12 = $m_Lscalatags_JsDom$svgTags$();
+      var jsx$8 = this$12.image__Lscalatags_JsDom$TypedTag();
       var jsx$7 = $m_Lscalatags_JsDom$all$().href__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("images/sedan.svg", $m_Lscalatags_JsDom$all$().stringAttr$1);
       var jsx$6 = $m_Lscalatags_JsDom$all$().width__Lscalatags_generic_StyleMisc$PixelAutoStyle();
-      var this$15 = $m_Lscalatags_JsDom$all$();
-      var jsx$5 = jsx$6.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$15, renderedWidth$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
+      var this$13 = $m_Lscalatags_JsDom$all$();
+      var jsx$5 = jsx$6.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$13, renderedWidth$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
       var jsx$4 = $m_Lscalatags_JsDom$all$().height__Lscalatags_generic_StyleMisc$PixelAutoStyle();
-      var this$16 = $m_Lscalatags_JsDom$all$();
-      var jsx$3 = jsx$4.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$16, renderedHeight$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
+      var this$14 = $m_Lscalatags_JsDom$all$();
+      var jsx$3 = jsx$4.$$colon$eq__O__Lscalatags_generic_PixelStyleValue__Lscalatags_generic_StylePair(new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$14, renderedHeight$1, $m_s_math_Numeric$DoubleIsFractional$()).px__T(), $m_Lscalatags_JsDom$all$().stringPixelStyle$1);
       var jsx$2 = $m_Lscalatags_JsDom$all$().onclick__Lscalatags_generic_Attr();
-      var jsx$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this, vehicle$1$1) {
+      var jsx$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this$1, vehicle$1$1) {
         return (function(e$2) {
           var x$2 = vehicle$1$1.uuid$1;
-          var this$18 = $m_s_Console$();
-          var this$19 = $as_Ljava_io_PrintStream(this$18.outVar$2.v$1);
-          this$19.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x$2 + "\n"))
+          var this$16 = $m_s_Console$();
+          var this$17 = $as_Ljava_io_PrintStream(this$16.outVar$2.v$1);
+          this$17.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x$2 + "\n"))
         })
-      })(this$2$1, vehicle$1));
-      var this$20 = $m_Lscalatags_JsDom$all$();
-      var ev$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$2) {
+      })($this, vehicle$1));
+      var this$18 = $m_Lscalatags_JsDom$all$();
+      var ev$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$1) {
         return (function(f$2) {
           var f = $as_F1(f$2);
           return (function(f$1) {
@@ -3729,16 +3726,16 @@ $c_Lcom_billding_Window.prototype.carReal__p1__Lcom_billding_traffic_PilotedVehi
             })
           })(f)
         })
-      })(this$2$1));
-      var array$2 = [jsx$7, jsx$5, jsx$3, jsx$2.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$1, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$20, ev$1))];
+      })($this));
+      var array$2 = [jsx$7, jsx$5, jsx$3, jsx$2.$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair(jsx$1, new $c_Lscalatags_LowPriorityImplicits$$anon$2().init___Lscalatags_LowPriorityImplicits__F1(this$18, ev$1))];
       var array$3 = [jsx$8.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$2))];
       return jsx$9.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$3))
     })
   })(this, "conceptG", x, y, renderedWidth, renderedHeight, vehicle)), this.ctx$1));
-  var this$25 = $m_Lscalatags_JsDom$svgTags$();
-  var jsx$12 = this$25.g__Lscalatags_JsDom$TypedTag();
-  var this$26 = $m_Lscalatags_JsDom$all$();
-  var array$4 = [new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$26, element)];
+  var this$23 = $m_Lscalatags_JsDom$svgTags$();
+  var jsx$12 = this$23.g__Lscalatags_JsDom$TypedTag();
+  var this$24 = $m_Lscalatags_JsDom$all$();
+  var array$4 = [new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$24, element)];
   return jsx$12.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$4))
 });
 function $as_Lcom_billding_Window(obj) {
@@ -3757,6 +3754,37 @@ var $d_Lcom_billding_Window = new $TypeData().initClass({
   O: 1
 });
 $c_Lcom_billding_Window.prototype.$classData = $d_Lcom_billding_Window;
+/** @constructor */
+function $c_Lcom_billding_physics_SpatialFor$() {
+  $c_O.call(this)
+}
+$c_Lcom_billding_physics_SpatialFor$.prototype = new $h_O();
+$c_Lcom_billding_physics_SpatialFor$.prototype.constructor = $c_Lcom_billding_physics_SpatialFor$;
+/** @constructor */
+function $h_Lcom_billding_physics_SpatialFor$() {
+  /*<skip>*/
+}
+$h_Lcom_billding_physics_SpatialFor$.prototype = $c_Lcom_billding_physics_SpatialFor$.prototype;
+$c_Lcom_billding_physics_SpatialFor$.prototype.init___ = (function() {
+  return this
+});
+$c_Lcom_billding_physics_SpatialFor$.prototype.disect__O__Lcom_billding_physics_SpatialFor__Lcom_billding_physics_Spatial = (function(t, evidence$1) {
+  return evidence$1.makeSpatial__O__Lcom_billding_physics_Spatial(t)
+});
+var $d_Lcom_billding_physics_SpatialFor$ = new $TypeData().initClass({
+  Lcom_billding_physics_SpatialFor$: 0
+}, false, "com.billding.physics.SpatialFor$", {
+  Lcom_billding_physics_SpatialFor$: 1,
+  O: 1
+});
+$c_Lcom_billding_physics_SpatialFor$.prototype.$classData = $d_Lcom_billding_physics_SpatialFor$;
+var $n_Lcom_billding_physics_SpatialFor$ = (void 0);
+function $m_Lcom_billding_physics_SpatialFor$() {
+  if ((!$n_Lcom_billding_physics_SpatialFor$)) {
+    $n_Lcom_billding_physics_SpatialFor$ = new $c_Lcom_billding_physics_SpatialFor$().init___()
+  };
+  return $n_Lcom_billding_physics_SpatialFor$
+}
 /** @constructor */
 function $c_Lcom_billding_traffic_VehicleStats$Commuter$() {
   $c_O.call(this);
@@ -15390,6 +15418,9 @@ $c_Lcom_billding_Client$$$Lambda$1.prototype.init___O = (function(f) {
   this.f$1 = f;
   return this
 });
+$c_Lcom_billding_Client$$$Lambda$1.prototype.makeSpatial__O__Lcom_billding_physics_Spatial = (function(a) {
+  return $as_Lcom_billding_physics_Spatial((0, this.f$1)(a))
+});
 var $d_Lcom_billding_Client$$$Lambda$1 = new $TypeData().initClass({
   Lcom_billding_Client$$$Lambda$1: 0
 }, false, "com.billding.Client$$$Lambda$1", {
@@ -19353,6 +19384,12 @@ function $h_Lcom_billding_physics_Spatial$() {
   /*<skip>*/
 }
 $h_Lcom_billding_physics_Spatial$.prototype = $c_Lcom_billding_physics_Spatial$.prototype;
+$c_Lcom_billding_physics_Spatial$.prototype.vectorsAreInOppositeDirections__Lsquants_QuantityVector__Lsquants_DoubleVector__Z = (function(vec1, vec2) {
+  var this$1 = vec1.normalize__Lsquants_QuantityVector().to__Lsquants_UnitOfMeasure__Lsquants_DoubleVector($m_Lsquants_motion_MetersPerSecond$());
+  var this$2 = this$1.divide__D__Lsquants_DoubleVector(this$1.magnitude__D());
+  var difference = $as_Lsquants_DoubleVector($f_Lsquants_SVector__$$plus__F1(this$2).apply__O__O(vec2.divide__D__Lsquants_DoubleVector(vec2.magnitude__D()))).magnitude__D();
+  return ((difference < 0.1) && (difference > (-0.1)))
+});
 $c_Lcom_billding_physics_Spatial$.prototype.newVelocityAfterAcceleration__Lcom_billding_physics_Spatial__Lsquants_QuantityVector__Lsquants_time_Time__Lsquants_QuantityVector = (function(spatial, accelerationAlongDirectionOfTravel, dt) {
   var changeInVelocity = accelerationAlongDirectionOfTravel.map__F1__Lsquants_QuantityVector(new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this, dt$1) {
     return (function(x$4$2) {
@@ -19361,12 +19398,6 @@ $c_Lcom_billding_physics_Spatial$.prototype.newVelocityAfterAcceleration__Lcom_b
     })
   })(this, dt)));
   return spatial.v$1.plus__Lsquants_QuantityVector__Lsquants_QuantityVector(changeInVelocity)
-});
-$c_Lcom_billding_physics_Spatial$.prototype.vectorsAreInOppositeDirections__Lsquants_QuantityVector__Lsquants_DoubleVector__Z = (function(vec1, vec2) {
-  var this$1 = vec1.normalize__Lsquants_QuantityVector().to__Lsquants_UnitOfMeasure__Lsquants_DoubleVector($m_Lsquants_motion_MetersPerSecond$());
-  var this$2 = this$1.divide__D__Lsquants_DoubleVector(this$1.magnitude__D());
-  var difference = $as_Lsquants_DoubleVector($f_Lsquants_SVector__$$plus__F1(this$2).apply__O__O(vec2.divide__D__Lsquants_DoubleVector(vec2.magnitude__D()))).magnitude__D();
-  return ((difference < 0.1) && (difference > (-0.1)))
 });
 $c_Lcom_billding_physics_Spatial$.prototype.init___ = (function() {
   $n_Lcom_billding_physics_Spatial$ = this;
@@ -31173,8 +31204,7 @@ function $c_Lcom_billding_traffic_Lane() {
   this.infinityPointForward$1 = null;
   this.infinityPointBackwards$1 = null;
   this.vehicleAtInfinityForward$1 = null;
-  this.vehicleAtInfinityBackwards$1 = null;
-  this.infinitySpatial$1 = null
+  this.vehicleAtInfinityBackwards$1 = null
 }
 $c_Lcom_billding_traffic_Lane.prototype = new $h_O();
 $c_Lcom_billding_traffic_Lane.prototype.constructor = $c_Lcom_billding_traffic_Lane;
@@ -31329,8 +31359,6 @@ $c_Lcom_billding_traffic_Lane.prototype.init___sci_List__Lcom_billding_traffic_V
   var d$1 = $m_Lcom_billding_physics_Spatial$().ZERO$undDIMENSIONS$undVECTOR$1;
   var spatial$2 = new $c_Lcom_billding_physics_Spatial().init___Lsquants_QuantityVector__Lsquants_QuantityVector__Lsquants_QuantityVector(p$1, v$1, d$1);
   this.vehicleAtInfinityBackwards$1 = $m_Lcom_billding_traffic_PilotedVehicle$().commuter2__Lcom_billding_physics_Spatial__Lcom_billding_traffic_IntelligentDriverModelImpl__Lcom_billding_physics_Spatial__Lcom_billding_traffic_PilotedVehicle(spatial$2, new $c_Lcom_billding_traffic_IntelligentDriverModelImpl().init___T(($m_Lcom_billding_traffic_IntelligentDriverModelImpl$(), "simpleIdm")), spatial$2);
-  var this$8 = this.vehicleAtInfinityForward$1;
-  this.infinitySpatial$1 = this$8.vehicle$1.spatial$1;
   return this
 });
 $c_Lcom_billding_traffic_Lane.prototype.hashCode__I = (function() {
@@ -31569,7 +31597,6 @@ function $c_Lcom_billding_traffic_Scene() {
   this.dt$1 = null;
   this.speedLimit$1 = null;
   this.canvasDimensions$1 = null;
-  this.updateLane$1 = null;
   this.allVehicles$1 = null
 }
 $c_Lcom_billding_traffic_Scene.prototype = new $h_O();
@@ -31658,43 +31685,82 @@ $c_Lcom_billding_traffic_Scene.prototype.updateWithSpeedLimit__Lsquants_motion_V
   var this$1 = this.t$1;
   var that = this.dt$1;
   var nextT = $as_Lsquants_time_Time(this$1.plus__Lsquants_Quantity__Lsquants_Quantity(that));
-  var this$3 = this.streets$1;
-  var f = (function($this) {
+  var this$5 = this.streets$1;
+  var f$1 = (function($this, dt$1) {
     return (function(street$2) {
       var street = $as_Lcom_billding_traffic_Street(street$2);
-      return street.updateLanes__F1__Lcom_billding_traffic_Street($this.updateLane$1)
-    })
-  })(this);
-  var this$2 = $m_sci_List$();
-  var bf = this$2.ReusableCBFInstance$2;
-  if ((bf === $m_sci_List$().ReusableCBFInstance$2)) {
-    if ((this$3 === $m_sci_Nil$())) {
-      var jsx$1 = $m_sci_Nil$()
-    } else {
-      var arg1 = this$3.head__O();
-      var h = new $c_sci_$colon$colon().init___O__sci_List(f(arg1), $m_sci_Nil$());
-      var t = h;
-      var rest = $as_sci_List(this$3.tail__O());
-      while ((rest !== $m_sci_Nil$())) {
-        var arg1$1 = rest.head__O();
-        var nx = new $c_sci_$colon$colon().init___O__sci_List(f(arg1$1), $m_sci_Nil$());
-        t.tl$5 = nx;
-        t = nx;
-        rest = $as_sci_List(rest.tail__O())
+      var f = (function($this$1, dt$1$1) {
+        return (function(lane$2) {
+          var lane = $as_Lcom_billding_traffic_Lane(lane$2);
+          return $m_Lcom_billding_traffic_Lane$().update__Lcom_billding_traffic_Lane__Lsquants_time_Time__Lsquants_time_Time__Lcom_billding_traffic_Lane(lane, $this$1.t$1, dt$1$1)
+        })
+      })($this, dt$1);
+      var this$3 = street.lanes$1;
+      var this$2 = $m_sci_List$();
+      var bf = this$2.ReusableCBFInstance$2;
+      if ((bf === $m_sci_List$().ReusableCBFInstance$2)) {
+        if ((this$3 === $m_sci_Nil$())) {
+          var jsx$1 = $m_sci_Nil$()
+        } else {
+          var arg1 = this$3.head__O();
+          var h = new $c_sci_$colon$colon().init___O__sci_List(f(arg1), $m_sci_Nil$());
+          var t = h;
+          var rest = $as_sci_List(this$3.tail__O());
+          while ((rest !== $m_sci_Nil$())) {
+            var arg1$1 = rest.head__O();
+            var nx = new $c_sci_$colon$colon().init___O__sci_List(f(arg1$1), $m_sci_Nil$());
+            t.tl$5 = nx;
+            t = nx;
+            rest = $as_sci_List(rest.tail__O())
+          };
+          var jsx$1 = h
+        }
+      } else {
+        var b = $f_sc_TraversableLike__builder$1__psc_TraversableLike__scg_CanBuildFrom__scm_Builder(this$3, bf);
+        var these = this$3;
+        while ((!these.isEmpty__Z())) {
+          var arg1$2 = these.head__O();
+          b.$$plus$eq__O__scm_Builder(f(arg1$2));
+          these = $as_sci_List(these.tail__O())
+        };
+        var jsx$1 = b.result__O()
       };
-      var jsx$1 = h
+      var lanes = $as_sci_List(jsx$1);
+      var beginning = street.beginning$1;
+      var end = street.end$1;
+      return new $c_Lcom_billding_traffic_Street().init___sci_List__Lcom_billding_physics_Spatial__Lcom_billding_physics_Spatial(lanes, beginning, end)
+    })
+  })(this, dt);
+  var this$4 = $m_sci_List$();
+  var bf$1 = this$4.ReusableCBFInstance$2;
+  if ((bf$1 === $m_sci_List$().ReusableCBFInstance$2)) {
+    if ((this$5 === $m_sci_Nil$())) {
+      var jsx$2 = $m_sci_Nil$()
+    } else {
+      var arg1$3 = this$5.head__O();
+      var h$1 = new $c_sci_$colon$colon().init___O__sci_List(f$1(arg1$3), $m_sci_Nil$());
+      var t$1 = h$1;
+      var rest$1 = $as_sci_List(this$5.tail__O());
+      while ((rest$1 !== $m_sci_Nil$())) {
+        var arg1$4 = rest$1.head__O();
+        var nx$1 = new $c_sci_$colon$colon().init___O__sci_List(f$1(arg1$4), $m_sci_Nil$());
+        t$1.tl$5 = nx$1;
+        t$1 = nx$1;
+        rest$1 = $as_sci_List(rest$1.tail__O())
+      };
+      var jsx$2 = h$1
     }
   } else {
-    var b = $f_sc_TraversableLike__builder$1__psc_TraversableLike__scg_CanBuildFrom__scm_Builder(this$3, bf);
-    var these = this$3;
-    while ((!these.isEmpty__Z())) {
-      var arg1$2 = these.head__O();
-      b.$$plus$eq__O__scm_Builder(f(arg1$2));
-      these = $as_sci_List(these.tail__O())
+    var b$1 = $f_sc_TraversableLike__builder$1__psc_TraversableLike__scg_CanBuildFrom__scm_Builder(this$5, bf$1);
+    var these$1 = this$5;
+    while ((!these$1.isEmpty__Z())) {
+      var arg1$5 = these$1.head__O();
+      b$1.$$plus$eq__O__scm_Builder(f$1(arg1$5));
+      these$1 = $as_sci_List(these$1.tail__O())
     };
-    var jsx$1 = b.result__O()
+    var jsx$2 = b$1.result__O()
   };
-  var res = $as_sci_List(jsx$1);
+  var res = $as_sci_List(jsx$2);
   return new $c_Lcom_billding_traffic_Scene().init___sci_List__Lsquants_time_Time__Lsquants_time_Time__Lsquants_motion_Velocity__T2(res, nextT, this.dt$1, speedLimit, this.canvasDimensions$1)
 });
 $c_Lcom_billding_traffic_Scene.prototype.init___sci_List__Lsquants_time_Time__Lsquants_time_Time__Lsquants_motion_Velocity__T2 = (function(streets, t, dt, speedLimit, canvasDimensions) {
@@ -31703,29 +31769,23 @@ $c_Lcom_billding_traffic_Scene.prototype.init___sci_List__Lsquants_time_Time__Ls
   this.dt$1 = dt;
   this.speedLimit$1 = speedLimit;
   this.canvasDimensions$1 = canvasDimensions;
-  this.updateLane$1 = new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function($this) {
-    return (function(lane$2) {
-      var lane = $as_Lcom_billding_traffic_Lane(lane$2);
-      return $m_Lcom_billding_traffic_Lane$().update__Lcom_billding_traffic_Lane__Lsquants_time_Time__Lsquants_time_Time__Lcom_billding_traffic_Lane(lane, $this.t$1, $this.dt$1)
-    })
-  })(this));
-  var f$1 = (function(this$2) {
+  var f$1 = (function($this) {
     return (function(x$1$2) {
       var x$1 = $as_Lcom_billding_traffic_Street(x$1$2);
-      var this$3 = x$1.lanes$1;
+      var this$2 = x$1.lanes$1;
       var f = (function($this$1) {
         return (function(x$2$2) {
           var x$2 = $as_Lcom_billding_traffic_Lane(x$2$2);
           return x$2.vehicles$1
         })
-      })(this$2);
+      })($this);
       var this$1 = $m_sci_List$();
       var bf = this$1.ReusableCBFInstance$2;
       if ((bf === $m_sci_List$().ReusableCBFInstance$2)) {
-        if ((this$3 === $m_sci_Nil$())) {
+        if ((this$2 === $m_sci_Nil$())) {
           var jsx$1 = $m_sci_Nil$()
         } else {
-          var rest = this$3;
+          var rest = this$2;
           var found = new $c_sr_BooleanRef().init___Z(false);
           var h = new $c_sr_ObjectRef().init___O(null);
           var t$1 = new $c_sr_ObjectRef().init___O(null);
@@ -31743,7 +31803,7 @@ $c_Lcom_billding_traffic_Scene.prototype.init___sci_List__Lsquants_time_Time__Ls
                   t$2.elem$1 = nx
                 }
               })
-            })(this$3, found, h, t$1)));
+            })(this$2, found, h, t$1)));
             rest = $as_sci_List(rest.tail__O())
           };
           var jsx$1 = ((!found.elem$1) ? $m_sci_Nil$() : $as_sci_$colon$colon(h.elem$1))
@@ -31751,7 +31811,7 @@ $c_Lcom_billding_traffic_Scene.prototype.init___sci_List__Lsquants_time_Time__Ls
       } else {
         $m_sci_List$();
         var b = new $c_scm_ListBuffer().init___();
-        var these = this$3;
+        var these = this$2;
         while ((!these.isEmpty__Z())) {
           var arg1$1 = these.head__O();
           var xs = $as_sc_GenTraversableOnce(f(arg1$1)).seq__sc_TraversableOnce();
@@ -31763,8 +31823,8 @@ $c_Lcom_billding_traffic_Scene.prototype.init___sci_List__Lsquants_time_Time__Ls
       return $as_sci_List(jsx$1)
     })
   })(this);
-  var this$8 = $m_sci_List$();
-  var bf$1 = this$8.ReusableCBFInstance$2;
+  var this$7 = $m_sci_List$();
+  var bf$1 = this$7.ReusableCBFInstance$2;
   if ((bf$1 === $m_sci_List$().ReusableCBFInstance$2)) {
     if ((streets === $m_sci_Nil$())) {
       var jsx$2 = $m_sci_Nil$()
@@ -47637,11 +47697,11 @@ $c_Lcom_billding_uimodules_Model.prototype.init___Lcom_billding_traffic_Scene__s
   this.DT$1 = originalScene.dt$1;
   this.sceneVar$1 = new $c_Lrx_Var().init___O(originalScene);
   this.carSpeedText$1 = $m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function($this) {
-    return (function(rxOwnerCtx$macro$2$2, rxDataCtx$macro$1$2) {
-      $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$2$2);
-      var rxDataCtx$macro$1 = $as_Lrx_Ctx$Data(rxDataCtx$macro$1$2);
+    return (function(rxOwnerCtx$macro$4$2, rxDataCtx$macro$3$2) {
+      $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$4$2);
+      var rxDataCtx$macro$3 = $as_Lrx_Ctx$Data(rxDataCtx$macro$3$2);
       var this$2 = $this.speed$1;
-      return (("Current car speed " + $f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$2, rxDataCtx$macro$1)) + " ")
+      return (("Current car speed " + $f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$2, rxDataCtx$macro$3)) + " ")
     })
   })(this)), ctx);
   var this$6 = originalScene.streets$1;
@@ -47731,19 +47791,19 @@ $c_Lcom_billding_uimodules_Model.prototype.init___Lcom_billding_traffic_Scene__s
   var initialValue = $as_sc_IterableLike(jsx$2).head__O();
   this.carTiming$1 = new $c_Lrx_Var().init___O(initialValue);
   this.carTimingText$1 = $m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function(this$3$1) {
-    return (function(rxOwnerCtx$macro$4$2, rxDataCtx$macro$3$2) {
-      $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$4$2);
-      var rxDataCtx$macro$3 = $as_Lrx_Ctx$Data(rxDataCtx$macro$3$2);
-      var this$12 = this$3$1.carTiming$1;
-      return (("Current car timing " + $f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$12, rxDataCtx$macro$3)) + " ")
-    })
-  })(this)), ctx);
-  this.pauseText$1 = $m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function(this$4$1) {
     return (function(rxOwnerCtx$macro$6$2, rxDataCtx$macro$5$2) {
       $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$6$2);
       var rxDataCtx$macro$5 = $as_Lrx_Ctx$Data(rxDataCtx$macro$5$2);
+      var this$12 = this$3$1.carTiming$1;
+      return (("Current car timing " + $f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$12, rxDataCtx$macro$5)) + " ")
+    })
+  })(this)), ctx);
+  this.pauseText$1 = $m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function(this$4$1) {
+    return (function(rxOwnerCtx$macro$2$2, rxDataCtx$macro$1$2) {
+      $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$2$2);
+      var rxDataCtx$macro$1 = $as_Lrx_Ctx$Data(rxDataCtx$macro$1$2);
       var this$13 = this$4$1.paused$1;
-      if ($uZ($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$13, rxDataCtx$macro$5))) {
+      if ($uZ($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$13, rxDataCtx$macro$1))) {
         return "Unpause"
       } else {
         return "Pause"

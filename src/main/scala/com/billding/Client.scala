@@ -36,7 +36,7 @@ object Client {
 
   val model: Model =
     Model(
-      scenes.startingScene.scene,
+      scenes.singleCarApproachingAStoppedCar.scene,
       List(
         scenes.emptyScene,
         scenes.scene1,

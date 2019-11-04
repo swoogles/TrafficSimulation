@@ -2,7 +2,6 @@ package com.billding
 
 import com.billding.physics.Spatial
 import com.billding.traffic._
-import scalacss.internal.LengthUnit
 import squants.Length
 import squants.motion.{DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
 import squants.space.{Kilometers, Meters}
@@ -88,7 +87,7 @@ class SampleSceneCreation(endingSpatial: Spatial) {
 
   val singleCarApproachingAStoppedCar =
     NamedScene(
-      "group encountering a stopped vehicle",
+      "single car encountering a stopped vehicle",
       createWithVehicles(
         Seconds(12),
         List(
@@ -98,9 +97,7 @@ class SampleSceneCreation(endingSpatial: Spatial) {
       )
     )
 
-  val startingScene = singleCarApproachingAStoppedCar
-
-  def createWithVehicles(sourceTiming: Time, vehicles: List[PilotedVehicle]): Scene = {
+  private def createWithVehicles(sourceTiming: Time, vehicles: List[PilotedVehicle]): Scene = {
 
     val speedLimit: Velocity = KilometersPerHour(65)
     val originSpatial = Spatial((0, 0, 0, Kilometers))
