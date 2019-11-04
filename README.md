@@ -28,7 +28,11 @@ First, build the javascript:
 sbt fastOptJS
 ```
 
-## Play with the Simulation ##
+## Play with the most recent version of the project  ##
+
+    www.whywestopped.com
+    
+## Play with the Simulation Locally ##
 
     firefox ./index.html
 
