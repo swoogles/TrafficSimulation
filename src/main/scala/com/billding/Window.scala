@@ -30,7 +30,6 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     svgTags
       .svg(
         attr("viewBox") := s"0 0 $canvasWidth $canvasHeight", // TODO double check order here
-        onclick := println,
         onwheel := { wheelEvent: dom.MouseEvent =>
           println("we want to zoom in/out here." + wheelEvent)
         }
