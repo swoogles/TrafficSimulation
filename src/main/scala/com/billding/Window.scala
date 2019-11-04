@@ -23,7 +23,7 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
 ) {
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
-  val spatialCanvas =
+  private val spatialCanvas =
     SpatialCanvas(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
 
   val svgNode: JsDom.TypedTag[SVG] =
@@ -44,8 +44,8 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
       )
 
   private def createSvgReps(
-                             drawables: Seq[JsDom.TypedTag[SVGElement]]
-                           ): JsDom.TypedTag[SVGElement] =
+    drawables: Seq[JsDom.TypedTag[SVGElement]]
+  ): JsDom.TypedTag[SVGElement] =
     svgTags.g(
       for {
         t <- drawables

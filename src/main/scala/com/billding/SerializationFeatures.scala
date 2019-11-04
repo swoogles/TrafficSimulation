@@ -12,8 +12,7 @@ import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 case class SerializationFeatures(hostName: String, port: Int, protocol: String) {
   val fullHost = s"$protocol://$hostName:$port"
 
-  var serializedSceneJson: play.api.libs.json.JsValue = null
-  var volatileScene: Scene = null
+  private var volatileScene: Scene = null
 
   def deserializeIfNecessary(model: Model)(implicit format: Format[Scene]): Unit =
     if (model.deserializeScene.now == true) {
@@ -35,7 +34,6 @@ case class SerializationFeatures(hostName: String, port: Int, protocol: String) 
   def serializeIfNecessary(model: Model)(implicit format: Format[Scene]): Unit =
     if (model.serializeScene.now == true) {
       val curScene = model.sceneVar.now
-      serializedSceneJson = Json.toJson(curScene)
       volatileScene = curScene
 
       val f = Ajax.post(s"$fullHost/writeScene", data = Json.toJson(curScene).toString)
