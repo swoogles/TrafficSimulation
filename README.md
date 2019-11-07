@@ -30,7 +30,7 @@ sbt fastOptJS
 
 ## Play with the most recent version of the project  ##
 
-    www.whywestopped.com
+[Live Demo](https://www.whywestopped.com)
     
 ## Play with the Simulation Locally ##
 
