@@ -30,7 +30,7 @@ object Client {
   val originSpatial = Spatial((0, 0, 0, Kilometers))
   val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
 
-  implicit val DT: Time = Milliseconds(20)
+  implicit val DT: Time = Milliseconds(100)
   val scenes = new SampleSceneCreation(endingSpatial)
 
   val model: Model =

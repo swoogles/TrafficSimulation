@@ -2579,7 +2579,7 @@ $c_Lcom_billding_Client$.prototype.init___ = (function() {
   this.endingSpatial$1 = new $c_Lcom_billding_physics_Spatial().init___Lsquants_QuantityVector__Lsquants_QuantityVector__Lsquants_QuantityVector(new $c_Lsquants_QuantityVector().init___sc_Seq(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1)), this$4.convertToSVector__T4__Lsquants_QuantityVector(vIn$1), this$4.convertToSVector__T4__Lsquants_QuantityVector(dIn$1));
   var this$7 = $m_Lsquants_time_Milliseconds$();
   var num$6 = $m_s_math_Numeric$IntIsIntegral$();
-  this.DT$1 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(20, this$7, num$6);
+  this.DT$1 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(100, this$7, num$6);
   this.scenes$1 = new $c_Lcom_billding_SampleSceneCreation().init___Lcom_billding_physics_Spatial(this.endingSpatial$1);
   var jsx$5 = this.scenes$1.singleCarApproachingAStoppedCar$1.scene$1;
   $m_sci_List$();
@@ -3701,13 +3701,6 @@ function $h_Lcom_billding_Window() {
   /*<skip>*/
 }
 $h_Lcom_billding_Window.prototype = $c_Lcom_billding_Window.prototype;
-$c_Lcom_billding_Window.prototype.renderedWidthInPixels__p1__Lcom_billding_traffic_PilotedVehicle__T = (function(vehicle) {
-  var this$2 = $m_Lscalatags_JsDom$all$();
-  var this$1 = vehicle.width$1;
-  var that = this.spatialCanvas$1.widthDistancePerPixel$1;
-  var x = this$1.divide__Lsquants_Quantity__D(that);
-  return new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$2, x, $m_s_math_Numeric$DoubleIsFractional$()).px__T()
-});
 $c_Lcom_billding_Window.prototype.init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner__Lcom_billding_physics_SpatialFor = (function(scene, canvasHeight, canvasWidth, ctx, spatialForPilotedVehicle) {
   this.ctx$1 = ctx;
   this.spatialForPilotedVehicle$1 = spatialForPilotedVehicle;
@@ -3753,6 +3746,13 @@ $c_Lcom_billding_Window.prototype.init___Lcom_billding_traffic_Scene__I__I__Lrx_
   var array$2 = [jsx$1.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1))];
   this.svgNode$1 = jsx$2.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$2));
   return this
+});
+$c_Lcom_billding_Window.prototype.renderedWidthInPixels__p1__Lcom_billding_traffic_PilotedVehicle__T = (function(vehicle) {
+  var this$2 = $m_Lscalatags_JsDom$all$();
+  var this$1 = vehicle.width$1;
+  var that = this.spatialCanvas$1.widthDistancePerPixel$1;
+  var x = this$1.divide__Lsquants_Quantity__D(that);
+  return new $c_Lscalatags_DataConverters$CssNumber().init___Lscalatags_DataConverters__O__s_math_Numeric(this$2, x, $m_s_math_Numeric$DoubleIsFractional$()).px__T()
 });
 $c_Lcom_billding_Window.prototype.renderedHeightInPixels__p1__Lcom_billding_traffic_PilotedVehicle__T = (function(vehicle) {
   var this$2 = $m_Lscalatags_JsDom$all$();
