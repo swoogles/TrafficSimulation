@@ -2580,7 +2580,7 @@ $c_Lcom_billding_Client$.prototype.init___ = (function() {
   var this$7 = $m_Lsquants_time_Milliseconds$();
   var num$6 = $m_s_math_Numeric$IntIsIntegral$();
   this.DT$1 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(100, this$7, num$6);
-  this.scenes$1 = new $c_Lcom_billding_SampleSceneCreation().init___Lcom_billding_physics_Spatial(this.endingSpatial$1);
+  this.scenes$1 = new $c_Lcom_billding_SampleSceneCreation().init___Lcom_billding_physics_Spatial__Lsquants_time_Time(this.endingSpatial$1, this.DT$1);
   var jsx$5 = this.scenes$1.singleCarApproachingAStoppedCar$1.scene$1;
   $m_sci_List$();
   var array$2 = [this.scenes$1.emptyScene$1, this.scenes$1.scene1$1, this.scenes$1.scene2$1, this.scenes$1.multipleStoppedGroups$1];
@@ -3270,10 +3270,15 @@ $c_Lcom_billding_Client$.prototype.init___ = (function() {
   this.sceneFormats$1 = new $c_Lplay_api_libs_json_OFormat$$anon$1().init___F1__F1(rfn$8, write$7);
   return this
 });
+$c_Lcom_billding_Client$.prototype.com$billding$Client$$$anonfun$setupSvgAndButtonResponses$3__D__V = (function($double) {
+  $m_Lcom_billding_Client$().model$1.respondToAllInput__Lplay_api_libs_json_Format__V($m_Lcom_billding_Client$().sceneFormats$1);
+  $m_Lorg_scalajs_dom_package$().window__Lorg_scalajs_dom_raw_Window().requestAnimationFrame(this.callback$1__p1__sjs_js_Function1())
+});
 $c_Lcom_billding_Client$.prototype.run__V = (function() {
+  var x = ("DT: " + this.DT$1);
   var this$2 = $m_s_Console$();
   var this$3 = $as_Ljava_io_PrintStream(this$2.outVar$2.v$1);
-  this$3.java$lang$JSConsoleBasedPrintStream$$printString__T__V("With an ending spatial\n");
+  this$3.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x + "\n"));
   var controlsContainer = $m_Lorg_scalajs_dom_package$().document__Lorg_scalajs_dom_raw_HTMLDocument().getElementById("controls-container");
   controlsContainer.appendChild(this.controlElements$1.createLayout__Lorg_scalajs_dom_raw_HTMLDivElement());
   var svgContainerAttempt = $m_s_Option$().apply__O__s_Option($m_Lorg_scalajs_dom_package$().document__Lorg_scalajs_dom_raw_HTMLDocument().getElementById("svg-container"));
@@ -3282,8 +3287,8 @@ $c_Lcom_billding_Client$.prototype.run__V = (function() {
     var svgContainer = x2.value$2;
     this.setupSvgAndButtonResponses__Lorg_scalajs_dom_raw_Element__I__I__I(svgContainer, 800, 1500)
   } else {
-    var x = $m_s_None$();
-    if ((x === svgContainerAttempt)) {
+    var x$1 = $m_s_None$();
+    if ((x$1 === svgContainerAttempt)) {
       var this$5 = $m_s_Console$();
       var this$6 = $as_Ljava_io_PrintStream(this$5.outVar$2.v$1);
       this$6.java$lang$JSConsoleBasedPrintStream$$printString__T__V("We can't do any svg setup on a page that doesn't have a container to hold it.\n")
@@ -3291,6 +3296,12 @@ $c_Lcom_billding_Client$.prototype.run__V = (function() {
       throw new $c_s_MatchError().init___O(svgContainerAttempt)
     }
   }
+});
+$c_Lcom_billding_Client$.prototype.callback$1__p1__sjs_js_Function1 = (function() {
+  return (function(arg1$2) {
+    var arg1 = $uD(arg1$2);
+    $m_Lcom_billding_Client$().com$billding$Client$$$anonfun$setupSvgAndButtonResponses$3__D__V(arg1)
+  })
 });
 $c_Lcom_billding_Client$.prototype.setupSvgAndButtonResponses__Lorg_scalajs_dom_raw_Element__I__I__I = (function(svgContainer, canvasHeight, canvasWidth) {
   var windowLocal = $m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function($this, canvasHeight$1, canvasWidth$1) {
@@ -3312,13 +3323,7 @@ $c_Lcom_billding_Client$.prototype.setupSvgAndButtonResponses__Lorg_scalajs_dom_
   })(this, svgContainer, windowLocal));
   var ownerCtx = $m_Lscaladget_tools_JsRxTags$().ctx$1;
   $f_Lrx_Rx__trigger__F0__Lrx_Ctx$Owner__Lrx_Obs(windowLocal, thunk, ownerCtx);
-  var jsx$2 = $m_Lorg_scalajs_dom_package$().window__Lorg_scalajs_dom_raw_Window();
-  var this$4 = this.DT$1;
-  var jsx$1 = jsx$2.setInterval((function() {
-    $m_Lcom_billding_Client$();
-    $m_Lcom_billding_Client$().model$1.respondToAllInput__Lplay_api_libs_json_Format__V($m_Lcom_billding_Client$().sceneFormats$1)
-  }), (this$4.to__Lsquants_UnitOfMeasure__D($m_Lsquants_time_Milliseconds$()) / 5));
-  return $uI(jsx$1)
+  return $uI($m_Lorg_scalajs_dom_package$().window__Lorg_scalajs_dom_raw_Window().requestAnimationFrame(this.callback$1__p1__sjs_js_Function1()))
 });
 $c_Lcom_billding_Client$.prototype.$$js$exported$meth$run__O = (function() {
   this.run__V()
@@ -3422,83 +3427,81 @@ function $h_Lcom_billding_SampleSceneCreation() {
   /*<skip>*/
 }
 $h_Lcom_billding_SampleSceneCreation.prototype = $c_Lcom_billding_SampleSceneCreation.prototype;
-$c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spatial = (function(endingSpatial) {
+$c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spatial__Lsquants_time_Time = (function(endingSpatial, DT) {
   this.endingSpatial$1 = endingSpatial;
-  var this$1 = $m_Lsquants_time_Milliseconds$();
+  this.DT$1 = DT;
+  var this$1 = $m_Lsquants_time_Seconds$();
   var num = $m_s_math_Numeric$IntIsIntegral$();
-  this.DT$1 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(20, this$1, num);
-  var this$2 = $m_Lsquants_time_Seconds$();
-  var num$1 = $m_s_math_Numeric$IntIsIntegral$();
-  var jsx$1 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(2, this$2, num$1);
+  var jsx$1 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(2, this$1, num);
   $m_sci_List$();
   var array = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(15.0, 100.0)];
   var i = (((-1) + $uI(array.length)) | 0);
   var result = $m_sci_Nil$();
   while ((i >= 0)) {
-    var this$6 = result;
+    var this$5 = result;
     var index = i;
     var x = array[index];
-    result = new $c_sci_$colon$colon().init___O__sci_List(x, this$6);
+    result = new $c_sci_$colon$colon().init___O__sci_List(x, this$5);
     i = (((-1) + i) | 0)
   };
   this.emptyScene$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("Empty Scene", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$1, result));
-  var this$7 = $m_Lsquants_time_Seconds$();
-  var num$2 = $m_s_math_Numeric$IntIsIntegral$();
-  var jsx$2 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(300, this$7, num$2);
+  var this$6 = $m_Lsquants_time_Seconds$();
+  var num$1 = $m_s_math_Numeric$IntIsIntegral$();
+  var jsx$2 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(300, this$6, num$1);
   $m_sci_List$();
   var array$1 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.1), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(45.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(30.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(15.0, 100.0)];
   var i$1 = (((-1) + $uI(array$1.length)) | 0);
   var result$1 = $m_sci_Nil$();
   while ((i$1 >= 0)) {
-    var this$11 = result$1;
+    var this$10 = result$1;
     var index$1 = i$1;
     var x$1 = array$1[index$1];
-    result$1 = new $c_sci_$colon$colon().init___O__sci_List(x$1, this$11);
+    result$1 = new $c_sci_$colon$colon().init___O__sci_List(x$1, this$10);
     i$1 = (((-1) + i$1) | 0)
   };
   this.scene1$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("group encountering a stopped vehilce", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$2, result$1));
-  var this$12 = $m_Lsquants_time_Seconds$();
-  var num$3 = $m_s_math_Numeric$IntIsIntegral$();
-  var jsx$3 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(100, this$12, num$3);
+  var this$11 = $m_Lsquants_time_Seconds$();
+  var num$2 = $m_s_math_Numeric$IntIsIntegral$();
+  var jsx$3 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(100, this$11, num$2);
   $m_sci_List$();
   var array$2 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(125.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(115.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(110.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(105.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(100.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(95.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(90.0, 0.0)];
   var i$2 = (((-1) + $uI(array$2.length)) | 0);
   var result$2 = $m_sci_Nil$();
   while ((i$2 >= 0)) {
-    var this$16 = result$2;
+    var this$15 = result$2;
     var index$2 = i$2;
     var x$2 = array$2[index$2];
-    result$2 = new $c_sci_$colon$colon().init___O__sci_List(x$2, this$16);
+    result$2 = new $c_sci_$colon$colon().init___O__sci_List(x$2, this$15);
     i$2 = (((-1) + i$2) | 0)
   };
   this.scene2$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("stopped group getting back up to speed", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$3, result$2));
-  var this$17 = $m_Lsquants_time_Seconds$();
-  var num$4 = $m_s_math_Numeric$IntIsIntegral$();
-  var jsx$4 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(3, this$17, num$4);
+  var this$16 = $m_Lsquants_time_Seconds$();
+  var num$3 = $m_s_math_Numeric$IntIsIntegral$();
+  var jsx$4 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(3, this$16, num$3);
   $m_sci_List$();
   var array$3 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(250.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(240.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(230.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(220.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(210.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(200.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(190.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(180.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(150.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(140.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(130.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(110.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(100.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(90.0, 0.0)];
   var i$3 = (((-1) + $uI(array$3.length)) | 0);
   var result$3 = $m_sci_Nil$();
   while ((i$3 >= 0)) {
-    var this$21 = result$3;
+    var this$20 = result$3;
     var index$3 = i$3;
     var x$3 = array$3[index$3];
-    result$3 = new $c_sci_$colon$colon().init___O__sci_List(x$3, this$21);
+    result$3 = new $c_sci_$colon$colon().init___O__sci_List(x$3, this$20);
     i$3 = (((-1) + i$3) | 0)
   };
   this.multipleStoppedGroups$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("multiple stopped groups getting back up to speed", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$4, result$3));
-  var this$22 = $m_Lsquants_time_Seconds$();
-  var num$5 = $m_s_math_Numeric$IntIsIntegral$();
-  var jsx$5 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(12, this$22, num$5);
+  var this$21 = $m_Lsquants_time_Seconds$();
+  var num$4 = $m_s_math_Numeric$IntIsIntegral$();
+  var jsx$5 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(12, this$21, num$4);
   $m_sci_List$();
   var array$4 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 60.0)];
   var i$4 = (((-1) + $uI(array$4.length)) | 0);
   var result$4 = $m_sci_Nil$();
   while ((i$4 >= 0)) {
-    var this$26 = result$4;
+    var this$25 = result$4;
     var index$4 = i$4;
     var x$4 = array$4[index$4];
-    result$4 = new $c_sci_$colon$colon().init___O__sci_List(x$4, this$26);
+    result$4 = new $c_sci_$colon$colon().init___O__sci_List(x$4, this$25);
     i$4 = (((-1) + i$4) | 0)
   };
   this.singleCarApproachingAStoppedCar$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("single car encountering a stopped vehicle", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$5, result$4));

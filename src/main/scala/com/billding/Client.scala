@@ -2,15 +2,7 @@ package com.billding
 
 import com.billding.physics.{Spatial, SpatialFor}
 import com.billding.serialization.BillSquants
-import com.billding.traffic.{
-  Driver,
-  Lane,
-  PilotedVehicle,
-  Scene,
-  Street,
-  Vehicle,
-  VehicleSourceImpl
-}
+import com.billding.traffic.{Driver, Lane, PilotedVehicle, Scene, Street, Vehicle, VehicleSourceImpl}
 import com.billding.uimodules.Model
 import squants.motion.{Acceleration, Distance}
 import org.scalajs.dom
@@ -23,6 +15,8 @@ import play.api.libs.json.{Format, Json}
 import squants.{Mass, QuantityVector, Time, Velocity}
 import squants.space.Kilometers
 import squants.time.Milliseconds
+
+import scala.scalajs.js
 
 @JSExportTopLevel("Client")
 object Client {
@@ -92,7 +86,7 @@ object Client {
 
   @JSExport
   def run() {
-    println("With an ending spatial")
+    println("DT: " + DT)
     val controlsContainer = dom.document.getElementById("controls-container")
     controlsContainer.appendChild(controlElements.createLayout())
 
@@ -124,11 +118,17 @@ object Client {
       }
       svgContainer.appendChild(windowLocal.now.svgNode.render)
     }
+    def callback: js.Function1[Double, Unit] = (double) => {
+      model.respondToAllInput()
 
-    dom.window.setInterval(
-      () => model.respondToAllInput(),
-      DT.toMilliseconds / 5
-    ) // TODO Make this understandable and easily modified. Just some simple algebra.
+      dom.window.requestAnimationFrame(callback)
+    }
+    dom.window.requestAnimationFrame(callback)
+
+//    dom.window.setInterval(
+//      () => model.respondToAllInput(),
+//      DT.toMilliseconds / 5
+//    ) // TODO Make this understandable and easily modified. Just some simple algebra.
 
   }
 

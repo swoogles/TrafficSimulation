@@ -7,8 +7,7 @@ import squants.motion.{DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
 import squants.space.{Kilometers, Meters}
 import squants.time.{Milliseconds, Seconds, Time}
 
-class SampleSceneCreation(endingSpatial: Spatial) {
-  implicit val DT: Time = Milliseconds(20)
+class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
   private def simplerVehicle(xPos: Double, xV: Double) = {
     val lengthUnit: DistanceUnit = Meters

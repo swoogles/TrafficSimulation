@@ -49,7 +49,7 @@ class SceneSpec extends  FlatSpec{
   }
 
   it should "simulate one car encountering a stopped car" in {
-    SampleSceneCreation
+//    SampleSceneCreation
 
   }
 }
