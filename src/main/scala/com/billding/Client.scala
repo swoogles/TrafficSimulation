@@ -95,18 +95,14 @@ object Client {
 
     val svgContainerAttempt: Option[Element] = Option(dom.document.getElementById("svg-container"))
     svgContainerAttempt match {
-      case Some(svgContainer) => setupSvgAndButtonResponses(svgContainer, canvasHeight, canvasWidth)
+      case Some(svgContainer) => setupSvgAndButtonResponses(svgContainer)
       case None =>
         println("We can't do any svg setup on a page that doesn't have a container to hold it.");
     }
   }
 
   // Currently this needs access to the window
-  def setupSvgAndButtonResponses(
-    svgContainer: Element,
-    canvasHeight: Int,
-    canvasWidth: Int
-  ) = {
+  def setupSvgAndButtonResponses(svgContainer: Element): Int = {
     println("svgContainer height: " + svgContainer.clientHeight)
     println("svgContainer width: " + svgContainer.clientWidth)
     val windowLocal: Rx[Window] = Rx {

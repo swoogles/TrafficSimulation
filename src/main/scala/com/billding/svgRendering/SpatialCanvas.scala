@@ -17,6 +17,6 @@ case class SpatialCanvas(
                           pixelWidth: Int
 ) {
   // Still not thrilled about this arbitrary multiplication
-  val heightDistancePerPixel: Distance = height / (pixelHeight * 4)
-  val widthDistancePerPixel: Distance = width / (pixelWidth * 4)
+  val heightDistancePerPixel: Distance = height / (pixelHeight * 3)
+  val widthDistancePerPixel: Distance = width / (pixelWidth * 3)
 }

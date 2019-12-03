@@ -34,8 +34,8 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
                    buttonBehaviors.initiateSceneDeserialization),
 
        */
-      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
-      dangerButton("Disrupt the flow Existing", buttonBehaviors.toggleDisruptExisting)
+//      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
+      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisruptExisting)
     ).render
 
   val sliders =

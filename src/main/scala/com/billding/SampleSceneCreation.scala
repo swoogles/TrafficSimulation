@@ -28,11 +28,11 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
   val scene1 =
     NamedScene(
-      "group encountering a stopped vehilce",
+      "group encountering a stopped vehicle",
       createWithVehicles(
-        Seconds(300),
+        Seconds(3.5),
         List(
-          simplerVehicle(120, 0.1),
+          simplerVehicle(100, 0.1),
           simplerVehicle(60, 100),
           simplerVehicle(45, 100),
           simplerVehicle(30, 100),
@@ -65,21 +65,21 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
       createWithVehicles(
         Seconds(3),
         List(
-          simplerVehicle(250, 0),
-          simplerVehicle(240, 0),
-          simplerVehicle(230, 0),
-          simplerVehicle(220, 0),
-          simplerVehicle(210, 0),
-          simplerVehicle(200, 0),
-          simplerVehicle(190, 0),
-          simplerVehicle(180, 0),
-          simplerVehicle(150, 0),
-          simplerVehicle(140, 0),
-          simplerVehicle(130, 0),
+          simplerVehicle(125, 0),
           simplerVehicle(120, 0),
+          simplerVehicle(115, 0),
           simplerVehicle(110, 0),
+          simplerVehicle(105, 0),
           simplerVehicle(100, 0),
-          simplerVehicle(90, 0)
+          simplerVehicle(95, 0),
+          simplerVehicle(90, 0),
+          simplerVehicle(60, 0),
+          simplerVehicle(55, 0),
+          simplerVehicle(50, 0),
+          simplerVehicle(45, 0),
+          simplerVehicle(40, 0),
+          simplerVehicle(35, 0),
+          simplerVehicle(30, 0)
         )
       )
     )
