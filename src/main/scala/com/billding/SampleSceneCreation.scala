@@ -30,13 +30,13 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
     NamedScene(
       "group encountering a stopped vehicle",
       createWithVehicles(
-        Seconds(3.5),
+        Seconds(3),
         List(
-          simplerVehicle(100, 0.1),
-          simplerVehicle(60, 100),
-          simplerVehicle(45, 100),
-          simplerVehicle(30, 100),
-          simplerVehicle(15, 100)
+          simplerVehicle(90, 0.1),
+          simplerVehicle(55, 100),
+          simplerVehicle(40, 100),
+          simplerVehicle(25, 100),
+          simplerVehicle(10, 100)
         )
       )
     )
@@ -63,7 +63,7 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
     NamedScene(
       "multiple stopped groups getting back up to speed",
       createWithVehicles(
-        Seconds(3),
+        Seconds(4),
         List(
           simplerVehicle(125, 0),
           simplerVehicle(120, 0),
@@ -98,7 +98,7 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
   private def createWithVehicles(sourceTiming: Time, vehicles: List[PilotedVehicle]): Scene = {
 
-    val speedLimit: Velocity = KilometersPerHour(65)
+    val speedLimit: Velocity = KilometersPerHour(45) // TODO Connect this to Car Speed Control.
     val originSpatial = Spatial((0, 0, 0, Kilometers))
     val endingSpatial = Spatial((0.5, 0, 0, Kilometers))
     val canvasDimensions: (Length, Length) = (Kilometers(.25), Kilometers(.5))

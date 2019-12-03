@@ -3317,7 +3317,7 @@ $c_Lcom_billding_Client$.prototype.setupSvgAndButtonResponses__Lorg_scalajs_dom_
       var rxOwnerCtx$macro$2 = $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$2$2);
       var rxDataCtx$macro$1 = $as_Lrx_Ctx$Data(rxDataCtx$macro$1$2);
       var this$7 = $m_Lcom_billding_Client$().sceneVar$1;
-      return new $c_Lcom_billding_Window().init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner__Lcom_billding_physics_SpatialFor($as_Lcom_billding_traffic_Scene($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$7, rxDataCtx$macro$1)), (($uI(svgContainer$1.clientWidth) / 5) | 0), $uI(svgContainer$1.clientWidth), rxOwnerCtx$macro$2, $m_Lcom_billding_Client$().spatialForPilotedVehicle$1)
+      return new $c_Lcom_billding_Window().init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner__Lcom_billding_physics_SpatialFor($as_Lcom_billding_traffic_Scene($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$7, rxDataCtx$macro$1)), (($uI(svgContainer$1.clientWidth) / 8) | 0), $uI(svgContainer$1.clientWidth), rxOwnerCtx$macro$2, $m_Lcom_billding_Client$().spatialForPilotedVehicle$1)
     })
   })(this, svgContainer)), $m_Lscaladget_tools_JsRxTags$().ctx$1);
   var thunk = new $c_sjsr_AnonFunction0().init___sjs_js_Function0((function(this$2$1, svgContainer$2, windowLocal$1) {
@@ -3454,10 +3454,10 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
   };
   this.emptyScene$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("Empty Scene", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$1, result));
   var this$6 = $m_Lsquants_time_Seconds$();
-  var num$1 = $m_s_math_Numeric$DoubleIsFractional$();
-  var jsx$2 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(3.5, this$6, num$1);
+  var num$1 = $m_s_math_Numeric$IntIsIntegral$();
+  var jsx$2 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(3, this$6, num$1);
   $m_sci_List$();
-  var array$1 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(100.0, 0.1), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(45.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(30.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(15.0, 100.0)];
+  var array$1 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(90.0, 0.1), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(55.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(40.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(25.0, 100.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(10.0, 100.0)];
   var i$1 = (((-1) + $uI(array$1.length)) | 0);
   var result$1 = $m_sci_Nil$();
   while ((i$1 >= 0)) {
@@ -3485,7 +3485,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
   this.scene2$1 = new $c_Lcom_billding_NamedScene().init___T__Lcom_billding_traffic_Scene("stopped group getting back up to speed", this.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene(jsx$3, result$2));
   var this$16 = $m_Lsquants_time_Seconds$();
   var num$3 = $m_s_math_Numeric$IntIsIntegral$();
-  var jsx$4 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(3, this$16, num$3);
+  var jsx$4 = $m_Lsquants_time_Time$().apply__O__Lsquants_time_TimeUnit__s_math_Numeric__Lsquants_time_Time(4, this$16, num$3);
   $m_sci_List$();
   var array$3 = [this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(125.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(120.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(115.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(110.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(105.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(100.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(95.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(90.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(60.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(55.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(50.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(45.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(40.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(35.0, 0.0), this.simplerVehicle__p1__D__D__Lcom_billding_traffic_PilotedVehicle(30.0, 0.0)];
   var i$3 = (((-1) + $uI(array$3.length)) | 0);
@@ -3518,7 +3518,7 @@ $c_Lcom_billding_SampleSceneCreation.prototype.init___Lcom_billding_physics_Spat
 $c_Lcom_billding_SampleSceneCreation.prototype.createWithVehicles__p1__Lsquants_time_Time__sci_List__Lcom_billding_traffic_Scene = (function(sourceTiming, vehicles) {
   var this$1 = $m_Lsquants_motion_KilometersPerHour$();
   var num = $m_s_math_Numeric$IntIsIntegral$();
-  var speedLimit = $m_Lsquants_motion_Velocity$().apply__O__Lsquants_motion_VelocityUnit__s_math_Numeric__Lsquants_motion_Velocity(65, this$1, num);
+  var speedLimit = $m_Lsquants_motion_Velocity$().apply__O__Lsquants_motion_VelocityUnit__s_math_Numeric__Lsquants_motion_Velocity(45, this$1, num);
   var this$2 = $m_Lcom_billding_physics_Spatial$();
   var _4 = $m_Lsquants_space_Kilometers$();
   var vIn = this$2.ZERO$undVELOCITY$1;
@@ -30342,7 +30342,7 @@ $c_Lcom_billding_ControlElements.prototype.init___Lcom_billding_ButtonBehaviors 
   var e$1 = $m_Lcom_billding_OutterStyles$().normalButton$1.apply__O__O__O("Reset the scene!", buttonBehaviors.initiateSceneReset$1);
   var jsx$2 = new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$7, e$1);
   var this$8 = $m_Lscalatags_JsDom$all$();
-  var e$3 = $m_Lcom_billding_OutterStyles$().dangerButton$1.apply__O__O__O("Disrupt the flow", buttonBehaviors.toggleDisruptExisting$1);
+  var e$3 = $m_Lcom_billding_OutterStyles$().dangerButton$1.apply__O__O__O("Make 1 car brake", buttonBehaviors.toggleDisruptExisting$1);
   var array$1 = [jsx$3, jsx$2, new $c_Lscalatags_LowPriorityImplicits$bindNode().init___Lscalatags_LowPriorityImplicits__Lorg_scalajs_dom_raw_Node(this$8, e$3)];
   this.buttons$1 = jsx$4.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array$1)).render__Lorg_scalajs_dom_raw_Element();
   var this$11 = $m_Lscalatags_JsDom$all$();
@@ -30962,7 +30962,7 @@ $c_Lcom_billding_svgRendering_SpatialCanvas.prototype.init___Lsquants_space_Leng
   this.width$1 = width;
   this.pixelHeight$1 = pixelHeight;
   this.pixelWidth$1 = pixelWidth;
-  var that = $imul(3, pixelHeight);
+  var that = $imul(5, pixelHeight);
   this.heightDistancePerPixel$1 = $as_Lsquants_space_Length(height.divide__D__Lsquants_Quantity(that));
   var that$1 = $imul(3, pixelWidth);
   this.widthDistancePerPixel$1 = $as_Lsquants_space_Length(width.divide__D__Lsquants_Quantity(that$1));

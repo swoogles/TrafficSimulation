@@ -15,6 +15,14 @@ object OutterStyles {
   object TrafficStyles extends StyleSheet.Inline {
     import dsl._
 
+    /* Unsuccessful attempt at styling the header
+    val headerStyling = style(
+      addClassName("header-title"),
+        textAlign.center
+    )
+
+     */
+
     val blue: Color = c"#0000FF"
     val green = c"#00FF00"
 

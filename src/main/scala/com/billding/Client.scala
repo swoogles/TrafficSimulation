@@ -89,10 +89,6 @@ object Client {
     println("DT: " + DT)
     val controlsContainer = dom.document.getElementById("controls-container")
     controlsContainer.appendChild(controlElements.createLayout())
-
-    val canvasHeight = 300 // TODO Ugh. I don't understand how this ripples through my program :(
-    val canvasWidth = 1500
-
     val svgContainerAttempt: Option[Element] = Option(dom.document.getElementById("svg-container"))
     svgContainerAttempt match {
       case Some(svgContainer) => setupSvgAndButtonResponses(svgContainer)
@@ -106,7 +102,7 @@ object Client {
     println("svgContainer height: " + svgContainer.clientHeight)
     println("svgContainer width: " + svgContainer.clientWidth)
     val windowLocal: Rx[Window] = Rx {
-      new Window(sceneVar(), svgContainer.clientWidth / 5, svgContainer.clientWidth)
+      new Window(sceneVar(), svgContainer.clientWidth / 8, svgContainer.clientWidth)
     }
 
     windowLocal.trigger {

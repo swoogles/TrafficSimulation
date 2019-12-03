@@ -35,7 +35,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
        */
 //      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
-      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisruptExisting)
+      dangerButton("Make 1 car brake", buttonBehaviors.toggleDisruptExisting)
     ).render
 
   val sliders =
