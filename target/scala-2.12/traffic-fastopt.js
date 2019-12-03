@@ -3285,7 +3285,7 @@ $c_Lcom_billding_Client$.prototype.run__V = (function() {
   if ((svgContainerAttempt instanceof $c_s_Some)) {
     var x2 = $as_s_Some(svgContainerAttempt);
     var svgContainer = x2.value$2;
-    this.setupSvgAndButtonResponses__Lorg_scalajs_dom_raw_Element__I__I__I(svgContainer, 800, 1500)
+    this.setupSvgAndButtonResponses__Lorg_scalajs_dom_raw_Element__I__I__I(svgContainer, 300, 1500)
   } else {
     var x$1 = $m_s_None$();
     if ((x$1 === svgContainerAttempt)) {
@@ -3304,21 +3304,29 @@ $c_Lcom_billding_Client$.prototype.callback$1__p1__sjs_js_Function1 = (function(
   })
 });
 $c_Lcom_billding_Client$.prototype.setupSvgAndButtonResponses__Lorg_scalajs_dom_raw_Element__I__I__I = (function(svgContainer, canvasHeight, canvasWidth) {
-  var windowLocal = $m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function($this, canvasHeight$1, canvasWidth$1) {
+  var x = ("svgContainer height: " + $uI(svgContainer.clientHeight));
+  var this$2 = $m_s_Console$();
+  var this$3 = $as_Ljava_io_PrintStream(this$2.outVar$2.v$1);
+  this$3.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x + "\n"));
+  var x$1 = ("svgContainer width: " + $uI(svgContainer.clientWidth));
+  var this$5 = $m_s_Console$();
+  var this$6 = $as_Ljava_io_PrintStream(this$5.outVar$2.v$1);
+  this$6.java$lang$JSConsoleBasedPrintStream$$printString__T__V((x$1 + "\n"));
+  var windowLocal = $m_Lrx_Rx$().build__F2__Lrx_Ctx$Owner__Lrx_Rx$Dynamic(new $c_sjsr_AnonFunction2().init___sjs_js_Function2((function($this, svgContainer$1) {
     return (function(rxOwnerCtx$macro$2$2, rxDataCtx$macro$1$2) {
       var rxOwnerCtx$macro$2 = $as_Lrx_Ctx$Owner(rxOwnerCtx$macro$2$2);
       var rxDataCtx$macro$1 = $as_Lrx_Ctx$Data(rxDataCtx$macro$1$2);
-      var this$1 = $m_Lcom_billding_Client$().sceneVar$1;
-      return new $c_Lcom_billding_Window().init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner__Lcom_billding_physics_SpatialFor($as_Lcom_billding_traffic_Scene($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$1, rxDataCtx$macro$1)), canvasHeight$1, canvasWidth$1, rxOwnerCtx$macro$2, $m_Lcom_billding_Client$().spatialForPilotedVehicle$1)
+      var this$7 = $m_Lcom_billding_Client$().sceneVar$1;
+      return new $c_Lcom_billding_Window().init___Lcom_billding_traffic_Scene__I__I__Lrx_Ctx$Owner__Lcom_billding_physics_SpatialFor($as_Lcom_billding_traffic_Scene($f_Lrx_Rx__apply__Lrx_Ctx$Data__O(this$7, rxDataCtx$macro$1)), (($uI(svgContainer$1.clientWidth) / 5) | 0), $uI(svgContainer$1.clientWidth), rxOwnerCtx$macro$2, $m_Lcom_billding_Client$().spatialForPilotedVehicle$1)
     })
-  })(this, canvasHeight, canvasWidth)), $m_Lscaladget_tools_JsRxTags$().ctx$1);
-  var thunk = new $c_sjsr_AnonFunction0().init___sjs_js_Function0((function(this$2, svgContainer$1, windowLocal$1) {
+  })(this, svgContainer)), $m_Lscaladget_tools_JsRxTags$().ctx$1);
+  var thunk = new $c_sjsr_AnonFunction0().init___sjs_js_Function0((function(this$2$1, svgContainer$2, windowLocal$1) {
     return (function() {
-      var previousSvg = svgContainer$1.getElementsByTagName("svg").item(0);
+      var previousSvg = svgContainer$2.getElementsByTagName("svg").item(0);
       if ((previousSvg !== null)) {
-        svgContainer$1.removeChild(previousSvg)
+        svgContainer$2.removeChild(previousSvg)
       };
-      svgContainer$1.appendChild($as_Lcom_billding_Window(windowLocal$1.now__O()).svgNode$1.render__Lorg_scalajs_dom_raw_Element())
+      svgContainer$2.appendChild($as_Lcom_billding_Window(windowLocal$1.now__O()).svgNode$1.render__Lorg_scalajs_dom_raw_Element())
     })
   })(this, svgContainer, windowLocal));
   var ownerCtx = $m_Lscaladget_tools_JsRxTags$().ctx$1;
@@ -19669,7 +19677,7 @@ $c_Lcom_billding_traffic_Driver$.prototype.commuter__Lcom_billding_physics_Spati
   var num$1 = $m_s_math_Numeric$IntIsIntegral$();
   var preferredDynamicSpacing = new $c_Lsquants_time_TimeConversions$TimeConversions().init___O__s_math_Numeric(1, num$1).seconds__Lsquants_time_Time();
   var num$2 = $m_s_math_Numeric$IntIsIntegral$();
-  var minimumDistance = new $c_Lsquants_space_LengthConversions$LengthConversions().init___O__s_math_Numeric(2, num$2).meters__Lsquants_space_Length();
+  var minimumDistance = new $c_Lsquants_space_LengthConversions$LengthConversions().init___O__s_math_Numeric(6, num$2).meters__Lsquants_space_Length();
   var num$3 = $m_s_math_Numeric$IntIsIntegral$();
   var this$5 = new $c_Lsquants_space_LengthConversions$LengthConversions().init___O__s_math_Numeric(120, num$3).kilometers__Lsquants_space_Length();
   var that = $m_Lsquants_time_TimeConversions$().hour__Lsquants_time_Time();
@@ -30957,8 +30965,10 @@ $c_Lcom_billding_svgRendering_SpatialCanvas.prototype.init___Lsquants_space_Leng
   this.width$1 = width;
   this.pixelHeight$1 = pixelHeight;
   this.pixelWidth$1 = pixelWidth;
-  this.heightDistancePerPixel$1 = $as_Lsquants_space_Length(height.divide__D__Lsquants_Quantity(pixelHeight));
-  this.widthDistancePerPixel$1 = $as_Lsquants_space_Length(width.divide__D__Lsquants_Quantity(pixelWidth));
+  var that = (pixelHeight << 2);
+  this.heightDistancePerPixel$1 = $as_Lsquants_space_Length(height.divide__D__Lsquants_Quantity(that));
+  var that$1 = (pixelWidth << 2);
+  this.widthDistancePerPixel$1 = $as_Lsquants_space_Length(width.divide__D__Lsquants_Quantity(that$1));
   return this
 });
 $c_Lcom_billding_svgRendering_SpatialCanvas.prototype.productIterator__sc_Iterator = (function() {

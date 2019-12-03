@@ -23,6 +23,8 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
 ) {
 
   // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
+//  println("CanvasHeight: " + canvasHeight)
+//  println("CanvasWidth: " + canvasWidth)
   private val spatialCanvas =
     SpatialCanvas(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
 
@@ -54,10 +56,10 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     )
 
   private def renderedWidthInPixels(vehicle: PilotedVehicle): String =
-    (vehicle.width / (spatialCanvas.widthDistancePerPixel)).px
+    (vehicle.width / spatialCanvas.widthDistancePerPixel).px
 
   private def renderedHeightInPixels(vehicle: PilotedVehicle): String =
-    (vehicle.height / (spatialCanvas.heightDistancePerPixel)).px
+    (vehicle.height / spatialCanvas.heightDistancePerPixel).px
 
   // TODO This should go somewhere else, on its own.
   private def createCarSvgRepresentation(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {

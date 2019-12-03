@@ -90,7 +90,7 @@ object Client {
     val controlsContainer = dom.document.getElementById("controls-container")
     controlsContainer.appendChild(controlElements.createLayout())
 
-    val canvasHeight = 800
+    val canvasHeight = 300 // TODO Ugh. I don't understand how this ripples through my program :(
     val canvasWidth = 1500
 
     val svgContainerAttempt: Option[Element] = Option(dom.document.getElementById("svg-container"))
@@ -107,8 +107,10 @@ object Client {
     canvasHeight: Int,
     canvasWidth: Int
   ) = {
+    println("svgContainer height: " + svgContainer.clientHeight)
+    println("svgContainer width: " + svgContainer.clientWidth)
     val windowLocal: Rx[Window] = Rx {
-      new Window(sceneVar(), canvasHeight, canvasWidth)
+      new Window(sceneVar(), svgContainer.clientWidth / 5, svgContainer.clientWidth)
     }
 
     windowLocal.trigger {

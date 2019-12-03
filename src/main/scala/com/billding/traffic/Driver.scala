@@ -31,7 +31,7 @@ object Driver {
   def commuter(spatial: Spatial, idm: IntelligentDriverModelImpl) = {
     val reactionTime: Time = 0.5 seconds
     val preferredDynamicSpacing: Time = 1 seconds
-    val minimumDistance: Distance = 2 meters
+    val minimumDistance: Distance = 6 meters
     val desiredSpeed: Velocity = 120.kilometers.per(hour)
     Driver(spatial, idm, reactionTime, preferredDynamicSpacing, minimumDistance, desiredSpeed)
   }
