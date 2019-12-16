@@ -30332,7 +30332,7 @@ $c_Lcom_billding_ControlElements.prototype.init___Lcom_billding_ButtonBehaviors 
   var array = [$m_Lscalatags_JsDom$all$().cls__Lscalatags_generic_Attr().$$colon$eq__O__Lscalatags_generic_AttrValue__Lscalatags_generic_AttrPair("col-md-6 text-center", $m_Lscalatags_JsDom$all$().stringAttr$1)];
   var jsx$4 = jsx$5.apply__sc_Seq__Lscalatags_JsDom$TypedTag(new $c_sjs_js_WrappedArray().init___sjs_js_Array(array));
   var this$6 = $m_Lscalatags_JsDom$all$();
-  var e = $m_Lcom_billding_OutterStyles$().normalButton$1.apply__O__O__O("Pause", new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$1) {
+  var e = $m_Lcom_billding_OutterStyles$().normalButton$1.apply__O__O__O("Pause for Andrew", new $c_sjsr_AnonFunction1().init___sjs_js_Function1((function(this$2$1) {
     return (function(e$2$1) {
       this$2$1.buttonBehaviors$1.togglePauseMethod__Lorg_scalajs_dom_raw_Event__V(e$2$1)
     })
