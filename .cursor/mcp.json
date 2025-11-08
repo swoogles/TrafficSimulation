@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "TrafficSimulation-metals": {
+      "url": "http://localhost:49281/sse"
+    }
+  }
+}
