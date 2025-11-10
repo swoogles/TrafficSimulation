@@ -103,8 +103,8 @@ object Client {
 
   // Currently this needs access to the window
   def setupSvgAndButtonResponses(svgContainer: Element): Int = {
-    println("svgContainer height: " + svgContainer.clientHeight)
-    println("svgContainer width: " + svgContainer.clientWidth)
+    println("!1 svgContainer height: " + svgContainer.clientHeight)
+    println("!1 svgContainer width: " + svgContainer.clientWidth)
 
     // Create a reactive window that updates when scene changes
     val windowSignal: Signal[Window] = sceneVar.map { scene =>

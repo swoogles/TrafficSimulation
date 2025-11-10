@@ -9,16 +9,16 @@ enablePlugins(ScalaJSPlugin)
 val Organization = "com.billding"
 val Name = "Traffice Simulator"
 val Version = "0.2.0-SNAPSHOT"
-val ScalaVer = "2.13.15"
-val scalatagsVersion = "0.12.0"
+val ScalaVer = "2.13.17"
+val scalatagsVersion = "0.13.1"
 val laminarVersion = "16.0.0"
 val airstreamVersion = "16.0.0"
 val scalajsDomVersion = "2.8.0"
 val scalaCssVersion = "1.0.0"
-val pprintVersion = "0.8.1"
-val playJsonVersion = "2.10.5"
-val scalaCheckVersion = "1.17.1"
-val scalaTestVersion = "3.2.19"
+val pprintVersion = "0.9.4"
+val playJsonVersion = "2.10.8"
+val scalaCheckVersion = "1.19.0"
+val scalaTestVersion = "3.3.0-alpha.1"
 val squantsVersion = "1.8.3"
 
 ThisBuild / scalacOptions ++= Seq(
@@ -82,7 +82,7 @@ libraryDependencies ++= Seq(
 
   "com.typesafe.play" %%% "play-json" % playJsonVersion,
 
-  "org.typelevel" %%% "cats-core" % "2.10.0",
+  "org.typelevel" %%% "cats-core" % "2.13.0",
   "org.typelevel" %%% "squants" % squantsVersion,
   "org.scalatest" %%% "scalatest" % scalaTestVersion % "test",
   "com.lihaoyi" %%% "pprint" % pprintVersion,

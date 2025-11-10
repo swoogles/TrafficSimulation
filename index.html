@@ -1,32 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Embouteillage</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/bttn.min.css">
 </head>
+
 <body>
-<!-- Include Scala.js compiled code -->
-<h2 style="text-align: center"> Embouteillage Traffic Simulator </h2>
-<hr>
-<div id="svg-container">
-</div>
-<div id="controls-container">
-</div>
-<br>
-<br>
-<br>
-<div>
-    <form action="https://www.billdingsoftware.com/">
-        <input type="submit" class="bttn-primary OutterStyles_TrafficStyles-standardButton bttn-simple bttn-lg lightly-padded" value="Go back to BilldingSoftware">
-    </form>
-</div>
-<script type="text/javascript" src="target/scala-2.12/traffic-jsdeps.js"></script>
-<script type="text/javascript" src="target/scala-2.12/traffic-fastopt.js"></script>
-<script>
-    // console.log("Doing js with requestNextAnimation!");
-    Client.run();
-</script>
+    <!-- Include Scala.js compiled code -->
+    <h2 style="text-align: center"> Embouteillage Traffic Simulator </h2>
+    <hr>
+    <div id="svg-container">
+    </div>
+    <div id="controls-container">
+    </div>
+    <br>
+    <br>
+    <br>
+    <div>
+        <form action="https://www.billdingsoftware.com/">
+            <input type="submit"
+                class="bttn-primary OutterStyles_TrafficStyles-standardButton bttn-simple bttn-lg lightly-padded"
+                value="Go back to BilldingSoftware">
+        </form>
+    </div>
+    <script type="text/javascript" src="target/scala-2.13/traffic-jsdeps.js"></script>
+    <script type="text/javascript" src="target/scala-2.13/traffic-fastopt.js"></script>
+    <script>
+        // console.log("Doing js with requestNextAnimation!");
+        Client.run();
+    </script>
 </body>
+
 </html>
