@@ -2,7 +2,7 @@ package com.billding
 
 import com.billding.physics.Spatial
 import com.billding.traffic._
-import org.scalatest.FlatSpec
+import org.scalatest.flatspec.AnyFlatSpec
 import squants.Length
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
@@ -14,7 +14,7 @@ import squants.time.{Milliseconds, Seconds}
   *   -Max/Min speeds
   *   -Collision?
   */
-class SceneSpec extends  FlatSpec{
+class SceneSpec extends AnyFlatSpec {
 
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)

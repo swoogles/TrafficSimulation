@@ -2,14 +2,14 @@ package com.billding
 
 import com.billding.physics.Spatial
 import com.billding.traffic._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 import squants.time.Time
 import squants.time.TimeConversions._
 
-class VehicleSourceSpec extends FlatSpec {
+class VehicleSourceSpec extends AnyFlatSpec with Matchers {
   val idm: IntelligentDriverModel = new IntelligentDriverModelImpl
   val speedLimit = KilometersPerHour(150)
 
@@ -32,7 +32,7 @@ class VehicleSourceSpec extends FlatSpec {
 //    val moments = Stream.range(0.5.seconds, 1.5.seconds, dt)
     val startT: Time = 0.seconds
     val vehicleProductions: Seq[Option[PilotedVehicle]] = ts.map{ case (curT) => vehicleSource.produceVehicle(curT, dt, laneEndingPoint)}
-    vehicleProductions.flatten.size shouldBe 1
+    vehicleProductions.flatten.size should be(1)
   }
 
 }

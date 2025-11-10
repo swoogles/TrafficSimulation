@@ -15,7 +15,7 @@ class SerializationFeatures(hostName: String, port: Int, protocol: String) {
   private var volatileScene: Scene = null
 
   def deserializeIfNecessary(model: Model)(implicit format: Format[Scene]): Unit =
-    if (model.deserializeScene.now == true) {
+    if (model.deserializeScene.now() == true) {
       val f = Ajax.get(s"$fullHost/loadScene")
       f.onComplete {
         case Success(xhr) => {
@@ -28,12 +28,12 @@ class SerializationFeatures(hostName: String, port: Int, protocol: String) {
 
         case Failure(cause) => println("failed: " + cause)
       }
-      model.deserializeScene() = false
+      model.deserializeScene.set(false)
     }
 
   def serializeIfNecessary(model: Model)(implicit format: Format[Scene]): Unit =
-    if (model.serializeScene.now == true) {
-      val curScene = model.sceneVar.now
+    if (model.serializeScene.now() == true) {
+      val curScene = model.sceneVar.now()
       volatileScene = curScene
 
       val f = Ajax.post(s"$fullHost/writeScene", data = Json.toJson(curScene).toString)
@@ -41,7 +41,7 @@ class SerializationFeatures(hostName: String, port: Int, protocol: String) {
         case Success(_)     => println("serialized some stuff and sent it off")
         case Failure(cause) => println("failed: " + cause)
       }
-      model.serializeScene() = false
+      model.serializeScene.set(false)
     }
 
 }

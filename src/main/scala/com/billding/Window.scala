@@ -4,11 +4,7 @@ import com.billding.physics.SpatialFor
 import com.billding.svgRendering.SpatialCanvas
 import com.billding.traffic.{PilotedVehicle, Scene}
 import org.scalajs.dom
-import org.scalajs.dom.raw.SVGElement
 import org.scalajs.dom.svg.{G, SVG}
-import rx.{Ctx, Rx}
-import scaladget.stylesheet.all.ms
-import scaladget.tools.JsRxTags._
 import scalatags.JsDom
 import scalatags.JsDom.all._
 import scalatags.JsDom.{svgAttrs, svgTags}
@@ -18,7 +14,6 @@ import scalatags.JsDom.{svgAttrs, svgTags}
  * and canvas dimensions to not muck around with anything specific to the scene.
  */
 class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
-  implicit ctx: Ctx.Owner,
   implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle]
 ) {
 
@@ -45,8 +40,8 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
       )
 
   private def createSvgReps(
-    drawables: Seq[JsDom.TypedTag[SVGElement]]
-  ): JsDom.TypedTag[SVGElement] =
+    drawables: Seq[JsDom.TypedTag[G]]
+  ): JsDom.TypedTag[G] =
     svgTags.g(
       for {
         t <- drawables
@@ -69,24 +64,19 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
     val x = spatial.x / spatialCanvas.widthDistancePerPixel
     val y = spatial.y / spatialCanvas.heightDistancePerPixel
 
-    val element: SVGElement =
-      Rx {
-        svgTags.g(
-          ms(CIRCLE)
-        )(
-          svgAttrs.transform := s"translate($x, $y)"
-        )(
-          svgTags.image(
-            href := "images/sedan.svg",
-            width := renderedWidthInPixels(vehicle),
-            height := renderedHeightInPixels(vehicle),
-            onclick := { _: dom.MouseEvent =>
-              println(vehicle.uuid)
-            }
-          )
-        )
-      }
-
-    svgTags.g(element)
+    svgTags.g(
+      cls := CIRCLE
+    )(
+      svgAttrs.transform := s"translate($x, $y)"
+    )(
+      svgTags.image(
+        href := "images/sedan.svg",
+        width := renderedWidthInPixels(vehicle),
+        height := renderedHeightInPixels(vehicle),
+        onclick := { _: dom.MouseEvent =>
+          println(vehicle.uuid)
+        }
+      )
+    )
   }
 }

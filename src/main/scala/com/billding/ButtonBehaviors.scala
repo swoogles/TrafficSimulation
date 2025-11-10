@@ -5,7 +5,7 @@ import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.html.Input
 import org.scalajs.dom.raw.{HTMLInputElement, WheelEvent}
-import rx.Var
+import com.raquo.laminar.api.L.Var
 import squants.motion.KilometersPerHour
 import squants.time.Seconds
 
@@ -14,9 +14,10 @@ case class ButtonBehaviors(model: Model) {
   def togglePauseMethod(e: dom.Event): Unit =
     e.target match {
       case elementClicked: HTMLInputElement => {
-        println("paused status: " + model.paused.now) // why is this fuggin true??
+        println("paused status: " + model.paused.now()) // why is this fuggin true??
         model.togglePause()
-        elementClicked.value = model.pauseText.now
+        // Update button text via signal - we can't access .now() on Signal directly
+        // The button will update reactively via Laminar bindings
       }
       case unrecognizedClickedElement => throw new RuntimeException("Must be an input element to toggle pausing. e.target: " + unrecognizedClickedElement)
     }
@@ -27,7 +28,7 @@ case class ButtonBehaviors(model: Model) {
     (e) => println("mouse event! we should zoom in/out now!")
 
   private val resetToTrue: Var[Boolean] => Event => Unit =
-    (theBool: Var[Boolean]) => (_: Event) => theBool() = true
+    (theBool: Var[Boolean]) => (_: Event) => theBool.set(true)
 
   val toggleDisrupt =
     resetToTrue(model.disruptions.disruptLane)
@@ -57,12 +58,12 @@ case class ButtonBehaviors(model: Model) {
 
   val updateSlider: (Event) => Unit =
     genericSlider(
-      (newTiming: Int) => model.carTiming() = Seconds(newTiming) / 10
+      (newTiming: Int) => model.carTiming.set(Seconds(newTiming) / 10)
     )
 
   val speedSliderUpdate: (Event) => Unit =
     genericSlider(
-      (newSpeed: Int) => model.speed() = KilometersPerHour(newSpeed)
+      (newSpeed: Int) => model.speed.set(KilometersPerHour(newSpeed))
     )
 
 }

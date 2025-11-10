@@ -3,15 +3,15 @@ package com.billding
 import com.billding.Orientation.East
 import com.billding.physics._
 import com.billding.traffic.Street
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import squants.motion.KilometersPerHour
 import squants.space.Meters
 import squants.time.Seconds
 
 import scala.language.postfixOps
 
-class StreetSpec extends FlatSpec {
+class StreetSpec extends AnyFlatSpec with Matchers {
   val beginning = Spatial.apply((0, 0, 0, Meters))
   val destination = beginning.move(East, Meters(100))
 

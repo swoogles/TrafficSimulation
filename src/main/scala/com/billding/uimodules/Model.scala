@@ -3,7 +3,7 @@ package com.billding.uimodules
 import com.billding.{NamedScene, SerializationFeatures}
 import com.billding.physics.Spatial
 import com.billding.traffic.{IntelligentDriverModelImpl, Lane, PilotedVehicle, Scene}
-import rx.{Ctx, Rx, Var}
+import com.raquo.laminar.api.L.{Var, Signal}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
 import play.api.libs.json.Format
@@ -21,7 +21,7 @@ case class Disruptions(
 trait ModelTrait {
   def togglePause(): Unit
   def pause(): Unit
-  def respondToAllInput()(implicit format: Format[Scene])
+  def respondToAllInput()(implicit format: Format[Scene]): Unit
 }
 
 /**
@@ -42,13 +42,13 @@ case class Model(
                   resetScene: Var[Boolean] = Var(false),
                   vehicleCount: Var[Int] = Var(0),
                   disruptions: Disruptions = Disruptions()
-)(implicit ctx: Ctx.Owner)
+)
     extends Serialization
     with ModelTrait {
   implicit private val DT: Time = originalScene.dt
   // TODO Make this private
   val sceneVar: Var[Scene] = Var(originalScene)
-  val carSpeedText: Rx.Dynamic[String] = Rx(s"Current car speed ${speed()} ")
+  val carSpeedText: Signal[String] = speed.signal.map(s => s"Current car speed $s ")
 
   val carTiming: Var[Time] = Var(
     originalScene.streets
@@ -56,20 +56,15 @@ case class Model(
       .head
   )
 
-  val carTimingText: Rx.Dynamic[String] = Rx(s"Current car timing ${carTiming()} ")
+  val carTimingText: Signal[String] = carTiming.signal.map(t => s"Current car timing $t ")
 
-  val pauseText = Rx {
-    if (paused())
-      "Unpause"
-    else
-      "Pause"
-  }
+  val pauseText: Signal[String] = paused.signal.map(p => if (p) "Unpause" else "Pause")
 
   def togglePause(): Unit =
-    paused() = !paused.now
+    paused.set(!paused.now())
 
   def pause(): Unit =
-    paused() = true
+    paused.set(true)
 
   def loadNamedScene(name: String): Unit = {
     val retrievedSceneAttempt =
@@ -83,20 +78,20 @@ case class Model(
   }
 
   def loadScene(scene: Scene): Unit = {
-    sceneVar() = scene
-    carTiming() = sceneVar.now.streets
+    sceneVar.set(scene)
+    carTiming.set(sceneVar.now().streets
       .flatMap(street => street.lanes.map(lane => lane.vehicleSource.spacingInTime))
-      .head
-    paused() = true
+      .head)
+    paused.set(true)
   }
 
   private def reset: Unit = {
-    sceneVar() = originalScene
-    resetScene() = false
+    sceneVar.set(originalScene)
+    resetScene.set(false)
   }
 
   private def resetIfNecessary(): Unit =
-    if (resetScene.now == true) {
+    if (resetScene.now() == true) {
       reset
     }
 
@@ -104,23 +99,23 @@ case class Model(
     PilotedVehicle.commuter2(Spatial.BLANK, new IntelligentDriverModelImpl, Spatial.BLANK)
 
   private def disrupt(lane: Lane): Lane = {
-    this.disruptions.disruptLane() = false
+    this.disruptions.disruptLane.set(false)
     lane.addDisruptiveVehicle(car)
   }
 
   def disruptLane(lane: Lane): Lane =
-    if (this.disruptions.disruptLane.now == true)
+    if (this.disruptions.disruptLane.now() == true)
       disrupt(lane)
     else
       lane
 
   private def disruptExisting(lane: Lane): Lane = {
-    this.disruptions.disruptLaneExisting() = false
+    this.disruptions.disruptLaneExisting.set(false)
     lane.disruptVehicles()
   }
 
   def disruptLaneExisting(lane: Lane): Lane =
-    if (this.disruptions.disruptLaneExisting.now == true)
+    if (this.disruptions.disruptLaneExisting.now() == true)
       disruptExisting(lane)
     else
       lane
@@ -131,19 +126,19 @@ case class Model(
 
     val newSource =
       laneAfterDisruptionExisting.vehicleSource
-        .copy(spacingInTime = this.carTiming.now)
-        .updateSpeed(this.speed.now)
+        .copy(spacingInTime = this.carTiming.now())
+        .updateSpeed(this.speed.now())
     laneAfterDisruptionExisting.copy(vehicleSource = newSource)
   }
 
   private def updateScene(speedLimit: Velocity) =
-    sceneVar() = sceneVar.now.updateWithSpeedLimit(speedLimit)
+    sceneVar.set(sceneVar.now().updateWithSpeedLimit(speedLimit))
 
   private def updateLanesAndScene(): Unit =
-    if (this.paused.now == false) {
-      val newScene = this.sceneVar.now.updateAllStreets(this.updateLane)
-      this.sceneVar() = newScene
-      this.updateScene(this.sceneVar.now.speedLimit)
+    if (this.paused.now() == false) {
+      val newScene = this.sceneVar.now().updateAllStreets(this.updateLane)
+      this.sceneVar.set(newScene)
+      this.updateScene(this.sceneVar.now().speedLimit)
     }
 
   def respondToAllInput()(implicit format: Format[Scene]): Unit = {

@@ -1,29 +1,46 @@
 package com.billding
 
-import scalatags.JsDom.all.{cls, div, id, input, max, min, oninput, step, tpe, value}
+import scalatags.JsDom.all.{
+  cls => scalatagsCls,
+  div,
+  id,
+  input,
+  max,
+  min,
+  oninput,
+  step,
+  tpe,
+  value
+}
 import org.scalajs.dom.html.Div
-
-import scalatags.JsDom.all._
+import org.scalajs.dom
+import com.raquo.laminar.api.L.{
+  div => ldiv,
+  button => lbutton,
+  span,
+  Observer,
+  cls => laminarCls,
+  Signal,
+  child
+}
+import com.raquo.laminar.nodes.ReactiveHtmlElement
+import org.scalajs.dom.html.{Div => HtmlDiv, Button => HtmlButton, Input => HtmlInput}
 import OutterStyles.normalButton
 import OutterStyles.dangerButton
-import org.scalajs.dom
-
-import org.scalajs.dom.html.Div
-
-import scaladget.tools.JsRxTags._
+import scalatags.JsDom.all._
+import scalatags.JsDom.TypedTag
 
 case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
-  val sceneSelections =
+  val sceneSelections: List[HtmlInput] =
     for (scene <- buttonBehaviors.model.preloadedScenes)
       yield {
         normalButton(scene.name, (e: dom.Event) => buttonBehaviors.model.loadNamedScene(scene.name))
-
       }
 
   val buttons: Div =
     div(
-      cls := "col-md-6 text-center"
+      scalatagsCls := "col-md-6 text-center"
     )(
       normalButton("Pause for Andrew", buttonBehaviors.togglePauseMethod),
       normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset),
@@ -38,11 +55,23 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
       dangerButton("Make 1 car brake", buttonBehaviors.toggleDisruptExisting)
     ).render
 
-  val sliders =
+  // Create Laminar components for reactive text display
+  val timingButton: ReactiveHtmlElement[HtmlButton] = lbutton(
+    laminarCls := "col-md-6 text-center",
+    child.text <-- buttonBehaviors.model.carTimingText
+  )
+
+  val speedButton: ReactiveHtmlElement[HtmlButton] = lbutton(
+    laminarCls := "col-md-6 text-center",
+    child.text <-- buttonBehaviors.model.carSpeedText
+  )
+
+  // Use scalatags for sliders since they're not reactive
+  val sliders: Div =
     div(
-      cls := "col-md-6 text-center"
+      scalatagsCls := "col-md-6 text-center"
     )(
-      button(buttonBehaviors.model.carTimingText),
+      timingButton.ref, // Convert Laminar element to DOM node
       input(
         tpe := "range",
         min := 10,
@@ -50,8 +79,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         value := 30,
         oninput := buttonBehaviors.updateSlider
       ),
-      button(
-        )(buttonBehaviors.model.carSpeedText),
+      speedButton.ref,
       input(
         id := "speedSlider",
         tpe := "range",
@@ -61,26 +89,26 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         step := 5,
         oninput := buttonBehaviors.speedSliderUpdate
       )
-    )
+    ).render
 
   def createLayout(): Div = {
     val buttonPanel = div(
       id := "button-panel",
-      cls := "row"
+      scalatagsCls := "row"
     )(buttons)
 
     val sliderPanel = div(
       id := "slider-panel",
-      cls := "row"
+      scalatagsCls := "row"
     )(sliders)
 
     val preloadedScenesPanel = div(
       id := "sample-scenes-panel",
-      cls := "row"
+      scalatagsCls := "row"
     )(sceneSelections)
 
     div(
-      cls := "container"
+      scalatagsCls := "container"
     )(
       buttonPanel,
       sliderPanel,

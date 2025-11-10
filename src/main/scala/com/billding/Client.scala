@@ -2,15 +2,23 @@ package com.billding
 
 import com.billding.physics.{Spatial, SpatialFor}
 import com.billding.serialization.BillSquants
-import com.billding.traffic.{Driver, Lane, PilotedVehicle, Scene, Street, Vehicle, VehicleSourceImpl}
+import com.billding.traffic.{
+  Driver,
+  Lane,
+  PilotedVehicle,
+  Scene,
+  Street,
+  Vehicle,
+  VehicleSourceImpl
+}
 import com.billding.uimodules.Model
 import squants.motion.{Acceleration, Distance}
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, Node}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import rx.Rx
-import scaladget.tools.JsRxTags._
+import com.raquo.laminar.api.L.{Observer, Signal}
+import com.raquo.airstream.ownership.Owner
 import play.api.libs.json.{Format, Json}
 import squants.{Mass, QuantityVector, Time, Velocity}
 import squants.space.Kilometers
@@ -39,9 +47,7 @@ object Client {
       new SerializationFeatures("localhost", 8080, "http")
     )
 
-  val sceneVar: Rx[Scene] = Rx {
-    model.sceneVar() // Ne
-  }
+  val sceneVar: Signal[Scene] = model.sceneVar.signal
 
   val controlElements =
     ControlElements(
@@ -49,9 +55,7 @@ object Client {
     )
 
   // Should directly use sceneVar
-  val GLOBAL_T: Rx[Time] = Rx {
-    sceneVar().t
-  }
+  val GLOBAL_T: Signal[Time] = sceneVar.map(_.t)
 
   implicit val df: Format[Distance] = BillSquants.distance.format
   implicit val tf: Format[Time] = BillSquants.time.format
@@ -85,7 +89,7 @@ object Client {
   implicit val sceneFormats: Format[Scene] = Json.format[Scene]
 
   @JSExport
-  def run() {
+  def run(): Unit = {
     println("DT: " + DT)
     val controlsContainer = dom.document.getElementById("controls-container")
     controlsContainer.appendChild(controlElements.createLayout())
@@ -101,17 +105,23 @@ object Client {
   def setupSvgAndButtonResponses(svgContainer: Element): Int = {
     println("svgContainer height: " + svgContainer.clientHeight)
     println("svgContainer width: " + svgContainer.clientWidth)
-    val windowLocal: Rx[Window] = Rx {
-      new Window(sceneVar(), svgContainer.clientWidth / 8, svgContainer.clientWidth)
+
+    // Create a reactive window that updates when scene changes
+    val windowSignal: Signal[Window] = sceneVar.map { scene =>
+      new Window(scene, svgContainer.clientWidth / 8, svgContainer.clientWidth)
     }
 
-    windowLocal.trigger {
+    // Subscribe to scene changes and update SVG
+    implicit val owner: Owner = new Owner {}
+    val observer = Observer[Window] { window =>
       val previousSvg: Node = svgContainer.getElementsByTagName("svg").item(0)
       if (previousSvg != null) {
         svgContainer.removeChild(previousSvg)
       }
-      svgContainer.appendChild(windowLocal.now.svgNode.render)
+      svgContainer.appendChild(window.svgNode.render)
     }
+    val subscription = windowSignal.addObserver(observer)
+
     def callback: js.Function1[Double, Unit] = (double) => {
       model.respondToAllInput()
 
@@ -119,11 +129,7 @@ object Client {
     }
     dom.window.requestAnimationFrame(callback)
 
-//    dom.window.setInterval(
-//      () => model.respondToAllInput(),
-//      DT.toMilliseconds / 5
-//    ) // TODO Make this understandable and easily modified. Just some simple algebra.
-
+    0 // Return value
   }
 
 }

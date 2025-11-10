@@ -3,15 +3,15 @@ package com.billding
 import com.billding.SquantsMatchers._
 import com.billding.physics.Spatial
 import com.billding.traffic.{IntelligentDriverModelImpl, PilotedVehicle}
-import org.scalatest.Matchers._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import squants.motion._
 import squants.space.{Kilometers, LengthUnit, Meters}
 
 /*
   I think these tests are specific to the IDM, rather than Piloted Vehicle.
  */
-class PilotedVehicleSpec extends FlatSpec {
+class PilotedVehicleSpec extends AnyFlatSpec with Matchers {
   val speedLimit = KilometersPerHour(150)
   val idm: IntelligentDriverModelImpl = new IntelligentDriverModelImpl
 

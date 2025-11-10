@@ -2,8 +2,8 @@ package com.billding
 
 import com.billding.Orientation.{East, North, South, West}
 import com.billding.physics._
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import squants.{DoubleVector, QuantityVector, Velocity}
 import squants.motion._
 import squants.space.{Kilometers, Meters}
@@ -11,7 +11,7 @@ import squants.time.TimeConversions._
 
 import scala.language.postfixOps
 
-class SpatialTest extends FlatSpec {
+class SpatialTest extends AnyFlatSpec with Matchers {
   private val dt = 1 seconds
 
   val destination: Spatial = Spatial.apply((1, 0, 0, Kilometers))

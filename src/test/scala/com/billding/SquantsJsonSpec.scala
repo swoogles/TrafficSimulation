@@ -1,8 +1,9 @@
 package com.billding
 
 import com.billding.serialization.BillSquants
-import org.scalatest.Matchers._
-import org.scalatest.{Assertion, FlatSpec}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.Assertion
 import play.api.libs.json.{JsString, Json}
 import squants.mass.Kilograms
 import squants.motion.{KilometersPerHour, MetersPerSecond, MetersPerSecondSquared}
@@ -12,7 +13,7 @@ import squants.{Quantity, QuantityVector}
 
 import scala.language.postfixOps
 
-class SquantsJsonSpec extends FlatSpec {
+class SquantsJsonSpec extends AnyFlatSpec with Matchers {
   it should "roundtrip serialize a distance" in {
     boilerTest(BillSquants.distance, Meters(10), JsString("10.0 m"))
     boilerTest(BillSquants.distance, Kilometers(.01), JsString("10.0 m"))
