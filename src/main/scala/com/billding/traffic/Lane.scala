@@ -7,17 +7,26 @@ import squants.motion.Acceleration
 import com.billding.physics.Spatial
 import squants.motion.Distance
 import squants.space.{Length, Meters}
-import squants.{QuantityVector, Velocity}
+import squants.{DoubleVector, QuantityVector, Velocity}
 
 case class Lane(
-                 vehicles: List[PilotedVehicle],
-                 vehicleSource: VehicleSourceImpl,
-                 beginning: Spatial,
-                 end: Spatial,
-                 speedLimit: Velocity
-               ) {
+  vehicles: List[PilotedVehicle],
+  vehicleSource: VehicleSourceImpl,
+  beginning: Spatial,
+  end: Spatial,
+  speedLimit: Velocity
+) {
 
   val length: Length = beginning.distanceTo(end)
+
+  /** Which way traffic faces here. Taken from the road, so stopped cars still point right. */
+  val direction: DoubleVector =
+    beginning
+      .vectorTo(end)
+      .map { component: Distance =>
+        component.toMeters
+      }
+      .normalize
 
   val infinityPointForward: QuantityVector[Distance] =
     beginning.vectorTo(end).normalize.map(_ * 10000)
@@ -90,11 +99,11 @@ object Lane {
   val MAX_VEHICLES_PER_LANE = 60
 
   def apply(
-             sourceTiming: Time,
-             beginning: Spatial,
-             end: Spatial,
-             speedLimit: Velocity,
-             vehicles: List[PilotedVehicle] = Nil
+    sourceTiming: Time,
+    beginning: Spatial,
+    end: Spatial,
+    speedLimit: Velocity,
+    vehicles: List[PilotedVehicle] = Nil
   ): Lane = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
@@ -111,8 +120,8 @@ object Lane {
   }
 
   private def responsesInOneLane(
-                                  vehicles: NonEmptyList[PilotedVehicle],
-                                  speedLimit: Velocity
+    vehicles: NonEmptyList[PilotedVehicle],
+    speedLimit: Velocity
   ): NonEmptyList[Acceleration] = {
     val target = vehicles.head
     vehicles.tail match {
@@ -165,12 +174,12 @@ object Lane {
     }
 
   def attemptVehicleBeforeAndAfter(
-                                    pilotedVehicle: PilotedVehicle,
-                                    lane: Lane
-                                  ): Option[(PilotedVehicle, PilotedVehicle)] =
+    pilotedVehicle: PilotedVehicle,
+    lane: Lane
+  ): Option[(PilotedVehicle, PilotedVehicle)] =
     for {
       before <- getVehicleBefore(pilotedVehicle, lane)
-      after <- getVehicleAfter(pilotedVehicle, lane)
+      after  <- getVehicleAfter(pilotedVehicle, lane)
     } yield {
       (before, after)
     }

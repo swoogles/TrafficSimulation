@@ -42,9 +42,11 @@ case class ButtonBehaviors(model: Model) {
   val initiateSceneSerialization =
     resetToTrue(model.serializeScene)
 
-  val initiateSceneDeserialization: Event => Unit = {
+  // The pause belongs to the click, not to building this object. As a bare block it ran the
+  // moment ButtonBehaviors was constructed, which left the page paused before you touched it.
+  val initiateSceneDeserialization: Event => Unit = { event: Event =>
     model.pause()
-    resetToTrue(model.deserializeScene)
+    resetToTrue(model.deserializeScene)(event)
   }
 
   private def genericSlider: (Int => Unit) => Event => Unit =

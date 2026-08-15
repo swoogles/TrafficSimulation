@@ -1,8 +1,7 @@
 package com.billding
 
-import com.billding.physics.SpatialFor
-import com.billding.svgRendering.SpatialCanvas
-import com.billding.traffic.{PilotedVehicle, Scene}
+import com.billding.svgRendering.{Projection, RenderedVehicle}
+import com.billding.traffic.Scene
 import org.scalajs.dom
 import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
@@ -13,20 +12,14 @@ import scalatags.JsDom.{svgAttrs, svgTags}
  * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
  * and canvas dimensions to not muck around with anything specific to the scene.
  */
-class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
-  implicit val spatialForPilotedVehicle: SpatialFor[PilotedVehicle]
-) {
+class Window(scene: Scene, canvasWidth: Int) {
 
-  // TODO ooooooooo, I think these could be made into Rxs/Vars for responsive rendering on screen resizing.
-//  println("CanvasHeight: " + canvasHeight)
-//  println("CanvasWidth: " + canvasWidth)
-  private val spatialCanvas =
-    SpatialCanvas(scene.canvasDimensions._1, scene.canvasDimensions._2, canvasHeight, canvasWidth)
+  private val projection: Projection = scene.project(canvasWidth)
 
   val svgNode: JsDom.TypedTag[SVG] =
     svgTags
       .svg(
-        attr("viewBox") := s"0 0 $canvasWidth $canvasHeight", // TODO double check order here
+        attr("viewBox") := projection.viewBox,
         onwheel := { wheelEvent: dom.MouseEvent =>
           println("we want to zoom in/out here." + wheelEvent)
         }
@@ -34,7 +27,7 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
         svgTags
           .g(
             createSvgReps(
-              scene.applyToAllVehicles(createCarSvgRepresentation)
+              scene.renderables.map(createCarSvgRepresentation)
             )
           )
       )
@@ -50,29 +43,29 @@ class Window(scene: Scene, canvasHeight: Int, canvasWidth: Int)(
       }
     )
 
-  private def renderedWidthInPixels(vehicle: PilotedVehicle): String =
-    (vehicle.width / spatialCanvas.widthDistancePerPixel).px
-
-  private def renderedHeightInPixels(vehicle: PilotedVehicle): String =
-    (vehicle.height / spatialCanvas.heightDistancePerPixel).px
-
   // TODO This should go somewhere else, on its own.
-  private def createCarSvgRepresentation(vehicle: PilotedVehicle): JsDom.TypedTag[G] = {
+  private def createCarSvgRepresentation(vehicle: RenderedVehicle): JsDom.TypedTag[G] = {
     val CIRCLE: String = "conceptG"
 
-    val spatial = SpatialFor.disect(vehicle)
-    val x = spatial.x / spatialCanvas.widthDistancePerPixel
-    val y = spatial.y / spatialCanvas.heightDistancePerPixel
+    val renderedWidth = projection.across(vehicle.width)
+    val renderedHeight = projection.down(vehicle.height)
+
+    // A car's position is its centre, so the sprite hangs half of itself back and up from
+    // there, and turns about that same centre to face along the road.
+    val x = projection.xOf(vehicle.position) - renderedWidth / 2
+    val y = projection.yOf(vehicle.position) - renderedHeight / 2
+    val turn =
+      s"rotate(${vehicle.headingInDegrees}, ${renderedWidth / 2}, ${renderedHeight / 2})"
 
     svgTags.g(
       cls := CIRCLE
     )(
-      svgAttrs.transform := s"translate($x, $y)"
+      svgAttrs.transform := s"translate($x, $y) $turn"
     )(
       svgTags.image(
         href := "images/sedan.svg",
-        width := renderedWidthInPixels(vehicle),
-        height := renderedHeightInPixels(vehicle),
+        width := renderedWidth.px,
+        height := renderedHeight.px,
         onclick := { _: dom.MouseEvent =>
           println(vehicle.uuid)
         }

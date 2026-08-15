@@ -8,6 +8,7 @@ import com.billding.traffic.{
   PilotedVehicle,
   Scene,
   Street,
+  StreetScene,
   Vehicle,
   VehicleSourceImpl
 }
@@ -42,14 +43,19 @@ object Client {
         scenes.emptyScene,
         scenes.scene1,
         scenes.scene2,
-        scenes.multipleStoppedGroups
+        scenes.multipleStoppedGroups,
+        scenes.quietRing,
+        scenes.busyRing,
+        scenes.jammedRing
       ),
       new SerializationFeatures("localhost", 8080, "http")
     )
 
   val sceneVar: Signal[Scene] = model.sceneVar.signal
 
-  val controlElements =
+  // Lazy so that merely loading this module doesn't touch the DOM. Client is a top-level
+  // export, so the test runner initializes it too, where there is no document to render into.
+  lazy val controlElements: ControlElements =
     ControlElements(
       ButtonBehaviors(model)
     )
@@ -86,7 +92,9 @@ object Client {
   implicit val laneFormat: Format[Lane] = Json.format[Lane]
   implicit val streetFormat: Format[Street] = Json.format[Street]
 
-  implicit val sceneFormats: Format[Scene] = Json.format[Scene]
+  // Only the street scene round-trips: a ring is described by its shape and how many cars
+  // are on it, which is a different thing to serialize and nothing reads it yet.
+  implicit val sceneFormats: Format[StreetScene] = Json.format[StreetScene]
 
   @JSExport
   def run(): Unit = {
@@ -108,7 +116,7 @@ object Client {
 
     // Create a reactive window that updates when scene changes
     val windowSignal: Signal[Window] = sceneVar.map { scene =>
-      new Window(scene, svgContainer.clientWidth / 8, svgContainer.clientWidth)
+      new Window(scene, svgContainer.clientWidth)
     }
 
     // Subscribe to scene changes and update SVG

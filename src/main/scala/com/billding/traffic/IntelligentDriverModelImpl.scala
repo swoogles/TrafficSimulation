@@ -29,14 +29,14 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends Intell
     * @return the acceleration to apply to the following vehicle.
     */
   def deltaVDimensionallySafe(
-                               v: Velocity,
-                               v0: Velocity,
-                               dV: Velocity,
-                               T: Time,
-                               a: Acceleration,
-                               b: Acceleration,
-                               s: Distance,
-                               s0: Distance
+    v: Velocity,
+    v0: Velocity,
+    dV: Velocity,
+    T: Time,
+    a: Acceleration,
+    b: Acceleration,
+    s: Distance,
+    s0: Distance
   ): Acceleration = {
 
     val desiredDistance = sStar(v, dV, T, a, b, s0)
@@ -47,23 +47,27 @@ case class IntelligentDriverModelImpl(name: String = "simpleIdm") extends Intell
   }
 
   private def sStar(
-                     v: Velocity,
-                     dV: Velocity,
-                     T: Time,
-                     a: Acceleration,
-                     b: Acceleration,
-                     s0: Distance
+    v: Velocity,
+    dV: Velocity,
+    T: Time,
+    a: Acceleration,
+    b: Acceleration,
+    s0: Distance
   ): Distance = {
     /*
-    If the desired distance is negative, that means:
-      - We've gotten too close to the car in front of us
-        ?Is this a Warning as opposed to a Failure?
-      -We've hit the car in front of us
+    The interaction term: the extra room a driver wants for the speed they are closing at.
+    dV is signed, so a leader pulling away shrinks the desired distance rather than growing it.
+
+    Watch the grouping here. Written across lines starting with `+`, Scala reads the second
+    line as a separate statement and throws it away, which silently reduces the model to
+    "keep a fixed time headway" and drops its response to closing speed entirely.
      */
-    val desiredDistance =
-      (v * T).toMeters
-    +(v.toMetersPerSecond * dV.toMetersPerSecond) /
-      2 * Math.sqrt(a.toMetersPerSecondSquared * b.toMetersPerSecondSquared)
+    val interactionTerm =
+      (v.toMetersPerSecond * dV.toMetersPerSecond) /
+      (2 * Math.sqrt(a.toMetersPerSecondSquared * b.toMetersPerSecondSquared))
+
+    val desiredDistance = (v * T).toMeters + interactionTerm
+
     Meters(s0.toMeters + max(0.0, desiredDistance)) // This prevents reversing.
   }
 

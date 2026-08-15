@@ -2,10 +2,18 @@ package com.billding.uimodules
 
 import com.billding.{NamedScene, SerializationFeatures}
 import com.billding.physics.Spatial
-import com.billding.traffic.{IntelligentDriverModelImpl, Lane, PilotedVehicle, Scene}
-import com.raquo.laminar.api.L.{Var, Signal}
+import com.billding.traffic.{
+  IntelligentDriverModelImpl,
+  Lane,
+  PilotedVehicle,
+  RingScene,
+  Scene,
+  StreetScene
+}
+import com.raquo.laminar.api.L.{Signal, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
+import squants.time.Seconds
 import play.api.libs.json.Format
 
 trait Serialization {
@@ -14,14 +22,14 @@ trait Serialization {
 }
 
 case class Disruptions(
-                        disruptLane: Var[Boolean] = Var(false),
-                        disruptLaneExisting: Var[Boolean] = Var(false)
+  disruptLane: Var[Boolean] = Var(false),
+  disruptLaneExisting: Var[Boolean] = Var(false)
 )
 
 trait ModelTrait {
   def togglePause(): Unit
   def pause(): Unit
-  def respondToAllInput()(implicit format: Format[Scene]): Unit
+  def respondToAllInput()(implicit format: Format[StreetScene]): Unit
 }
 
 /**
@@ -33,28 +41,23 @@ trait ModelTrait {
     given Scene, which does *not* interact directly with the user. The page model does, not the scene.
   */
 case class Model(
-                  originalScene: Scene,
-                  preloadedScenes: List[NamedScene] = List(),
-                  serializationFeatures: SerializationFeatures,
-                  // These should probably be gleaned from the scene itself.
-                  speed: Var[Velocity] = Var(KilometersPerHour(50)),
-                  paused: Var[Boolean] = Var(false),
-                  resetScene: Var[Boolean] = Var(false),
-                  vehicleCount: Var[Int] = Var(0),
-                  disruptions: Disruptions = Disruptions()
-)
-    extends Serialization
+  originalScene: Scene,
+  preloadedScenes: List[NamedScene] = List(),
+  serializationFeatures: SerializationFeatures,
+  // These should probably be gleaned from the scene itself.
+  speed: Var[Velocity] = Var(KilometersPerHour(50)),
+  paused: Var[Boolean] = Var(false),
+  resetScene: Var[Boolean] = Var(false),
+  vehicleCount: Var[Int] = Var(0),
+  disruptions: Disruptions = Disruptions()
+) extends Serialization
     with ModelTrait {
-  implicit private val DT: Time = originalScene.dt
   // TODO Make this private
   val sceneVar: Var[Scene] = Var(originalScene)
   val carSpeedText: Signal[String] = speed.signal.map(s => s"Current car speed $s ")
 
-  val carTiming: Var[Time] = Var(
-    originalScene.streets
-      .flatMap(street => street.lanes.map(lane => lane.vehicleSource.spacingInTime))
-      .head
-  )
+  // A ring has no source, so it has no timing to report - fall back to a sane slider value.
+  val carTiming: Var[Time] = Var(originalScene.sourceTiming.getOrElse(Seconds(3)))
 
   val carTimingText: Signal[String] = carTiming.signal.map(t => s"Current car timing $t ")
 
@@ -79,9 +82,7 @@ case class Model(
 
   def loadScene(scene: Scene): Unit = {
     sceneVar.set(scene)
-    carTiming.set(sceneVar.now().streets
-      .flatMap(street => street.lanes.map(lane => lane.vehicleSource.spacingInTime))
-      .head)
+    scene.sourceTiming.foreach(carTiming.set)
     paused.set(true)
   }
 
@@ -134,14 +135,32 @@ case class Model(
   private def updateScene(speedLimit: Velocity) =
     sceneVar.set(sceneVar.now().updateWithSpeedLimit(speedLimit))
 
+  /**
+    * Feed this tick's control settings into the scene, which each shape of road takes
+    * differently: a street passes them to the source that makes new cars, while a ring has
+    * no source, so the speed control lands on the limit its fixed population drives to.
+    */
+  private def applyInputTo(scene: Scene): Scene = scene match {
+    case street: StreetScene => street.updateAllStreets(this.updateLane)
+    case ring: RingScene =>
+      val disrupted = brakeOneCarIfRequested(ring)
+      disrupted.copy(lane = disrupted.lane.copy(speedLimit = this.speed.now()))
+  }
+
+  private def brakeOneCarIfRequested(ring: RingScene): RingScene =
+    if (this.disruptions.disruptLaneExisting.now() == true) {
+      this.disruptions.disruptLaneExisting.set(false)
+      ring.brakeOneCar()
+    } else ring
+
   private def updateLanesAndScene(): Unit =
     if (this.paused.now() == false) {
-      val newScene = this.sceneVar.now().updateAllStreets(this.updateLane)
+      val newScene = applyInputTo(this.sceneVar.now())
       this.sceneVar.set(newScene)
       this.updateScene(this.sceneVar.now().speedLimit)
     }
 
-  def respondToAllInput()(implicit format: Format[Scene]): Unit = {
+  def respondToAllInput()(implicit format: Format[StreetScene]): Unit = {
     this.resetIfNecessary()
     this.updateLanesAndScene()
     serializationFeatures.serializeIfNecessary(this)

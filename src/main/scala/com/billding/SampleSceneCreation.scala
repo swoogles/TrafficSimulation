@@ -1,6 +1,6 @@
 package com.billding
 
-import com.billding.physics.Spatial
+import com.billding.physics.{RingPath, Spatial}
 import com.billding.traffic._
 import squants.Length
 import squants.motion.{DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
@@ -96,7 +96,10 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
       )
     )
 
-  private def createWithVehicles(sourceTiming: Time, vehicles: List[PilotedVehicle]): Scene = {
+  private def createWithVehicles(
+    sourceTiming: Time,
+    vehicles: List[PilotedVehicle]
+  ): StreetScene = {
 
     val speedLimit: Velocity = KilometersPerHour(45) // TODO Connect this to Car Speed Control.
     val originSpatial = Spatial((0, 0, 0, Kilometers))
@@ -106,7 +109,7 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
     val lane =
       Lane.apply(sourceTiming, originSpatial, endingSpatial, speedLimit, vehicles)
     val street = Street(List(lane), originSpatial, endingSpatial)
-    Scene(
+    StreetScene(
       List(street),
       Seconds(0.2),
       DT,
@@ -114,4 +117,37 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
       canvasDimensions
     )
   }
+
+  private val ringSpeedLimit: Velocity = KilometersPerHour(45)
+
+  /**
+    * A fixed population going round a closed loop, which is where traffic gets to misbehave
+    * on its own: nothing enters, nothing leaves, so any jam you see the cars made themselves.
+    */
+  private def ring(carCount: Int, circumference: Length): RingScene =
+    RingScene(
+      TrackLane.evenlySpaced(
+        RingPath.ofCircumference(circumference),
+        carCount,
+        ringSpeedLimit,
+        ringSpeedLimit
+      ),
+      Seconds(0),
+      DT
+    )
+
+  /*
+  Car counts on a 400m loop, with 8m cars that want 6m of room at a standstill. Past about
+  28 cars there is no room left to want, and the whole ring locks solid and stays that way.
+  These three sit either side of the interesting part: free flowing, dense enough to be
+  fragile, and crawling.
+   */
+  val quietRing =
+    NamedScene("ring road, 8 cars", ring(8, Meters(400)))
+
+  val busyRing =
+    NamedScene("ring road, 16 cars", ring(16, Meters(400)))
+
+  val jammedRing =
+    NamedScene("ring road, 22 cars", ring(22, Meters(400)))
 }

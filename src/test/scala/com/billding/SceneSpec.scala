@@ -37,7 +37,7 @@ class SceneSpec extends AnyFlatSpec {
     val street = Street(List(lane), originSpatial, endingSpatial)
     val t = Seconds(500)
     implicit val dt = Milliseconds(500)
-    val scene: Scene = Scene(
+    val scene: Scene = StreetScene(
       List(street),
       t,
       dt,
