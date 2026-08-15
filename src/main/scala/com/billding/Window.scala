@@ -1,18 +1,31 @@
 package com.billding
 
-import com.billding.svgRendering.{Projection, RenderedVehicle}
+import com.billding.svgRendering.{Projection, RenderedVehicle, RoadRing, RoadShape, RoadStrip}
 import com.billding.traffic.Scene
 import org.scalajs.dom
 import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
 import scalatags.JsDom.all._
 import scalatags.JsDom.{svgAttrs, svgTags}
+import squants.space.Length
 
 /*
  * TODO It might make more sense for this to accept a List[JsDom.TypedTag[G]]
  * and canvas dimensions to not muck around with anything specific to the scene.
  */
+object Window {
+
+  /*
+  These live out here rather than in the class body on purpose. svgNode is a val that renders
+  during construction, so any field declared below it is still null by the time it is read.
+   */
+  private val Tarmac = "#57606a"
+  private val EdgeLine = "#f6f8fa"
+  private val EdgeLineWidth = 1.5
+}
+
 class Window(scene: Scene, canvasWidth: Int) {
+  import Window.{EdgeLine, EdgeLineWidth, Tarmac}
 
   private val projection: Projection = scene.project(canvasWidth)
 
@@ -24,12 +37,10 @@ class Window(scene: Scene, canvasWidth: Int) {
           println("we want to zoom in/out here." + wheelEvent)
         }
       )(
-        svgTags
-          .g(
-            createSvgReps(
-              scene.renderables.map(createCarSvgRepresentation)
-            )
-          )
+        svgTags.g(
+          createSvgReps(scene.roadShapes.map(createRoadSvgRepresentation)),
+          createSvgReps(scene.renderables.map(createCarSvgRepresentation))
+        )
       )
 
   private def createSvgReps(
@@ -42,6 +53,54 @@ class Window(scene: Scene, canvasWidth: Int) {
         t
       }
     )
+
+  /**
+    * The road under the traffic: a band of tarmac with a line down either edge.
+    *
+    * A ring is drawn as an actual circle rather than a many-sided polygon, so it stays
+    * smooth however far in you zoom.
+    */
+  private def createRoadSvgRepresentation(road: RoadShape): JsDom.TypedTag[G] =
+    road match {
+    case RoadRing(center, radius, width) =>
+      val cx = projection.xOf(center)
+      val cy = projection.yOf(center)
+
+      def ring(atRadius: Length, colour: String, thickness: Double) =
+        svgTags.circle(
+          svgAttrs.cx := cx.toString,
+          svgAttrs.cy := cy.toString,
+          svgAttrs.r := projection.across(atRadius).toString,
+          svgAttrs.fill := "none",
+          svgAttrs.stroke := colour,
+          svgAttrs.strokeWidth := thickness.toString
+        )
+
+      svgTags.g(cls := "roadway")(
+        ring(radius, Tarmac, projection.across(width)),
+        ring(radius + width / 2.0, EdgeLine, EdgeLineWidth),
+        ring(radius - width / 2.0, EdgeLine, EdgeLineWidth)
+      )
+
+    case RoadStrip(from, to, width) =>
+      val halfWidth = projection.down(width) / 2
+
+      def stripe(offset: Double, colour: String, thickness: Double) =
+        svgTags.line(
+          svgAttrs.x1 := projection.xOf(from).toString,
+          svgAttrs.y1 := (projection.yOf(from) + offset).toString,
+          svgAttrs.x2 := projection.xOf(to).toString,
+          svgAttrs.y2 := (projection.yOf(to) + offset).toString,
+          svgAttrs.stroke := colour,
+          svgAttrs.strokeWidth := thickness.toString
+        )
+
+      svgTags.g(cls := "roadway")(
+        stripe(0, Tarmac, projection.down(width)),
+        stripe(-halfWidth, EdgeLine, EdgeLineWidth),
+        stripe(halfWidth, EdgeLine, EdgeLineWidth)
+      )
+  }
 
   // TODO This should go somewhere else, on its own.
   private def createCarSvgRepresentation(vehicle: RenderedVehicle): JsDom.TypedTag[G] = {

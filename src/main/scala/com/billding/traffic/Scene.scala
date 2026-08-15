@@ -1,6 +1,6 @@
 package com.billding.traffic
 
-import com.billding.svgRendering.{Projection, RenderedVehicle}
+import com.billding.svgRendering.{Projection, RenderedVehicle, RoadShape, RoadStrip}
 import squants.motion.MetersPerSecond
 import squants.{Length, Time, Velocity}
 
@@ -21,6 +21,9 @@ sealed trait Scene {
 
   /** The cars, as the canvas wants them. */
   def renderables: List[RenderedVehicle]
+
+  /** The road they are driving on, laid down before them. */
+  def roadShapes: List[RoadShape]
 
   /** How this scene wants to be laid out on a canvas of the given pixel width. */
   def project(pixelWidth: Int): Projection
@@ -70,6 +73,12 @@ case class StreetScene(
       vehicle.uuid
     )
 
+  def roadShapes: List[RoadShape] =
+    for {
+      street <- streets
+      lane   <- street.lanes
+    } yield RoadStrip(lane.beginning.r, lane.end.r, RoadShape.LaneWidth)
+
   /**
     * The original SpatialCanvas arithmetic, fudge factors and all, so the straight road
     * keeps its familiar scale.
@@ -117,6 +126,8 @@ case class RingScene(
         vehicle.piloted.uuid
       )
     }
+
+  def roadShapes: List[RoadShape] = List(RoadShape.of(lane.path))
 
   def project(pixelWidth: Int): Projection =
     Projection.fitting(

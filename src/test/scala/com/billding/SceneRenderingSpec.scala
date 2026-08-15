@@ -1,7 +1,8 @@
 package com.billding
 
 import com.billding.physics.RingPath
-import com.billding.traffic.{RingScene, TrackLane}
+import com.billding.svgRendering.{RoadRing, RoadShape, RoadStrip}
+import com.billding.traffic.{RingScene, StreetScene, TrackLane}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import squants.motion.KilometersPerHour
@@ -67,6 +68,52 @@ class SceneRenderingSpec extends AnyFlatSpec with Matchers {
     // 8m car against a 400m loop, so it should cover about 2% of the circumference.
     val loopInPixels = projection.across(Meters(400))
     (carLengthInPixels / loopInPixels) shouldBe 0.02 +- 0.001
+  }
+
+  /**
+    * The cars should sit on the tarmac rather than beside it: they drive along the middle
+    * of the road, so their distance from the centre has to be the road's own radius.
+    */
+  it should "lay a road down under the traffic" in {
+    val road = ringScene.roadShapes match {
+      case List(ring: RoadRing) => ring
+      case other                => fail(s"expected a single ring of road, got $other")
+    }
+
+    road.center shouldBe RingPath.ORIGIN
+    road.radius.toMeters shouldBe (400 / (2 * math.Pi)) +- 1e-9
+    road.width.toMeters shouldBe 6.0 // wider than the 4m cars
+
+    val roadRadiusInPixels = projection.across(road.radius)
+    pixelPositions.map(pixelRadiusOf).foreach { carRadius =>
+      carRadius shouldBe roadRadiusInPixels +- 1e-9
+    }
+  }
+
+  it should "keep the road inside the canvas, edge lines and all" in {
+    val road = ringScene.roadShapes.head.asInstanceOf[RoadRing]
+    val outerEdge = projection.across(road.radius + road.width / 2.0)
+
+    // Measured from the centre of the canvas, which is where the ring's centre lands.
+    outerEdge should be < math.min(projection.pixelWidth, projection.pixelHeight) / 2.0
+  }
+
+  "A street scene" should "give every lane its own strip of road" in {
+    val scenes = new SampleSceneCreation(
+      com.billding.physics.Spatial((0.5, 0, 0, squants.space.Kilometers))
+    )(Milliseconds(100))
+    val street = scenes.scene1.scene.asInstanceOf[StreetScene]
+    val lanes = street.streets.flatMap(_.lanes)
+
+    street.roadShapes.size shouldBe lanes.size
+
+    street.roadShapes.zip(lanes).foreach {
+      case (strip: RoadStrip, lane) =>
+        strip.from shouldBe lane.beginning.r
+        strip.to shouldBe lane.end.r
+        strip.width shouldBe RoadShape.LaneWidth
+      case (other, _) => fail(s"a straight lane should be a strip, not $other")
+    }
   }
 
   /**
