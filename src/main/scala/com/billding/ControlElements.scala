@@ -14,17 +14,9 @@ import scalatags.JsDom.all.{
 }
 import org.scalajs.dom.html.Div
 import org.scalajs.dom
-import com.raquo.laminar.api.L.{
-  div => ldiv,
-  button => lbutton,
-  span,
-  Observer,
-  cls => laminarCls,
-  Signal,
-  child
-}
-import com.raquo.laminar.nodes.ReactiveHtmlElement
-import org.scalajs.dom.html.{Div => HtmlDiv, Button => HtmlButton, Input => HtmlInput}
+import com.raquo.laminar.api.L.Signal
+import com.raquo.airstream.ownership.Owner
+import org.scalajs.dom.html.{Input => HtmlInput}
 import OutterStyles.normalButton
 import OutterStyles.dangerButton
 import scalatags.JsDom.all._
@@ -52,26 +44,40 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
        */
 //      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
-      dangerButton("Make 1 car brake", buttonBehaviors.toggleDisruptExisting)
+      dangerButton("Make 1 car brake", buttonBehaviors.toggleDisruptExisting),
+      dangerButton("Force a lane change", buttonBehaviors.forceLaneChange)
     ).render
 
-  // Create Laminar components for reactive text display
-  val timingButton: ReactiveHtmlElement[HtmlButton] = lbutton(
-    laminarCls := "col-md-6 text-center",
-    child.text <-- buttonBehaviors.model.carTimingText
-  )
+  /*
+  Laminar only starts a `child.text <-- signal` binding when it mounts the element itself.
+  These labels are handed to scalatags as raw DOM nodes, which Laminar never sees, so the
+  binding stayed dormant and every slider sat under a blank pill. Subscribing directly with
+  an owner of our own keeps the labels reactive without pulling the whole panel into Laminar.
+   */
+  implicit private val owner: Owner = new Owner {}
 
-  val speedButton: ReactiveHtmlElement[HtmlButton] = lbutton(
-    laminarCls := "col-md-6 text-center",
-    child.text <-- buttonBehaviors.model.carSpeedText
-  )
+  private def reactiveLabel(text: Signal[String]): Div = {
+    val label = div(scalatagsCls := "col-md-12 text-center")().render
+    text.foreach { value =>
+      label.textContent = value
+    }
+    label
+  }
+
+  val timingLabel: Div = reactiveLabel(buttonBehaviors.model.carTimingText)
+
+  val speedLabel: Div = reactiveLabel(buttonBehaviors.model.carSpeedText)
+
+  val eagernessLabel: Div = reactiveLabel(buttonBehaviors.model.laneChangeEagernessText)
+
+  val politenessLabel: Div = reactiveLabel(buttonBehaviors.model.politenessText)
 
   // Use scalatags for sliders since they're not reactive
   val sliders: Div =
     div(
       scalatagsCls := "col-md-6 text-center"
     )(
-      timingButton.ref, // Convert Laminar element to DOM node
+      timingLabel,
       input(
         tpe := "range",
         min := 10,
@@ -79,7 +85,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         value := 30,
         oninput := buttonBehaviors.updateSlider
       ),
-      speedButton.ref,
+      speedLabel,
       input(
         id := "speedSlider",
         tpe := "range",
@@ -88,6 +94,28 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         value := 65,
         step := 5,
         oninput := buttonBehaviors.speedSliderUpdate
+      ),
+      // How readily a driver takes a gap at all. Turn it up and the lanes churn.
+      eagernessLabel,
+      input(
+        id := "eagernessSlider",
+        tpe := "range",
+        min := 0,
+        max := 100,
+        value := 50,
+        step := 5,
+        oninput := buttonBehaviors.eagernessSliderUpdate
+      ),
+      // How much a driver cares what its merge costs the car behind. Turn it down for waves.
+      politenessLabel,
+      input(
+        id := "politenessSlider",
+        tpe := "range",
+        min := 0,
+        max := 100,
+        value := 20,
+        step := 5,
+        oninput := buttonBehaviors.politenessSliderUpdate
       )
     ).render
 

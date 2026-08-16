@@ -19,9 +19,11 @@ case class ButtonBehaviors(model: Model) {
         // Update button text via signal - we can't access .now() on Signal directly
         // The button will update reactively via Laminar bindings
       }
-      case unrecognizedClickedElement => throw new RuntimeException("Must be an input element to toggle pausing. e.target: " + unrecognizedClickedElement)
+      case unrecognizedClickedElement =>
+        throw new RuntimeException(
+          "Must be an input element to toggle pausing. e.target: " + unrecognizedClickedElement
+        )
     }
-
 
   // TODO make mousewheel behavior
   private val onMouseWheelUp: (WheelEvent) => Unit =
@@ -35,6 +37,9 @@ case class ButtonBehaviors(model: Model) {
 
   val toggleDisruptExisting =
     resetToTrue(model.disruptions.disruptLaneExisting)
+
+  val forceLaneChange =
+    resetToTrue(model.disruptions.forceLaneChange)
 
   val initiateSceneReset =
     resetToTrue(model.resetScene)
@@ -66,6 +71,17 @@ case class ButtonBehaviors(model: Model) {
   val speedSliderUpdate: (Event) => Unit =
     genericSlider(
       (newSpeed: Int) => model.speed.set(KilometersPerHour(newSpeed))
+    )
+
+  /** Both lane-change sliders run 0 to 100 on the page and 0 to 1 in the model. */
+  val eagernessSliderUpdate: (Event) => Unit =
+    genericSlider(
+      (eagerness: Int) => model.laneChangeEagerness.set(eagerness / 100.0)
+    )
+
+  val politenessSliderUpdate: (Event) => Unit =
+    genericSlider(
+      (politeness: Int) => model.politeness.set(politeness / 100.0)
     )
 
 }

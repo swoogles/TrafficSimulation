@@ -46,7 +46,10 @@ object Client {
         scenes.multipleStoppedGroups,
         scenes.quietRing,
         scenes.busyRing,
-        scenes.jammedRing
+        scenes.jammedRing,
+        scenes.quietTwoLaneRing,
+        scenes.waveProneTwoLaneRing,
+        scenes.lopsidedTwoLaneRing
       ),
       new SerializationFeatures("localhost", 8080, "http")
     )

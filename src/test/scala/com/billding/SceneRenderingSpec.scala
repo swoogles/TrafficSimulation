@@ -2,7 +2,7 @@ package com.billding
 
 import com.billding.physics.RingPath
 import com.billding.svgRendering.{RoadRing, RoadShape, RoadStrip}
-import com.billding.traffic.{RingScene, StreetScene, TrackLane}
+import com.billding.traffic.{RingScene, StreetScene, TrackLane, TrackRoad}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import squants.motion.KilometersPerHour
@@ -15,8 +15,12 @@ class SceneRenderingSpec extends AnyFlatSpec with Matchers {
   private val speedLimit = KilometersPerHour(45)
 
   private val ringScene = RingScene(
-    TrackLane
-      .evenlySpaced(RingPath.ofCircumference(Meters(400)), 8, speedLimit, speedLimit),
+    TrackRoad(
+      List(
+        TrackLane
+          .evenlySpaced(RingPath.ofCircumference(Meters(400)), 8, speedLimit, speedLimit)
+      )
+    ),
     Seconds(0),
     Milliseconds(100)
   )

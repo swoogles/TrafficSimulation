@@ -44,12 +44,21 @@ class RingDensitySpec extends AnyFlatSpec with Matchers {
   "Every preset ring" should "still be moving after a minute" in {
     val scenes = new SampleSceneCreation(Spatial((0.5, 0, 0, Kilometers)))(dt)
 
-    List(scenes.quietRing, scenes.busyRing, scenes.jammedRing).foreach { named =>
+    val presets = List(
+      scenes.quietRing,
+      scenes.busyRing,
+      scenes.jammedRing,
+      scenes.quietTwoLaneRing,
+      scenes.waveProneTwoLaneRing,
+      scenes.lopsidedTwoLaneRing
+    )
+
+    presets.foreach { named =>
       val ring = named.scene.asInstanceOf[RingScene]
       val settled = (1 to 600).foldLeft(ring)((scene, _) => scene.updateWithSpeedLimit(limit))
 
       withClue(s"${named.name} came to a permanent stop: ") {
-        settled.lane.meanSpeed.toKilometersPerHour should be > 5.0
+        settled.road.meanSpeed.toKilometersPerHour should be > 5.0
       }
     }
   }

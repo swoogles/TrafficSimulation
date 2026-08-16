@@ -1,6 +1,13 @@
 package com.billding
 
-import com.billding.svgRendering.{Projection, RenderedVehicle, RoadRing, RoadShape, RoadStrip}
+import com.billding.svgRendering.{
+  DividerRing,
+  Projection,
+  RenderedVehicle,
+  RoadRing,
+  RoadShape,
+  RoadStrip
+}
 import com.billding.traffic.Scene
 import org.scalajs.dom
 import org.scalajs.dom.svg.{G, SVG}
@@ -22,6 +29,9 @@ object Window {
   private val Tarmac = "#23282f"
   private val EdgeLine = "#ffffff"
 
+  /** Dashed lane markings are yellower and dimmer than the solid white at the kerb. */
+  private val DividerLine = "#d8c56a"
+
   /** How far in from the kerb the painted lines sit, as a fraction of the road's width. */
   private val EdgeLineInset = 0.42
 
@@ -34,7 +44,7 @@ object Window {
 }
 
 class Window(scene: Scene, canvasWidth: Int) {
-  import Window.{edgeLineWidth, EdgeLine, EdgeLineInset, Tarmac}
+  import Window.{edgeLineWidth, DividerLine, EdgeLine, EdgeLineInset, Tarmac}
 
   private val projection: Projection = scene.project(canvasWidth)
 
@@ -71,51 +81,70 @@ class Window(scene: Scene, canvasWidth: Int) {
     */
   private def createRoadSvgRepresentation(road: RoadShape): JsDom.TypedTag[G] =
     road match {
-    case RoadRing(center, radius, width) =>
-      val cx = projection.xOf(center)
-      val cy = projection.yOf(center)
+      case RoadRing(center, radius, width) =>
+        val cx = projection.xOf(center)
+        val cy = projection.yOf(center)
 
-      def ring(atRadius: Length, colour: String, thickness: Double) =
-        svgTags.circle(
-          svgAttrs.cx := cx.toString,
-          svgAttrs.cy := cy.toString,
-          svgAttrs.r := projection.across(atRadius).toString,
-          svgAttrs.fill := "none",
-          svgAttrs.stroke := colour,
-          svgAttrs.strokeWidth := thickness.toString
+        def ring(atRadius: Length, colour: String, thickness: Double) =
+          svgTags.circle(
+            svgAttrs.cx := cx.toString,
+            svgAttrs.cy := cy.toString,
+            svgAttrs.r := projection.across(atRadius).toString,
+            svgAttrs.fill := "none",
+            svgAttrs.stroke := colour,
+            svgAttrs.strokeWidth := thickness.toString
+          )
+
+        val tarmacWidth = projection.across(width)
+        val lineWidth = edgeLineWidth(tarmacWidth)
+
+        svgTags.g(cls := "roadway")(
+          ring(radius, Tarmac, tarmacWidth),
+          ring(radius + width * EdgeLineInset, EdgeLine, lineWidth),
+          ring(radius - width * EdgeLineInset, EdgeLine, lineWidth)
         )
 
-      val tarmacWidth = projection.across(width)
-      val lineWidth = edgeLineWidth(tarmacWidth)
+      case DividerRing(center, radius, width) =>
+        val renderedRadius = projection.across(radius)
+        val lineWidth = edgeLineWidth(projection.across(width))
+        // A dash and a gap of the same length, sized off the road rather than the screen, so
+        // the line reads as painted markings at any zoom.
+        val dash = math.max(4.0, renderedRadius * 0.05)
 
-      svgTags.g(cls := "roadway")(
-        ring(radius, Tarmac, tarmacWidth),
-        ring(radius + width * EdgeLineInset, EdgeLine, lineWidth),
-        ring(radius - width * EdgeLineInset, EdgeLine, lineWidth)
-      )
-
-    case RoadStrip(from, to, width) =>
-      val toEdgeLine = projection.down(width) * EdgeLineInset
-
-      def stripe(offset: Double, colour: String, thickness: Double) =
-        svgTags.line(
-          svgAttrs.x1 := projection.xOf(from).toString,
-          svgAttrs.y1 := (projection.yOf(from) + offset).toString,
-          svgAttrs.x2 := projection.xOf(to).toString,
-          svgAttrs.y2 := (projection.yOf(to) + offset).toString,
-          svgAttrs.stroke := colour,
-          svgAttrs.strokeWidth := thickness.toString
+        svgTags.g(cls := "lane-divider")(
+          svgTags.circle(
+            svgAttrs.cx := projection.xOf(center).toString,
+            svgAttrs.cy := projection.yOf(center).toString,
+            svgAttrs.r := renderedRadius.toString,
+            svgAttrs.fill := "none",
+            svgAttrs.stroke := DividerLine,
+            svgAttrs.strokeWidth := lineWidth.toString,
+            svgAttrs.strokeDasharray := s"$dash $dash"
+          )
         )
 
-      val tarmacWidth = projection.down(width)
-      val lineWidth = edgeLineWidth(tarmacWidth)
+      case RoadStrip(from, to, width) =>
+        val toEdgeLine = projection.down(width) * EdgeLineInset
 
-      svgTags.g(cls := "roadway")(
-        stripe(0, Tarmac, tarmacWidth),
-        stripe(-toEdgeLine, EdgeLine, lineWidth),
-        stripe(toEdgeLine, EdgeLine, lineWidth)
-      )
-  }
+        def stripe(offset: Double, colour: String, thickness: Double) =
+          svgTags.line(
+            svgAttrs.x1 := projection.xOf(from).toString,
+            svgAttrs.y1 := (projection.yOf(from) + offset).toString,
+            svgAttrs.x2 := projection.xOf(to).toString,
+            svgAttrs.y2 := (projection.yOf(to) + offset).toString,
+            svgAttrs.stroke := colour,
+            svgAttrs.strokeWidth := thickness.toString
+          )
+
+        val tarmacWidth = projection.down(width)
+        val lineWidth = edgeLineWidth(tarmacWidth)
+
+        svgTags.g(cls := "roadway")(
+          stripe(0, Tarmac, tarmacWidth),
+          stripe(-toEdgeLine, EdgeLine, lineWidth),
+          stripe(toEdgeLine, EdgeLine, lineWidth)
+        )
+    }
 
   // TODO This should go somewhere else, on its own.
   private def createCarSvgRepresentation(vehicle: RenderedVehicle): JsDom.TypedTag[G] = {

@@ -1,6 +1,14 @@
 package com.billding.traffic
 
-import com.billding.svgRendering.{Projection, RenderedVehicle, RoadShape, RoadStrip}
+import com.billding.physics.RingPath
+import com.billding.svgRendering.{
+  DividerRing,
+  Projection,
+  RenderedVehicle,
+  RoadRing,
+  RoadShape,
+  RoadStrip
+}
 import squants.motion.MetersPerSecond
 import squants.{Length, Time, Velocity}
 
@@ -106,32 +114,54 @@ case class StreetScene(
   * whatever you see is something the traffic did to itself.
   */
 case class RingScene(
-  lane: TrackLane,
+  road: TrackRoad,
   t: Time,
   dt: Time
 ) extends Scene {
 
-  val speedLimit: Velocity = lane.speedLimit
+  val speedLimit: Velocity = road.speedLimit
 
   def updateWithSpeedLimit(speedLimit: Velocity): RingScene =
-    copy(lane = TrackLane.update(lane.copy(speedLimit = speedLimit), dt), t = t + dt)
+    copy(road = TrackRoad.update(road.withSpeedLimit(speedLimit), dt), t = t + dt)
 
   def renderables: List[RenderedVehicle] =
-    lane.vehicles.map { vehicle =>
-      RenderedVehicle(
-        vehicle.piloted.spatial.r,
-        lane.headingOf(vehicle),
-        vehicle.piloted.width,
-        vehicle.piloted.height,
-        vehicle.piloted.uuid
-      )
-    }
+    for {
+      lane    <- road.lanes
+      vehicle <- lane.vehicles
+    } yield RenderedVehicle(
+      vehicle.piloted.spatial.r,
+      lane.headingOf(vehicle),
+      vehicle.piloted.width,
+      vehicle.piloted.height,
+      vehicle.piloted.uuid
+    )
 
-  def roadShapes: List[RoadShape] = List(RoadShape.of(lane.path))
+  /**
+    * One band of tarmac across all the lanes, with a dashed line on each interior boundary.
+    *
+    * Drawing a separate strip per lane would paint an edge line down every boundary, which
+    * reads as two roads that happen to touch rather than as one road you may change lanes on.
+    */
+  def roadShapes: List[RoadShape] = {
+    val rings = road.lanes.map(_.path).collect { case ring: RingPath => ring }
+    if (rings.size != road.lanes.size) road.lanes.map(lane => RoadShape.of(lane.path))
+    else {
+      // The band spans every lane, so it is centred halfway between the outer and inner ones.
+      val tarmac = RoadRing(
+        rings.head.center,
+        (rings.head.radius + rings.last.radius) / 2.0,
+        road.laneWidth * road.lanes.size.toDouble
+      )
+      val dividers = rings.tail.map { ring =>
+        DividerRing(ring.center, ring.radius + road.laneWidth / 2.0, road.laneWidth)
+      }
+      tarmac :: dividers
+    }
+  }
 
   def project(pixelWidth: Int): Projection =
     Projection.fitting(
-      lane.path.extent,
+      road.extent,
       pixelWidth,
       (pixelWidth * RingScene.CanvasAspect).toInt,
       RingScene.Padding
@@ -140,9 +170,22 @@ case class RingScene(
   val sourceTiming: Option[Time] = None
 
   /** Brake one car in the middle of the pack, so there are cars either side to watch. */
-  def brakeOneCar(): RingScene =
+  def brakeOneCar(): RingScene = {
+    val busiest = road.lanes.zipWithIndex.maxBy(_._1.vehicles.size)
+    val (lane, index) = busiest
     if (lane.vehicles.isEmpty) this
-    else copy(lane = lane.withVehicleSlowedTo(lane.vehicles.size / 2, MetersPerSecond(0)))
+    else
+      copy(
+        road = road.copy(
+          lanes = road.lanes
+            .updated(index, lane.withVehicleSlowedTo(lane.vehicles.size / 2, MetersPerSecond(0)))
+        )
+      )
+  }
+
+  /** The single errant lane change, on demand. */
+  def forceLaneChange(): RingScene =
+    copy(road = TrackRoad.forceLaneChange(road))
 }
 
 object RingScene {

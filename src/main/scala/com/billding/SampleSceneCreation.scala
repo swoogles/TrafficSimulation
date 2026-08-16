@@ -126,9 +126,32 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
     */
   private def ring(carCount: Int, circumference: Length): RingScene =
     RingScene(
-      TrackLane.evenlySpaced(
-        RingPath.ofCircumference(circumference),
-        carCount,
+      TrackRoad(
+        List(
+          TrackLane.evenlySpaced(
+            RingPath.ofCircumference(circumference),
+            carCount,
+            ringSpeedLimit,
+            ringSpeedLimit
+          )
+        )
+      ),
+      Seconds(0),
+      DT
+    )
+
+  /**
+    * Two lanes, with the outer one carrying more of the traffic.
+    *
+    * The imbalance is the point. Even densities leave nobody with a reason to move, where a
+    * crowded outer lane beside a clearer inner one gives drivers something to want, and the
+    * keep-right bias gives them a reason to come back once they have had it.
+    */
+  private def twoLaneRing(outerCars: Int, innerCars: Int, circumference: Length): RingScene =
+    RingScene(
+      TrackRoad.ring(
+        circumference,
+        List(outerCars, innerCars),
         ringSpeedLimit,
         ringSpeedLimit
       ),
@@ -150,4 +173,25 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
   val jammedRing =
     NamedScene("ring road, 22 cars", ring(22, Meters(400)))
+
+  /*
+  The inner lane is shorter, so the same car count is a higher density there. These pairs are
+  picked by how full each lane actually is rather than by how the numbers look.
+   */
+  val quietTwoLaneRing =
+    NamedScene("2 lanes, free flowing", twoLaneRing(9, 5, Meters(400)))
+
+  /**
+    * Dense enough that the traffic can't damp a disturbance out.
+    *
+    * Below about twenty cars in the outer lane a jolt spreads, fades and is gone inside a
+    * minute. Above it the same jolt feeds itself: this is the density where one forced lane
+    * change turns into stop-and-go traffic that is still going round the loop minutes later,
+    * long after the car that caused it has driven out of its own wave.
+    */
+  val waveProneTwoLaneRing =
+    NamedScene("2 lanes, standing waves", twoLaneRing(21, 13, Meters(400)))
+
+  val lopsidedTwoLaneRing =
+    NamedScene("2 lanes, all in the right one", twoLaneRing(18, 2, Meters(400)))
 }

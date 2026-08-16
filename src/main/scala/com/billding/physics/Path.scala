@@ -27,6 +27,15 @@ sealed trait Path {
   /** Unit vector pointing the way traffic travels at arc length s. */
   def headingAt(s: Length): DoubleVector
 
+  /**
+    * Unit vector pointing to the left of travel at arc length s.
+    *
+    * This is what lets something sit beside the path rather than on it, which is how a car
+    * caught mid-lane-change is drawn: it is between two lanes, so it is offset from the one
+    * it belongs to.
+    */
+  def normalAt(s: Length): DoubleVector
+
   /** Wrap s back onto a closed path, or clamp it to the ends of an open one. */
   def normalize(s: Length): Length
 
@@ -63,6 +72,11 @@ final case class StraightPath(
     }
 
   def headingAt(s: Length): DoubleVector = heading
+
+  private val normal: DoubleVector =
+    DoubleVector(-heading.coordinates(1), heading.coordinates.head, 0.0)
+
+  def normalAt(s: Length): DoubleVector = normal
 
   def normalize(s: Length): Length =
     if (s < Meters(0)) Meters(0)
@@ -115,6 +129,12 @@ final case class RingPath(
     DoubleVector(-sin(angle), cos(angle), 0.0)
   }
 
+  /** Traffic runs counter-clockwise, so the left of travel points in at the centre. */
+  def normalAt(s: Length): DoubleVector = {
+    val angle = angleAt(s)
+    DoubleVector(-cos(angle), -sin(angle), 0.0)
+  }
+
   def normalize(s: Length): Length = {
     val loop = totalLength.toMeters
     val remainder = s.toMeters % loop
@@ -134,4 +154,23 @@ object RingPath {
   /** The ring you actually want to specify: how much road there is to drive on. */
   def ofCircumference(circumference: Length): RingPath =
     RingPath(ORIGIN, circumference / (2 * Pi))
+
+  /**
+    * Concentric lanes, outermost first, each one lane-width in from the last.
+    *
+    * The outermost lane is the one whose circumference you asked for, so adding a lane to a
+    * ring never moves the traffic that was already on it. Index 0 is the right-hand lane:
+    * traffic runs counter-clockwise, so the inner lanes are the ones you overtake in.
+    */
+  def concentric(circumference: Length, laneCount: Int, laneWidth: Length): List[RingPath] = {
+    require(laneCount >= 1, "a road needs at least one lane")
+    val outer = ofCircumference(circumference)
+    require(
+      outer.radius > laneWidth * (laneCount - 1).toDouble,
+      "the innermost lane would fall through the middle of the ring"
+    )
+    (0 until laneCount).toList.map { index =>
+      RingPath(outer.center, outer.radius - laneWidth * index.toDouble)
+    }
+  }
 }

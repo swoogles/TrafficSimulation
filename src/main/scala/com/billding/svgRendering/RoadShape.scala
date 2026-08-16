@@ -27,6 +27,18 @@ case class RoadStrip(
   width: Length
 ) extends RoadShape
 
+/**
+  * The dashed line between two lanes of a ring, drawn on top of the tarmac.
+  *
+  * Its width is the lane width it divides rather than its own stroke, so the dashes stay in
+  * proportion to the road the way the edge lines do.
+  */
+case class DividerRing(
+  center: QuantityVector[Distance],
+  radius: Length,
+  width: Length
+) extends RoadShape
+
 object RoadShape {
 
   /** Wide enough for the 4m cars, and the same 6m that Street uses to space its lanes. */

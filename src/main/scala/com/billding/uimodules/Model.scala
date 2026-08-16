@@ -5,6 +5,7 @@ import com.billding.physics.Spatial
 import com.billding.traffic.{
   IntelligentDriverModelImpl,
   Lane,
+  MOBIL,
   PilotedVehicle,
   RingScene,
   Scene,
@@ -23,7 +24,8 @@ trait Serialization {
 
 case class Disruptions(
   disruptLane: Var[Boolean] = Var(false),
-  disruptLaneExisting: Var[Boolean] = Var(false)
+  disruptLaneExisting: Var[Boolean] = Var(false),
+  forceLaneChange: Var[Boolean] = Var(false)
 )
 
 trait ModelTrait {
@@ -49,12 +51,22 @@ case class Model(
   paused: Var[Boolean] = Var(false),
   resetScene: Var[Boolean] = Var(false),
   vehicleCount: Var[Int] = Var(0),
-  disruptions: Disruptions = Disruptions()
+  disruptions: Disruptions = Disruptions(),
+  /** 0 to 1, where 1 takes any gap that leaves the driver the least bit better off. */
+  laneChangeEagerness: Var[Double] = Var(0.5),
+  /** 0 to 1, how much of the cost to everyone else a driver counts against its own gain. */
+  politeness: Var[Double] = Var(MOBIL.DefaultPoliteness)
 ) extends Serialization
     with ModelTrait {
   // TODO Make this private
   val sceneVar: Var[Scene] = Var(originalScene)
   val carSpeedText: Signal[String] = speed.signal.map(s => s"Current car speed $s ")
+
+  val laneChangeEagernessText: Signal[String] =
+    laneChangeEagerness.signal.map(e => f"Lane change eagerness ${e * 100}%.0f%%")
+
+  val politenessText: Signal[String] =
+    politeness.signal.map(p => f"Driver politeness ${p * 100}%.0f%%")
 
   // A ring has no source, so it has no timing to report - fall back to a sane slider value.
   val carTiming: Var[Time] = Var(originalScene.sourceTiming.getOrElse(Seconds(3)))
@@ -143,14 +155,37 @@ case class Model(
   private def applyInputTo(scene: Scene): Scene = scene match {
     case street: StreetScene => street.updateAllStreets(this.updateLane)
     case ring: RingScene =>
-      val disrupted = brakeOneCarIfRequested(ring)
-      disrupted.copy(lane = disrupted.lane.copy(speedLimit = this.speed.now()))
+      val disrupted = forceLaneChangeIfRequested(brakeOneCarIfRequested(ring))
+      disrupted.copy(
+        road = disrupted.road
+          .withSpeedLimit(this.speed.now())
+          .copy(mobil = this.laneChangeRules)
+      )
   }
+
+  /**
+    * The lane-change model the sliders currently describe.
+    *
+    * Rebuilt every tick rather than held onto, so moving a slider changes what the drivers
+    * do from the next tick on - the whole point of the control is watching the traffic
+    * respond to it without a reset.
+    */
+  private def laneChangeRules: MOBIL =
+    MOBIL(
+      politeness = this.politeness.now(),
+      threshold = MOBIL.thresholdFor(this.laneChangeEagerness.now())
+    )
 
   private def brakeOneCarIfRequested(ring: RingScene): RingScene =
     if (this.disruptions.disruptLaneExisting.now() == true) {
       this.disruptions.disruptLaneExisting.set(false)
       ring.brakeOneCar()
+    } else ring
+
+  private def forceLaneChangeIfRequested(ring: RingScene): RingScene =
+    if (this.disruptions.forceLaneChange.now() == true) {
+      this.disruptions.forceLaneChange.set(false)
+      ring.forceLaneChange()
     } else ring
 
   private def updateLanesAndScene(): Unit =
