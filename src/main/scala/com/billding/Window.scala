@@ -19,13 +19,22 @@ object Window {
   These live out here rather than in the class body on purpose. svgNode is a val that renders
   during construction, so any field declared below it is still null by the time it is read.
    */
-  private val Tarmac = "#57606a"
-  private val EdgeLine = "#f6f8fa"
-  private val EdgeLineWidth = 1.5
+  private val Tarmac = "#23282f"
+  private val EdgeLine = "#ffffff"
+
+  /** How far in from the kerb the painted lines sit, as a fraction of the road's width. */
+  private val EdgeLineInset = 0.42
+
+  /**
+    * Painted lines are a share of the road's own width, so they stay in proportion as the
+    * canvas grows, with a floor that keeps them from vanishing on a small one.
+    */
+  private def edgeLineWidth(roadWidthInPixels: Double): Double =
+    math.max(1.0, roadWidthInPixels * 0.12)
 }
 
 class Window(scene: Scene, canvasWidth: Int) {
-  import Window.{EdgeLine, EdgeLineWidth, Tarmac}
+  import Window.{edgeLineWidth, EdgeLine, EdgeLineInset, Tarmac}
 
   private val projection: Projection = scene.project(canvasWidth)
 
@@ -76,14 +85,17 @@ class Window(scene: Scene, canvasWidth: Int) {
           svgAttrs.strokeWidth := thickness.toString
         )
 
+      val tarmacWidth = projection.across(width)
+      val lineWidth = edgeLineWidth(tarmacWidth)
+
       svgTags.g(cls := "roadway")(
-        ring(radius, Tarmac, projection.across(width)),
-        ring(radius + width / 2.0, EdgeLine, EdgeLineWidth),
-        ring(radius - width / 2.0, EdgeLine, EdgeLineWidth)
+        ring(radius, Tarmac, tarmacWidth),
+        ring(radius + width * EdgeLineInset, EdgeLine, lineWidth),
+        ring(radius - width * EdgeLineInset, EdgeLine, lineWidth)
       )
 
     case RoadStrip(from, to, width) =>
-      val halfWidth = projection.down(width) / 2
+      val toEdgeLine = projection.down(width) * EdgeLineInset
 
       def stripe(offset: Double, colour: String, thickness: Double) =
         svgTags.line(
@@ -95,10 +107,13 @@ class Window(scene: Scene, canvasWidth: Int) {
           svgAttrs.strokeWidth := thickness.toString
         )
 
+      val tarmacWidth = projection.down(width)
+      val lineWidth = edgeLineWidth(tarmacWidth)
+
       svgTags.g(cls := "roadway")(
-        stripe(0, Tarmac, projection.down(width)),
-        stripe(-halfWidth, EdgeLine, EdgeLineWidth),
-        stripe(halfWidth, EdgeLine, EdgeLineWidth)
+        stripe(0, Tarmac, tarmacWidth),
+        stripe(-toEdgeLine, EdgeLine, lineWidth),
+        stripe(toEdgeLine, EdgeLine, lineWidth)
       )
   }
 
