@@ -16,7 +16,8 @@ case class RenderedVehicle(
   heading: DoubleVector,
   width: Distance,
   height: Distance,
-  uuid: UUID
+  uuid: UUID,
+  motion: Motion = Motion.Steady
 ) {
 
   /** Clockwise degrees from east, in screen space, where y already points down. */

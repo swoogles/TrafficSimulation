@@ -2,6 +2,7 @@ package com.billding
 
 import com.billding.svgRendering.{
   DividerRing,
+  Motion,
   Projection,
   RenderedVehicle,
   RoadRing,
@@ -32,6 +33,53 @@ object Window {
   /** Dashed lane markings are yellower and dimmer than the solid white at the kerb. */
   private val DividerLine = "#d8c56a"
 
+  /*
+  The sprite is a light silver car, so multiplying it by a colour keeps its shading and its
+  outline while changing what colour it is - a green car rather than a green rectangle. The
+  alternative, tinting with an overlay, would paint the sprite's transparent corners too.
+   */
+  private val AcceleratingTint = "#35c46a"
+  private val BrakingTint = "#e8483c"
+
+  private val AcceleratingFilter = "acceleratingCar"
+  private val BrakingFilter = "brakingCar"
+
+  /** Which tint, if any, a car in this state is drawn through. */
+  def filterFor(motion: Motion): Option[String] = motion match {
+    case Motion.Accelerating => Some(AcceleratingFilter)
+    case Motion.Braking      => Some(BrakingFilter)
+    case Motion.Steady       => None
+  }
+
+  /**
+    * The two tints every car shares, defined once and referenced by the cars that want them.
+    *
+    * Flooding the filter region with a colour and compositing it against the sprite's own
+    * alpha gives a car-shaped patch of that colour; multiplying the sprite by that patch
+    * recolours the paintwork while leaving the windows and the shadow under the car dark.
+    */
+  def tintDefinitions: JsDom.TypedTag[dom.svg.Element] =
+    svgTags.defs(
+      tintFilter(AcceleratingFilter, AcceleratingTint),
+      tintFilter(BrakingFilter, BrakingTint)
+    )
+
+  private def tintFilter(name: String, colour: String): JsDom.TypedTag[dom.svg.Element] =
+    svgTags.filter(id := name)(
+      svgTags.feFlood(attr("flood-color") := colour, attr("result") := "paint"),
+      svgTags.feComposite(
+        attr("in") := "paint",
+        attr("in2") := "SourceAlpha",
+        attr("operator") := "in",
+        attr("result") := "carShapedPaint"
+      ),
+      svgTags.feBlend(
+        attr("in") := "SourceGraphic",
+        attr("in2") := "carShapedPaint",
+        attr("mode") := "multiply"
+      )
+    )
+
   /** How far in from the kerb the painted lines sit, as a fraction of the road's width. */
   private val EdgeLineInset = 0.42
 
@@ -56,6 +104,7 @@ class Window(scene: Scene, canvasWidth: Int) {
           println("we want to zoom in/out here." + wheelEvent)
         }
       )(
+        Window.tintDefinitions,
         svgTags.g(
           createSvgReps(scene.roadShapes.map(createRoadSvgRepresentation)),
           createSvgReps(scene.renderables.map(createCarSvgRepresentation))
@@ -160,6 +209,10 @@ class Window(scene: Scene, canvasWidth: Int) {
     val turn =
       s"rotate(${vehicle.headingInDegrees}, ${renderedWidth / 2}, ${renderedHeight / 2})"
 
+    // A steady car is left exactly as it was drawn before, so colour reads as something
+    // happening rather than as a permanent property of the traffic.
+    val tint = Window.filterFor(vehicle.motion).map(name => svgAttrs.filter := s"url(#$name)")
+
     svgTags.g(
       cls := CIRCLE
     )(
@@ -169,6 +222,7 @@ class Window(scene: Scene, canvasWidth: Int) {
         href := "images/sedan.svg",
         width := renderedWidth.px,
         height := renderedHeight.px,
+        tint,
         onclick := { _: dom.MouseEvent =>
           println(vehicle.uuid)
         }

@@ -3,7 +3,7 @@ package com.billding.traffic
 import java.util.UUID
 
 import com.billding.physics.{Path, Spatial}
-import squants.motion.{Acceleration, MetersPerSecond}
+import squants.motion.{Acceleration, MetersPerSecond, MetersPerSecondSquared}
 import squants.space.{Length, Meters}
 import squants.time.Seconds
 import squants.{DoubleVector, Time, Velocity}
@@ -20,7 +20,9 @@ case class TrackVehicle(
   s: Length,
   speed: Velocity,
   lateral: Length = Meters(0),
-  changeCooldown: Time = Seconds(0)
+  changeCooldown: Time = Seconds(0),
+  /** What the car did about its speed on the last tick, kept so the canvas can colour it. */
+  acceleration: Acceleration = MetersPerSecondSquared(0)
 ) {
 
   /** The along-the-road extent of the car, which is what a gap is measured between. */
@@ -248,7 +250,8 @@ object TrackLane {
         (STOPPED, distanceToStop(vehicle.speed, acceleration))
 
     val settled = vehicle.copy(
-      changeCooldown = if (vehicle.changeCooldown > dt) vehicle.changeCooldown - dt else Seconds(0)
+      changeCooldown = if (vehicle.changeCooldown > dt) vehicle.changeCooldown - dt else Seconds(0),
+      acceleration = acceleration
     )
     settled.at(path.normalize(settled.s + travelled), newSpeed).placedOn(path)
   }

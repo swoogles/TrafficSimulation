@@ -149,12 +149,14 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
     */
   private def twoLaneRing(outerCars: Int, innerCars: Int, circumference: Length): RingScene =
     RingScene(
-      TrackRoad.ring(
-        circumference,
-        List(outerCars, innerCars),
-        ringSpeedLimit,
-        ringSpeedLimit
-      ),
+      TrackRoad
+        .ring(
+          circumference,
+          List(outerCars, innerCars),
+          ringSpeedLimit,
+          ringSpeedLimit
+        )
+        .copy(laneChangeDuration = Some(SampleSceneCreation.LaneChangeDuration)),
       Seconds(0),
       DT
     )
@@ -194,4 +196,21 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
   val lopsidedTwoLaneRing =
     NamedScene("2 lanes, all in the right one", twoLaneRing(18, 2, Meters(400)))
+}
+
+object SampleSceneCreation {
+
+  /**
+    * How long a car takes to cross the line, on screen.
+    *
+    * Instant changes are what the model does and are impossible to follow: a car is in one
+    * lane, and on the next frame it is in the other, with nothing to tell you which car moved
+    * or that anything moved at all. Sliding it across costs nothing in the physics - the
+    * change has already happened as far as the other drivers are concerned - and buys the
+    * thing the ring is for, which is being able to watch one.
+    *
+    * Kept shorter than MOBIL's cooldown so a car is always settled in its lane before it is
+    * allowed to consider leaving it again.
+    */
+  val LaneChangeDuration: Time = Seconds(2)
 }

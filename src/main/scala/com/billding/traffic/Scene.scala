@@ -3,6 +3,7 @@ package com.billding.traffic
 import com.billding.physics.RingPath
 import com.billding.svgRendering.{
   DividerRing,
+  Motion,
   Projection,
   RenderedVehicle,
   RoadRing,
@@ -68,17 +69,23 @@ case class StreetScene(
     this.copy(streets = newStreets)
   }
 
+  /**
+    * The straight road recomputes what each driver is doing rather than remembering it, since
+    * a Lane keeps its accelerations only long enough to apply them. It is the same function
+    * the update uses, so the colours agree with the motion they are describing.
+    */
   def renderables: List[RenderedVehicle] =
     for {
-      street  <- streets
-      lane    <- street.lanes
-      vehicle <- lane.vehicles
+      street                  <- streets
+      lane                    <- street.lanes
+      (vehicle, acceleration) <- lane.vehicles.zip(Lane.responsesInOneLanePrep(lane))
     } yield RenderedVehicle(
       vehicle.spatial.r,
       lane.direction,
       vehicle.width,
       vehicle.height,
-      vehicle.uuid
+      vehicle.uuid,
+      Motion.of(vehicle.spatial.v.magnitude, acceleration)
     )
 
   def roadShapes: List[RoadShape] =
@@ -133,7 +140,8 @@ case class RingScene(
       lane.headingOf(vehicle),
       vehicle.piloted.width,
       vehicle.piloted.height,
-      vehicle.piloted.uuid
+      vehicle.piloted.uuid,
+      Motion.of(vehicle.speed, vehicle.acceleration)
     )
 
   /**
