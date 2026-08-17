@@ -315,10 +315,6 @@ class LaneChangeSignallingSpec extends AnyFlatSpec with Matchers {
   }
 
   "Every preset that can change lanes" should "warn before it does" in {
-    val scenes = new SampleSceneCreation(
-      com.billding.physics.Spatial((0.5, 0, 0, squants.space.Kilometers))
-    )(dt)
-
     List(scenes.quietTwoLaneRing, scenes.waveProneTwoLaneRing, scenes.lopsidedTwoLaneRing)
       .foreach { named =>
         val preset = named.scene.asInstanceOf[RingScene].road
@@ -333,4 +329,62 @@ class LaneChangeSignallingSpec extends AnyFlatSpec with Matchers {
         }
       }
   }
+
+  /**
+    * None of this exists on a road with one lane, and the page used to open on one: a single
+    * car approaching a stopped car, on a straight strip with nowhere to go. Everything the
+    * simulation had learned about lane changing was a preset click away, which is the same as
+    * not being there.
+    */
+  "The scene the page opens on" should "be a road where a lane change can happen at all" in {
+    Client.model.originalScene match {
+      case ring: RingScene =>
+        withClue("the landing scene has nowhere to change lanes to: ") {
+          ring.road.lanes.size should be > 1
+        }
+        ring.road.laneChangeWarning shouldBe defined
+      case other =>
+        fail(s"the page opens on $other, where no car can change lanes")
+    }
+  }
+
+  it should "be running, rather than waiting to be started" in {
+    Client.model.paused.now() shouldBe false
+  }
+
+  /**
+    * A road that could change lanes but doesn't is no better to land on than a road that
+    * can't. Both of the other two-lane presets are in this position: free-flowing traffic has
+    * no reason to move and the standing-wave one is too tightly packed for a gap to be worth
+    * taking, and neither indicates once in the first thirty seconds - about as long as anyone
+    * gives a page before deciding it is a still picture.
+    */
+  it should "actually show somebody indicating, within half a minute of opening" in {
+    val landing = Client.model.originalScene.asInstanceOf[RingScene].road
+    // The sliders overwrite MOBIL every tick, so these are the drivers the page really runs.
+    val asThePageRunsIt =
+      landing.copy(mobil = MOBIL(politeness = 0.2, threshold = MOBIL.thresholdFor(0.5)))
+
+    val history =
+      (1 to 300).scanLeft(asThePageRunsIt)((current, _) => TrackRoad.update(current, dt))
+
+    val indicatingTicks = history.count(_.vehicles.exists(_.intent.isDefined))
+
+    withClue("the landing scene never announces a lane change, so it never shows one: ") {
+      indicatingTicks should be > 0
+    }
+  }
+
+  /** Picking a preset means "show me this", not "lay this out and wait". */
+  "Loading a scene" should "start it, even if the page was paused at the time" in {
+    val model = Client.model
+    model.pause()
+
+    model.loadScene(scenes.quietTwoLaneRing.scene)
+
+    model.paused.now() shouldBe false
+  }
+
+  private lazy val scenes =
+    new SampleSceneCreation(com.billding.physics.Spatial((0.5, 0, 0, squants.space.Kilometers)))(dt)
 }

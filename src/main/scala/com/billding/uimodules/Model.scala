@@ -92,10 +92,18 @@ case class Model(
 
   }
 
+  /**
+    * Picking a scene starts it, rather than laying it out and waiting to be told.
+    *
+    * Loading used to pause, which meant every preset opened as a still photograph and the
+    * next thing you did was hunt for the button that made it move. Traffic that isn't moving
+    * has nothing to say. Anything that genuinely wants a frozen scene pauses after loading
+    * one, which is the honest way round: this is what picking a scene means.
+    */
   def loadScene(scene: Scene): Unit = {
     sceneVar.set(scene)
     scene.sourceTiming.foreach(carTiming.set)
-    paused.set(true)
+    paused.set(false)
   }
 
   private def reset: Unit = {

@@ -24,6 +24,9 @@ class SerializationFeatures(hostName: String, port: Int, protocol: String) {
               .parse(xhr.responseText)
               .as[StreetScene] // Might want to use safer .asOpt
           model.loadScene(res)
+          // Loading a scene runs it, and a scene fetched from the server is one you asked
+          // for in order to look at it, so it is held still until you say otherwise.
+          model.pause()
         }
 
         case Failure(cause) => println("failed: " + cause)

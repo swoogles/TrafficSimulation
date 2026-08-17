@@ -36,9 +36,22 @@ object Client {
   implicit val DT: Time = Milliseconds(100)
   val scenes = new SampleSceneCreation(endingSpatial)
 
+  /*
+  The landing scene is a two-lane ring rather than a single car on a straight road, because
+  the straight road is one lane: nothing on it can change lanes, so everything the simulation
+  has learned to show about lane changing was invisible until you went looking through the
+  presets for a road that had two of them.
+
+  The lopsided one rather than the denser, more interesting ones, because it is the only one
+  that shows you anything soon enough. Given the traffic thirty seconds - about as long as
+  anyone gives a page before deciding it is a still picture - the free-flowing ring changes
+  lanes not at all, the standing-wave ring is too tightly packed for a gap to be worth taking
+  and also changes lanes not at all, and this one has a driver indicating about a twelfth of
+  the time. An imbalance is what gives anybody a reason to move.
+   */
   val model: Model =
     Model(
-      scenes.singleCarApproachingAStoppedCar.scene,
+      scenes.lopsidedTwoLaneRing.scene,
       List(
         scenes.emptyScene,
         scenes.scene1,
