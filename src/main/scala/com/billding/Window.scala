@@ -224,10 +224,10 @@ object Window {
     math.max(1.0, roadWidthInPixels * 0.12)
 }
 
-class Window(scene: Scene, canvasWidth: Int) {
+class Window(scene: Scene, canvasWidth: Int, availableHeight: Int) {
   import Window.{edgeLineWidth, DividerLine, EdgeLine, EdgeLineInset, Tarmac}
 
-  private val projection: Projection = scene.project(canvasWidth)
+  private val projection: Projection = scene.project(canvasWidth, availableHeight)
 
   val svgNode: JsDom.TypedTag[SVG] =
     svgTags

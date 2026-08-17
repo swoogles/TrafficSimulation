@@ -125,6 +125,34 @@ object Client {
     }
   }
 
+  /**
+    * How much of the window is left below the top of the canvas, less a share kept back for
+    * the controls.
+    *
+    * Measured rather than assumed, and measured again on every frame, which is what makes
+    * turning a phone on its side work without anybody listening for it: the canvas is rebuilt
+    * from the scene each tick anyway, so it picks up the new window on the way past.
+    *
+    * The share held back is what stops the road filling the screen and pushing every button
+    * off the bottom of it. It is the road's job to want less than this if it cannot use it -
+    * a ring that has settled for a square canvas leaves far more than this showing.
+    */
+  private def availableHeight(svgContainer: Element): Int = {
+    val topOfCanvas = svgContainer.getBoundingClientRect().top
+    val window = dom.window.innerHeight
+
+    val toTheBottomOfTheWindow = window - topOfCanvas
+    val leavingRoomForTheControls = window * MostOfTheWindow
+
+    math.max(MinimumCanvasHeight, math.min(toTheBottomOfTheWindow, leavingRoomForTheControls)).toInt
+  }
+
+  /** At most this much of the window goes to the road, so some of the controls stay in view. */
+  private val MostOfTheWindow = 0.68
+
+  /** Below this the drawing is not worth looking at, whatever the window is doing. */
+  private val MinimumCanvasHeight = 200
+
   // Currently this needs access to the window
   def setupSvgAndButtonResponses(svgContainer: Element): Int = {
     println("!1 svgContainer height: " + svgContainer.clientHeight)
@@ -132,7 +160,7 @@ object Client {
 
     // Create a reactive window that updates when scene changes
     val windowSignal: Signal[Window] = sceneVar.map { scene =>
-      new Window(scene, svgContainer.clientWidth)
+      new Window(scene, svgContainer.clientWidth, availableHeight(svgContainer))
     }
 
     // Subscribe to scene changes and update SVG

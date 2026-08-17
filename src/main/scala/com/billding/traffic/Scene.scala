@@ -35,8 +35,13 @@ sealed trait Scene {
   /** The road they are driving on, laid down before them. */
   def roadShapes: List[RoadShape]
 
-  /** How this scene wants to be laid out on a canvas of the given pixel width. */
-  def project(pixelWidth: Int): Projection
+  /**
+    * How this scene wants to be laid out in the box the page can give it.
+    *
+    * The height is what the page has room for, not what the scene must take: a scene is free
+    * to use less of it, and says so by returning a projection shorter than it was offered.
+    */
+  def project(pixelWidth: Int, pixelHeight: Int): Projection
 
   /** How often new cars arrive, for scenes that have anywhere for them to arrive from. */
   def sourceTiming: Option[Time]
@@ -101,8 +106,11 @@ case class StreetScene(
     *
     * The road itself sits at y = 0, and a car is drawn centred on its position, so the
     * strip needs half a car of room above the road or the top half gets clipped away.
+    *
+    * Whatever height the page offers is ignored: a straight road is a letterbox strip, and
+    * stretching it down the screen would only put more empty tarmac either side of it.
     */
-  def project(pixelWidth: Int): Projection = {
+  def project(pixelWidth: Int, availableHeight: Int): Projection = {
     val pixelHeight = pixelWidth / 8
     Projection(
       pixelWidth,
@@ -170,13 +178,33 @@ case class RingScene(
     }
   }
 
-  def project(pixelWidth: Int): Projection =
+  /**
+    * Fit the ring into the box the page has room for, and take no more of it than the road
+    * can fill.
+    *
+    * The canvas used to be a fixed fraction of its own width, which is a letterbox whatever
+    * the screen is: on a phone held upright it left the ring small with the screen empty
+    * underneath, and on a wide desktop it made the canvas taller than the window, so the
+    * bottom of the ring was cut off. Both of those are the same mistake - deciding how tall
+    * the drawing is without reference to how tall the page is.
+    *
+    * Asking for only as much height as the road's own proportions can use keeps the controls
+    * tucked up underneath rather than pushed down past a band of whitespace. A round ring
+    * can't use a tall box, so on a phone it settles for a square one - but a road that is
+    * taller than it is wide, an oval stood on its end, would take the height as soon as
+    * there were one to take.
+    */
+  def project(pixelWidth: Int, availableHeight: Int): Projection = {
+    val shape = road.extent
+    val tallestWorthHaving = pixelWidth * (shape.height / shape.width)
+
     Projection.fitting(
-      road.extent,
+      shape,
       pixelWidth,
-      (pixelWidth * RingScene.CanvasAspect).toInt,
+      math.max(1, math.min(availableHeight, tallestWorthHaving.toInt)),
       RingScene.Padding
     )
+  }
 
   val sourceTiming: Option[Time] = None
 
@@ -200,9 +228,6 @@ case class RingScene(
 }
 
 object RingScene {
-
-  /** How tall the ring's canvas is relative to its width. */
-  val CanvasAspect: Double = 0.62
 
   /** Breathing room around the ring, so cars aren't clipped by the edge of the canvas. */
   val Padding: Double = 1.12

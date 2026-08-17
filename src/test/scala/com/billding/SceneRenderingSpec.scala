@@ -12,6 +12,10 @@ import squants.time.{Milliseconds, Seconds}
 class SceneRenderingSpec extends AnyFlatSpec with Matchers {
 
   private val CanvasWidth = 800
+
+  /** A window with plenty of room, so these tests are about the scene and not about the page. */
+  private val CanvasHeight = 800
+
   private val speedLimit = KilometersPerHour(45)
 
   private val ringScene = RingScene(
@@ -25,7 +29,7 @@ class SceneRenderingSpec extends AnyFlatSpec with Matchers {
     Milliseconds(100)
   )
 
-  private val projection = ringScene.project(CanvasWidth)
+  private val projection = ringScene.project(CanvasWidth, CanvasHeight)
 
   private def pixelRadiusOf(position: (Double, Double)): Double = {
     val (x, y) = position
@@ -102,6 +106,47 @@ class SceneRenderingSpec extends AnyFlatSpec with Matchers {
     outerEdge should be < math.min(projection.pixelWidth, projection.pixelHeight) / 2.0
   }
 
+  /**
+    * The canvas used to be a fixed fraction of its own width, which is a letterbox whatever
+    * shape the screen is. On anything wide that made the drawing taller than the window and
+    * cut the bottom off the ring, which is the bug these two are really about: how tall the
+    * drawing is has to be settled against how tall the page is.
+    */
+  "A ring scene on a short, wide page" should "fit the room it was given rather than overflow it" in {
+    val wideAndShort = ringScene.project(1400, 500)
+
+    wideAndShort.pixelHeight shouldBe 500
+
+    // The whole road, edge lines and all, inside the box top to bottom.
+    val road = ringScene.roadShapes.head.asInstanceOf[RoadRing]
+    val outerEdge = wideAndShort.across(road.radius + road.width / 2.0)
+    outerEdge should be < wideAndShort.pixelHeight / 2.0
+  }
+
+  /**
+    * The other half of the same idea. A round road in a tall box can only ever be as big as
+    * the box is wide, so taking the rest of the height would be claiming a band of whitespace
+    * and pushing the controls down past it. A road that could use the height - an oval stood
+    * on its end - would get it, because this is asked of the road's own proportions.
+    */
+  "A ring scene on a phone held upright" should "take only the height a round road can fill" in {
+    val tallAndNarrow = ringScene.project(390, 700)
+
+    tallAndNarrow.pixelWidth shouldBe 390
+    tallAndNarrow.pixelHeight shouldBe 390
+  }
+
+  it should "still be bigger than the old letterbox made it" in {
+    val phone = ringScene.project(390, 700)
+    // The canvas was its own width times 0.62, whatever the page had room for.
+    val asTheLetterboxHadIt = ringScene.project(390, (390 * 0.62).toInt)
+
+    val roadIn = (projection: com.billding.svgRendering.Projection) =>
+      projection.across(ringScene.roadShapes.head.asInstanceOf[RoadRing].radius)
+
+    roadIn(phone) should be > roadIn(asTheLetterboxHadIt)
+  }
+
   "A street scene" should "give every lane its own strip of road" in {
     val scenes = new SampleSceneCreation(
       com.billding.physics.Spatial((0.5, 0, 0, squants.space.Kilometers))
@@ -130,7 +175,7 @@ class SceneRenderingSpec extends AnyFlatSpec with Matchers {
     val scenes = new SampleSceneCreation(
       com.billding.physics.Spatial((0.5, 0, 0, squants.space.Kilometers))
     )(Milliseconds(100))
-    val streetProjection = scenes.scene1.scene.project(CanvasWidth)
+    val streetProjection = scenes.scene1.scene.project(CanvasWidth, CanvasHeight)
 
     streetProjection.pixelHeight shouldBe CanvasWidth / 8
     streetProjection.metersPerPixelAcross shouldBe 500.0 / (800 * 3) +- 1e-12
