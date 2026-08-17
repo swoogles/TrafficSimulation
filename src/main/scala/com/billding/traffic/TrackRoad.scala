@@ -119,7 +119,8 @@ object TrackRoad {
     initialSpeed: Velocity,
     speedLimit: Velocity,
     mobil: MOBIL = MOBIL(),
-    laneWidth: Length = RoadShape.LaneWidth
+    laneWidth: Length = RoadShape.LaneWidth,
+    speedSpread: Double = DefaultSpeedSpread
   ): TrackRoad = {
     val paths: List[RingPath] =
       RingPath.concentric(circumference, carsPerLane.size, laneWidth)
@@ -129,10 +130,23 @@ object TrackRoad {
         val stagger =
           if (count == 0) Meters(0)
           else path.totalLength / count.toDouble / 2.0 * (index % 2).toDouble
-        TrackLane.evenlySpaced(path, count, initialSpeed, speedLimit, stagger)
+        TrackLane.evenlySpaced(path, count, initialSpeed, speedLimit, stagger, speedSpread)
     }
     TrackRoad(lanes, mobil, laneWidth)
   }
+
+  /**
+    * How much the drivers on a multi-lane ring disagree about how fast they want to go.
+    *
+    * Without this a road of identical drivers has nothing to overtake for, and the lane
+    * changing that MOBIL is here to show simply never happens: balanced lanes produced no
+    * change at all at any density or any eagerness, because a ring of identical cars starts
+    * at a fixed point and stays there, so MOBIL's answer on the first tick is its answer for
+    * the whole run. Fifteen percent is picked to be the smallest spread that reliably gets
+    * traffic moving between lanes - at twenty-five the slowest drivers start capping everyone
+    * behind them hard enough to change what the traffic is, rather than just why it moves.
+    */
+  val DefaultSpeedSpread: Double = 0.15
 
   def update(road: TrackRoad, dt: Time): TrackRoad = {
     val afterChanges = withLaneChanges(road)

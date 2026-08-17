@@ -42,12 +42,17 @@ object Client {
   has learned to show about lane changing was invisible until you went looking through the
   presets for a road that had two of them.
 
-  The lopsided one rather than the denser, more interesting ones, because it is the only one
-  that shows you anything soon enough. Given the traffic thirty seconds - about as long as
-  anyone gives a page before deciding it is a still picture - the free-flowing ring changes
-  lanes not at all, the standing-wave ring is too tightly packed for a gap to be worth taking
-  and also changes lanes not at all, and this one has a driver indicating about a twelfth of
-  the time. An imbalance is what gives anybody a reason to move.
+  The lopsided one because it starts moving immediately: cars are indicating inside a second,
+  where the free-flowing ring takes about twenty to produce its first change. Given the
+  traffic thirty seconds - about as long as anyone gives a page before deciding it is a still
+  picture - that is the difference between landing on traffic doing something and landing on
+  traffic about to.
+
+  It is worth knowing that this one is front-loaded, though. Its lane changes are the two
+  lanes levelling out, so they are over inside fifteen seconds and it settles at eleven and
+  nine and stops. The free-flowing ring is the opposite shape: slower to start, and then it
+  keeps overtaking for as long as you leave it running. If this page ever wants a scene to sit
+  and watch rather than a scene to arrive at, that is the one.
    */
   val model: Model =
     Model(

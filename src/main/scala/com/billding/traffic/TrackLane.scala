@@ -24,7 +24,20 @@ case class TrackVehicle(
   /** What the car did about its speed on the last tick, kept so the canvas can colour it. */
   acceleration: Acceleration = MetersPerSecondSquared(0),
   /** A change this driver has decided on but not yet made, if the road works that way. */
-  intent: Option[LaneChangeIntent] = None
+  intent: Option[LaneChangeIntent] = None,
+  /**
+    * How fast this driver wants to go, as a multiple of the limit.
+    *
+    * Traffic where everybody wants exactly the same speed has no reason to overtake, and a
+    * ring of it settles into a state where every car sees an identical road and keeps seeing
+    * it forever - so whatever MOBIL answers on the first tick, it answers for the rest of the
+    * run. This is the one thing that makes a driver's situation its own: somebody in front
+    * who is slower than you is a reason to be somewhere else, and it is the reason.
+    *
+    * A multiple rather than a speed of its own, so the speed control still moves the whole
+    * population together rather than being overridden car by car.
+    */
+  speedPreference: Double = 1.0
 ) {
 
   /** The along-the-road extent of the car, which is what a gap is measured between. */
@@ -55,7 +68,7 @@ case class TrackVehicle(
   def reactTo(leader: TrackVehicle, gap: Length, speedLimit: Velocity): Acceleration =
     piloted.driver.idm.deltaVDimensionallySafe(
       speed,
-      speedLimit,
+      speedLimit * speedPreference,
       speed - leader.speed, // Signed, unlike the vector version: positive means we are closing.
       piloted.driver.preferredDynamicSpacing,
       piloted.vehicle.accelerationAbility,
@@ -126,13 +139,20 @@ object TrackLane {
     *
     * Index 0 sits at arc length 0 and each subsequent car sits one spacing behind it, which
     * puts the list in leader-first order the same way the straight lane's list is.
+    *
+    * `speedSpread` is how much the drivers disagree about how fast they want to go, either
+    * side of the limit: 0.15 gives a population running from 85% of it to 115%. It defaults
+    * to none, because a lane of identical drivers is what the single-lane demonstrations are
+    * tuned around - their waves come from a car being braked, not from the traffic's own
+    * variety, and giving them a spread would be retuning a scene that already works.
     */
   def evenlySpaced(
     path: Path,
     count: Int,
     initialSpeed: Velocity,
     speedLimit: Velocity,
-    startingAt: Length = Meters(0)
+    startingAt: Length = Meters(0),
+    speedSpread: Double = 0.0
   ): TrackLane = {
     require(count >= 0, "a lane cannot hold a negative number of cars")
     require(path.isClosed, "even spacing only makes sense on a closed path")
@@ -140,9 +160,31 @@ object TrackLane {
     val spacing = if (count == 0) Meters(0) else path.totalLength / count.toDouble
     val vehicles = (0 until count).toList.map { index =>
       val s = path.normalize(startingAt + spacing * -index.toDouble)
-      TrackVehicle(commuterAt(path, s, initialSpeed), s, initialSpeed).placedOn(path)
+      TrackVehicle(
+        commuterAt(path, s, initialSpeed),
+        s,
+        initialSpeed,
+        speedPreference = preferenceAt(index, speedSpread)
+      ).placedOn(path)
     }
     TrackLane(path, vehicles, speedLimit)
+  }
+
+  /**
+    * The golden ratio's fractional multiples, which is the cheapest way to hand out a spread
+    * that is both even and deterministic.
+    *
+    * Dealing them out in order - slowest car, next slowest, and so on round the loop - would
+    * put every slow driver in one convoy and every fast one in another, which is a lane with
+    * two speeds in it rather than a lane of drivers who disagree. Stepping by an irrational
+    * fraction of the range instead means consecutive cars land far apart in it while the
+    * population as a whole still comes out evenly covered, and it does so without a seed to
+    * thread through or a random number generator to make a test's result depend on.
+    */
+  private[traffic] def preferenceAt(index: Int, spread: Double): Double = {
+    val golden = 0.6180339887498949
+    val place = (index * golden) % 1.0
+    1.0 - spread + 2 * spread * place
   }
 
   def update(lane: TrackLane, dt: Time): TrackLane = {

@@ -143,9 +143,12 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
   /**
     * Two lanes, with the outer one carrying more of the traffic.
     *
-    * The imbalance is the point. Even densities leave nobody with a reason to move, where a
-    * crowded outer lane beside a clearer inner one gives drivers something to want, and the
-    * keep-right bias gives them a reason to come back once they have had it.
+    * The imbalance is what gets things moving quickly: a crowded outer lane beside a clearer
+    * inner one gives drivers somewhere they obviously want to be, so the first changes happen
+    * within a second rather than within half a minute. It is not what gives them a reason at
+    * all any more - the drivers disagree about how fast they want to go, so even lanes still
+    * overtake - but it is over sooner, because levelling two lanes out is a thing traffic
+    * finishes, where wanting past the car in front is not.
     */
   private def twoLaneRing(outerCars: Int, innerCars: Int, circumference: Length): RingScene =
     RingScene(

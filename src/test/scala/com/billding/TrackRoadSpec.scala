@@ -194,21 +194,32 @@ class TrackRoadSpec extends AnyFlatSpec with Matchers {
     */
   it should "start a wave in traffic that was running smoothly" in {
     val settled = tick(road(11, 7, orderly), 400)
+    val background = speedSpread(settled)
 
-    withClue("the traffic was not smooth to begin with: ") {
-      speedSpread(settled) shouldBe 0.0 +- 0.01
+    /*
+    Settled traffic used to converge on a single speed exactly, and this asked for a spread of
+    zero. It cannot any more, and shouldn't: the drivers disagree about how fast they want to
+    go, which is the whole reason any of them ever has cause to change lanes, so a little
+    spread is what running smoothly now looks like. What the button has to do is stand out
+    against that, which is a stronger thing to ask than beating zero was.
+     */
+    withClue("the traffic was not running smoothly to begin with: ") {
+      background should be < 2.0
     }
 
     val disturbed = TrackRoad.forceLaneChange(settled)
     val (ended, worstSpread, slowest) = watch(disturbed, 300)
 
     println(
-      f"[forced change] worst spread $worstSpread%.2f m/s, slowest car $slowest%.2f m/s, " +
-      f"spread after 30s ${speedSpread(ended)}%.2f m/s"
+      f"[forced change] background $background%.2f m/s, worst spread $worstSpread%.2f m/s, " +
+      f"slowest car $slowest%.2f m/s, spread after 30s ${speedSpread(ended)}%.2f m/s"
     )
 
     slowest should be < settled.meanSpeed.toMetersPerSecond * 0.5 // somebody braked hard
     worstSpread should be > 5.0 // and it was not just the one car
+    withClue("the wave was lost in the traffic's own variety: ") {
+      worstSpread should be > background * 4
+    }
   }
 
   /**
@@ -233,6 +244,51 @@ class TrackRoadSpec extends AnyFlatSpec with Matchers {
 
   /** Drivers who never change lanes on their own, so a wave is down to the change we forced. */
   private val orderly = MOBIL(threshold = MetersPerSecondSquared(1000))
+
+  /**
+    * The property the drivers' spread of desired speeds exists for, and the one whose absence
+    * was invisible for so long: traffic that goes on overtaking.
+    *
+    * A ring of identical drivers is a fixed point. Every car sees the same road as every other
+    * and keeps seeing it, so MOBIL's answer on the first tick is its answer for the whole run
+    * - and for evenly filled lanes that answer is no. It was not a bug anywhere in the
+    * decision, which is what made it so hard to see: every part of MOBIL worked, and was asked
+    * a question whose answer never changed. Balanced lanes produced no lane change at all, at
+    * any density, at any eagerness, and jolting the traffic did not help because it settled
+    * back into the same fixed point.
+    *
+    * Thirty seconds is deliberately well short of what the traffic manages, so this fails when
+    * the overtaking stops rather than when it slows down.
+    */
+  "Drivers who disagree about how fast they want to go" should "keep overtaking indefinitely" in {
+    val evenlyFilled = road(9, 5)
+
+    withClue("the drivers all want the same speed, so none of them has anywhere to be: ") {
+      evenlyFilled.vehicles.map(_.speedPreference).distinct.size should be > 1
+    }
+
+    // Well past the point where the traffic has forgotten how it was laid out.
+    val settled = tick(evenlyFilled, 1200) // two minutes
+    val was = positionsByCar(settled)
+    val later = tick(settled, 300) // and half a minute more
+
+    val changed = positionsByCar(later).count { case (uuid, lane) => was(uuid) != lane }
+
+    withClue("evenly filled lanes stopped changing lanes once they had settled: ") {
+      changed should be > 0
+    }
+  }
+
+  /**
+    * The single-lane demonstrations are tuned around identical drivers - their waves come from
+    * a car being braked, not from the traffic's own variety - so the spread is something a
+    * road opts into rather than something every lane is born with.
+    */
+  it should "not be forced on a lane that did not ask for one" in {
+    val plain = TrackLane.evenlySpaced(RingPath.ofCircumference(Circumference), 16, limit, limit)
+
+    plain.vehicles.map(_.speedPreference).distinct shouldBe List(1.0)
+  }
 
   /** Run the road on, keeping the worst speed spread and the slowest anyone got. */
   private def watch(start: TrackRoad, ticks: Int): (TrackRoad, Double, Double) =
@@ -292,7 +348,14 @@ class TrackRoadSpec extends AnyFlatSpec with Matchers {
     // It starts a full lane away from where it is headed, on the side it came from.
     crossing.lateral.abs.toMeters shouldBe LaneWidth.toMeters +- Tolerance
 
+    // Followed by name rather than asking the whole road to be settled: the drivers around it
+    // now have reasons of their own to change lanes, so somebody else being mid-crossing two
+    // seconds later is the traffic working, not this car failing to arrive.
     val arrived = tick(moved, 20) // Two seconds, against a one second crossing.
-    arrived.vehicles.foreach(_.lateral.toMeters shouldBe 0.0 +- Tolerance)
+    arrived.vehicles
+      .find(_.uuid == crossing.uuid)
+      .getOrElse(fail("the car that was crossing has gone missing"))
+      .lateral
+      .toMeters shouldBe 0.0 +- Tolerance
   }
 }

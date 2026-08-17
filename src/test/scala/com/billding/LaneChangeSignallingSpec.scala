@@ -354,10 +354,10 @@ class LaneChangeSignallingSpec extends AnyFlatSpec with Matchers {
 
   /**
     * A road that could change lanes but doesn't is no better to land on than a road that
-    * can't. Both of the other two-lane presets are in this position: free-flowing traffic has
-    * no reason to move and the standing-wave one is too tightly packed for a gap to be worth
-    * taking, and neither indicates once in the first thirty seconds - about as long as anyone
-    * gives a page before deciding it is a still picture.
+    * can't. Thirty seconds is about as long as anyone gives a page before deciding it is a
+    * still picture, and the standing-wave preset still never indicates in that time or any
+    * other - it is packed too tightly for a gap to be worth taking, whatever its drivers
+    * want. The free-flowing one does now, but takes about twenty seconds to get round to it.
     */
   it should "actually show somebody indicating, within half a minute of opening" in {
     val landing = Client.model.originalScene.asInstanceOf[RingScene].road
