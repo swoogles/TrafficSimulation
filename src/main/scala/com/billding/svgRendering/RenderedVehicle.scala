@@ -17,7 +17,9 @@ case class RenderedVehicle(
   width: Distance,
   height: Distance,
   uuid: UUID,
-  motion: Motion = Motion.Steady
+  motion: Motion = Motion.Steady,
+  /** Set while this car is indicating a lane change it has not made yet. */
+  signal: Option[LaneChangeSignal] = None
 ) {
 
   /** Clockwise degrees from east, in screen space, where y already points down. */

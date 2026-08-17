@@ -156,7 +156,10 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
           ringSpeedLimit,
           ringSpeedLimit
         )
-        .copy(laneChangeDuration = Some(SampleSceneCreation.LaneChangeDuration)),
+        .copy(
+          laneChangeDuration = Some(SampleSceneCreation.LaneChangeDuration),
+          laneChangeWarning = Some(SampleSceneCreation.LaneChangeWarning)
+        ),
       Seconds(0),
       DT
     )
@@ -213,4 +216,15 @@ object SampleSceneCreation {
     * allowed to consider leaving it again.
     */
   val LaneChangeDuration: Time = Seconds(2)
+
+  /**
+    * How long a driver indicates before it starts to cross.
+    *
+    * Sliding a car across the line made a change followable once you had found it, which is
+    * the harder half: on a ring of twenty cars, the change is over before you know which car
+    * to watch, and watching all of them is not watching. This is the part that tells you
+    * where to look, so it only has to be long enough to notice and turn towards - much longer
+    * and the road is permanently full of cars indicating rather than doing anything.
+    */
+  val LaneChangeWarning: Time = Seconds(1.2)
 }

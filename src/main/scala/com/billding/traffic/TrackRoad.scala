@@ -27,7 +27,16 @@ case class TrackRoad(
     * an animated one needs is carried by [[TrackVehicle.lateral]] either way, so turning
     * this on is the only change animation asks for.
     */
-  laneChangeDuration: Option[Time] = None
+  laneChangeDuration: Option[Time] = None,
+  /**
+    * How long a driver indicates before it crosses, or None to have it decide and go at once.
+    *
+    * Deciding and moving in the same instant is what MOBIL describes, and it means the first
+    * thing you can see of a lane change is the car already making it. A warning gives the
+    * canvas somewhere to point before anything moves, and gives the driver a moment to think
+    * better of it - the decision is re-examined against the road when the warning is up.
+    */
+  laneChangeWarning: Option[Time] = None
 ) {
 
   require(lanes.nonEmpty, "a road needs at least one lane")
@@ -85,8 +94,17 @@ object TrackRoad {
   /** Below this a lateral offset has arrived, and is snapped flat rather than left drifting. */
   private val Settled: Length = Meters(0.01)
 
+  /** How many warnings' worth of waiting a forced change will do before it gives up. */
+  private val Patience: Double = 2.0
+
   /** A car's move across the line, and how much it wanted it. */
-  private case class Proposal(uuid: UUID, from: Int, to: Int, motivation: Acceleration)
+  private case class Proposal(
+    uuid: UUID,
+    from: Int,
+    to: Int,
+    motivation: Acceleration,
+    insistent: Boolean = false
+  )
 
   /**
     * Concentric lanes with a fixed population on each, outermost lane first.
@@ -124,16 +142,30 @@ object TrackRoad {
   }
 
   /**
-    * Every change worth making, applied in the order the drivers wanting them are keenest.
+    * The traffic's lane changing for one tick: promises kept first, then fresh decisions.
     *
-    * Each is proposed against the same frozen road, so nobody's decision depends on the order
-    * they happen to be considered in, and then re-examined against the road as it stands by
-    * the time its turn comes. That second look is what stops two cars taking the same gap:
-    * whoever gets there first is present in the state the runner-up is judged against, and
-    * either the safety criterion or the incentive turns them away.
+    * On a road with no warning period the two halves collapse into the one they always were,
+    * since a driver that never announces anything has no promise outstanding to keep.
     */
   private def withLaneChanges(road: TrackRoad): TrackRoad = {
-    val proposals = for {
+    val afterPromises = ranked(ripeProposals(road)).foldLeft(road)(reconsider)
+    val fresh = ranked(freshProposals(afterPromises))
+
+    road.laneChangeWarning match {
+      case None           => fresh.foldLeft(afterPromises)(reconsider)
+      case Some(duration) => fresh.foldLeft(afterPromises)(announce(duration))
+    }
+  }
+
+  /**
+    * Every change the drivers currently fancy, weighed against the same frozen road.
+    *
+    * Judging them all against one state means nobody's decision depends on the order they
+    * happen to be considered in; the second look each one gets in [[reconsider]] is where
+    * the road as it actually stands has its say.
+    */
+  private def freshProposals(road: TrackRoad): List[Proposal] =
+    for {
       (lane, from)     <- road.lanes.zipWithIndex
       (vehicle, index) <- lane.vehicles.zipWithIndex
       if vehicle.mayChangeLane
@@ -142,26 +174,113 @@ object TrackRoad {
       if road.mobil.wants(situation, from, to)
     } yield Proposal(vehicle.uuid, from, to, road.mobil.motivation(situation, from, to))
 
-    // One move per car per tick: a driver picks its best lane, not every lane that tempts it.
-    val ranked = proposals
+  /** The drivers who have finished indicating, and are now actually going. */
+  private def ripeProposals(road: TrackRoad): List[Proposal] =
+    for {
+      (lane, from)     <- road.lanes.zipWithIndex
+      (vehicle, index) <- lane.vehicles.zipWithIndex
+      intent           <- vehicle.intent.toList
+      if intent.isRipe && road.lanes.indices.contains(intent.to)
+    } yield Proposal(
+      vehicle.uuid,
+      from,
+      intent.to,
+      road.mobil.motivation(situationFor(road, from, index, intent.to), from, intent.to),
+      intent.insistent
+    )
+
+  /** One move per car per tick: a driver picks its best lane, not every lane that tempts it. */
+  private def ranked(proposals: List[Proposal]): List[Proposal] =
+    proposals
       .groupBy(_.uuid)
       .values
       .toList
       .map(_.maxBy(_.motivation.toMetersPerSecondSquared))
       .sortBy(proposal => (-proposal.motivation.toMetersPerSecondSquared, proposal.uuid.toString))
 
-    ranked.foldLeft(road)(reconsider)
-  }
-
+  /**
+    * Take one last look before crossing, and cross if it still holds up.
+    *
+    * That second look is what stops two cars taking the same gap: whoever gets there first is
+    * present in the state the runner-up is judged against, and either the safety criterion or
+    * the incentive turns them away. With a warning period it is doing more than settling ties
+    * - the road has had a second or so to change since the driver made its mind up, and a gap
+    * that has closed in the meantime is a change that doesn't happen.
+    */
   private def reconsider(road: TrackRoad, proposal: Proposal): TrackRoad =
     road.lanes(proposal.from).vehicles.indexWhere(_.uuid == proposal.uuid) match {
       case -1 => road // Already moved on somebody else's account.
       case index =>
-        val situation = situationFor(road, proposal.from, index, proposal.to)
-        if (road.mobil.wants(situation, proposal.from, proposal.to))
-          move(road, proposal.from, index, proposal.to)
-        else road
+        if (stillWorthIt(road, proposal, index)) move(road, proposal.from, index, proposal.to)
+        else if (proposal.insistent && stillWaiting(road, proposal.from, index)) road
+        else abandon(road, proposal.from, index)
     }
+
+  /**
+    * A forced change sits with its indicator on until the gap it wants opens up, rather than
+    * giving up on it. The car it means to cut in front of has had a second to close the gap
+    * it was picked for, and a button that quietly does nothing is worse than one that waits.
+    *
+    * Not indefinitely, though: on a road with nowhere to go, a car indicating for the rest of
+    * the run is a light left blinking rather than a change about to happen.
+    */
+  private def stillWaiting(road: TrackRoad, from: Int, index: Int): Boolean =
+    road.lanes(from).vehicles(index).intent.exists { intent =>
+      intent.elapsed < intent.duration * Patience
+    }
+
+  /**
+    * A forced change asks only whether the car will fit, since it was never made on MOBIL's
+    * terms in the first place. Everybody else has to satisfy both criteria all over again.
+    */
+  private def stillWorthIt(road: TrackRoad, proposal: Proposal, index: Int): Boolean = {
+    val fromLane = road.lanes(proposal.from)
+    val mover = fromLane.vehicles(index)
+    if (proposal.insistent)
+      fits(
+        road.lanes(proposal.to),
+        road.transpose(fromLane.path, road.lanes(proposal.to).path, mover.s),
+        mover.length
+      )
+    else
+      road.mobil.wants(
+        situationFor(road, proposal.from, index, proposal.to),
+        proposal.from,
+        proposal.to
+      )
+  }
+
+  /** Think better of a change, and stop indicating it. */
+  private def abandon(road: TrackRoad, from: Int, index: Int): TrackRoad =
+    withVehicleAt(road, from, index)(vehicle => vehicle.copy(intent = None))
+
+  /**
+    * Start indicating, rather than moving.
+    *
+    * Nothing on the road moves as a result, so unlike a change itself these don't interact:
+    * every driver that wants a lane this tick gets to say so.
+    */
+  private def announce(duration: Time)(road: TrackRoad, proposal: Proposal): TrackRoad =
+    road.lanes(proposal.from).vehicles.indexWhere(_.uuid == proposal.uuid) match {
+      case -1 => road
+      case index =>
+        withVehicleAt(road, proposal.from, index)(
+          _.copy(intent = Some(LaneChangeIntent(proposal.to, duration)))
+        )
+    }
+
+  private def withVehicleAt(road: TrackRoad, lane: Int, index: Int)(
+    change: TrackVehicle => TrackVehicle
+  ): TrackRoad = {
+    val target = road.lanes(lane)
+    road.copy(
+      lanes = road.lanes
+        .updated(
+          lane,
+          target.copy(vehicles = target.vehicles.updated(index, change(target.vehicles(index))))
+        )
+    )
+  }
 
   /**
     * Weigh up one car's move into one neighbouring lane.
@@ -216,7 +335,8 @@ object TrackRoad {
       .copy(
         s = road.transpose(fromLane.path, toLane.path, mover.s),
         lateral = road.arrivalOffset(from, to),
-        changeCooldown = road.mobil.cooldown
+        changeCooldown = road.mobil.cooldown,
+        intent = None // Whatever it was indicating, it has now done.
       )
       .placedOn(toLane.path)
 
@@ -234,22 +354,68 @@ object TrackRoad {
     * that would physically fit, it takes the one that forces the hardest braking on the car
     * behind. That is the single errant change the whole ring exists to demonstrate - one
     * driver's bad decision, and a wave that outlives it.
+    *
+    * It still indicates first where the road asks drivers to, because this is the change you
+    * pressed a button to watch, and being told where to look is the whole value of a warning.
+    * What it doesn't do is change its mind when the warning is up.
     */
   def forceLaneChange(road: TrackRoad): TrackRoad = {
     val options = for {
       (lane, from)     <- road.lanes.zipWithIndex
       (vehicle, index) <- lane.vehicles.zipWithIndex
-      to               <- road.neighboursOf(from)
+      if vehicle.intent.isEmpty
+      to <- road.neighboursOf(from)
       arrivalS = road.transpose(lane.path, road.lanes(to).path, vehicle.s)
       if fits(road.lanes(to), arrivalS, vehicle.length)
+      if road.laneChangeWarning.forall(warning => willStillFit(road, from, index, to, warning))
       situation = situationFor(road, from, index, to)
     } yield (from, index, to, situation.newFollowerAfter, vehicle.uuid)
 
     options
       .sortBy(option => (option._4.toMetersPerSecondSquared, option._5.toString))
       .headOption
-      .fold(road) { case (from, index, to, _, _) => move(road, from, index, to) }
+      .fold(road) {
+        case (from, index, to, _, _) =>
+          road.laneChangeWarning match {
+            case None => move(road, from, index, to)
+            case Some(duration) =>
+              withVehicleAt(road, from, index)(
+                _.copy(intent = Some(LaneChangeIntent(to, duration, insistent = true)))
+              )
+          }
+      }
   }
+
+  /**
+    * Will there still be room by the time a driver that indicates first actually goes?
+    *
+    * The rudest change available is by definition the one into the tightest gap, and on a
+    * road where the lanes run at different speeds the tightest gap is the one most likely to
+    * have shut by the end of the warning. Asking the question a warning ahead - everyone
+    * holding their present speed - is what stops the button announcing a change that then
+    * can't be made, which from the outside is a button that does nothing.
+    */
+  private def willStillFit(road: TrackRoad,
+                           from: Int,
+                           index: Int,
+                           to: Int,
+                           warning: Time): Boolean = {
+    val fromLane = road.lanes(from)
+    val toLane = road.lanes(to)
+    val mover = fromLane.vehicles(index)
+
+    fits(
+      coasted(toLane, warning),
+      road.transpose(fromLane.path, toLane.path, mover.s + mover.speed * warning),
+      mover.length
+    )
+  }
+
+  /** Where a lane's traffic would be after `elapsed`, if every driver held its speed. */
+  private def coasted(lane: TrackLane, elapsed: Time): TrackLane =
+    lane.copy(vehicles = lane.vehicles.map { vehicle =>
+      vehicle.at(lane.path.normalize(vehicle.s + vehicle.speed * elapsed), vehicle.speed)
+    })
 
   /** Is there actually room, front and back, for a car to appear here? */
   private def fits(lane: TrackLane, s: Length, length: Length): Boolean = {

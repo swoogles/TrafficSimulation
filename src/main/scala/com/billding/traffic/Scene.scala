@@ -3,6 +3,7 @@ package com.billding.traffic
 import com.billding.physics.RingPath
 import com.billding.svgRendering.{
   DividerRing,
+  LaneChangeSignal,
   Motion,
   Projection,
   RenderedVehicle,
@@ -133,15 +134,17 @@ case class RingScene(
 
   def renderables: List[RenderedVehicle] =
     for {
-      lane    <- road.lanes
-      vehicle <- lane.vehicles
+      (lane, index) <- road.lanes.zipWithIndex
+      vehicle       <- lane.vehicles
     } yield RenderedVehicle(
       vehicle.piloted.spatial.r,
       lane.headingOf(vehicle),
       vehicle.piloted.width,
       vehicle.piloted.height,
       vehicle.piloted.uuid,
-      Motion.of(vehicle.speed, vehicle.acceleration)
+      Motion.of(vehicle.speed, vehicle.acceleration),
+      // Lanes are numbered from the outside in, and the inside is the driver's left.
+      vehicle.intent.map(intent => LaneChangeSignal(intent.to > index, intent.progress))
     )
 
   /**

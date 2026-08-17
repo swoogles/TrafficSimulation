@@ -8,6 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import squants.motion.{KilometersPerHour, MetersPerSecond, MetersPerSecondSquared}
 import squants.space.{Kilometers, Meters}
 import squants.time.{Milliseconds, Seconds}
+import squants.Time
 
 /**
   * Colour is how the wave becomes visible. The speeds were always in the model; what was
@@ -122,17 +123,24 @@ class MotionColouringSpec extends AnyFlatSpec with Matchers {
     val scenes = new SampleSceneCreation(Spatial((0.5, 0, 0, Kilometers)))(dt)
     val settled = tick(scenes.quietTwoLaneRing.scene.asInstanceOf[RingScene], 100)
 
-    val moved = settled.forceLaneChange()
-    val crossing = moved.road.vehicles
-      .find(_.lateral.abs > Meters(0.01))
-      .getOrElse(fail("forcing a change left nobody between the lanes"))
+    // Forced changes indicate first, like any other, so the crossing starts a warning later.
+    val announced = settled.forceLaneChange()
+    val crossing = announced.road.vehicles
+      .find(_.intent.isDefined)
+      .getOrElse(fail("forcing a change left nobody indicating"))
 
     def offsetOf(scene: RingScene) =
       scene.road.vehicles.find(_.uuid == crossing.uuid).map(_.lateral.abs).getOrElse(Meters(-1))
 
-    // It starts a full lane out, is partway across at one second, and has arrived by two.
-    offsetOf(moved).toMeters shouldBe 6.0 +- 1e-6
+    offsetOf(announced).toMeters shouldBe 0.0 +- 1e-6 // Still in its own lane, announcing.
+
+    val moved = tick(announced, ticksIn(SampleSceneCreation.LaneChangeWarning) + 1)
+
+    // It starts a full lane out, is partway across a second later, and has arrived by two.
+    offsetOf(moved).toMeters shouldBe 6.0 +- 0.35
     offsetOf(tick(moved, 10)).toMeters shouldBe 3.0 +- 0.35
     offsetOf(tick(moved, 21)).toMeters shouldBe 0.0 +- 1e-6
   }
+
+  private def ticksIn(duration: Time): Int = (duration / dt).round.toInt
 }

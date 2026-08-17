@@ -22,7 +22,9 @@ case class TrackVehicle(
   lateral: Length = Meters(0),
   changeCooldown: Time = Seconds(0),
   /** What the car did about its speed on the last tick, kept so the canvas can colour it. */
-  acceleration: Acceleration = MetersPerSecondSquared(0)
+  acceleration: Acceleration = MetersPerSecondSquared(0),
+  /** A change this driver has decided on but not yet made, if the road works that way. */
+  intent: Option[LaneChangeIntent] = None
 ) {
 
   /** The along-the-road extent of the car, which is what a gap is measured between. */
@@ -30,8 +32,11 @@ case class TrackVehicle(
 
   def uuid: UUID = piloted.uuid
 
-  /** A car that has just changed lanes stays put for a while, rather than dithering. */
-  def mayChangeLane: Boolean = changeCooldown <= Seconds(0)
+  /**
+    * A car that has just changed lanes stays put for a while, rather than dithering, and one
+    * that has already made up its mind is not still shopping for somewhere to go.
+    */
+  def mayChangeLane: Boolean = changeCooldown <= Seconds(0) && intent.isEmpty
 
   /** Rewrite the derived Spatial from this position on the given path. */
   def placedOn(path: Path): TrackVehicle = {
@@ -251,7 +256,8 @@ object TrackLane {
 
     val settled = vehicle.copy(
       changeCooldown = if (vehicle.changeCooldown > dt) vehicle.changeCooldown - dt else Seconds(0),
-      acceleration = acceleration
+      acceleration = acceleration,
+      intent = vehicle.intent.map(_.advancedBy(dt))
     )
     settled.at(path.normalize(settled.s + travelled), newSpeed).placedOn(path)
   }
