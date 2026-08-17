@@ -87,6 +87,9 @@ object Window {
     */
   private val SignalTint = "#ffc233"
 
+  /** The paler amber the car itself is washed with, so a flash reads as light on paintwork. */
+  private val SignalGlow = "#fff2c4"
+
   /** How many chevrons are in the air at once. */
   private val SignalChevrons = 3
 
@@ -94,7 +97,21 @@ object Window {
   private val SignalRepeats = 3
 
   /** How far the last chevron gets from the car's flank, in car widths. */
-  private val SignalReach = 1.2
+  private val SignalReach = 2.4
+
+  /** How many ping rings are expanding at once, spaced evenly round the same clock. */
+  private val SignalPings = 2
+
+  /**
+    * How far a ping gets from the car before it goes out, in car lengths.
+    *
+    * Kept close in. The first try at this sent rings out nearly three car lengths on the
+    * grounds that bigger is easier to see, and on a road where the cars are one length apart
+    * that draws a haze of overlapping hoops across the whole loop: every car is inside
+    * somebody's ping, so a ping stops meaning anything. A pulse that stays within reach of
+    * the car it belongs to is the one that still points at a car.
+    */
+  private val PingReach = 1.0
 
   /**
     * One chevron, in the car's own frame: an apex out to the side, and two arms trailing it.
@@ -155,6 +172,18 @@ object Window {
   private def intensityOf(signal: LaneChangeSignal): Double =
     0.65 + 0.35 * clamped(signal.progress)
 
+  /**
+    * On, off, on: an indicator rather than a shimmer.
+    *
+    * A sine spends most of its life somewhere in the middle, and at the size a car is drawn
+    * here that reads as a car which is slightly the wrong colour rather than as a car that is
+    * flashing. What the eye catches across a crowded ring is the transition, so what to draw
+    * is the squarest wave the tick rate will carry - held on a little longer than off, which
+    * is how a real indicator looks and stops the effect flickering into nothing.
+    */
+  private def flash(signal: LaneChangeSignal): Double =
+    if (wrapped(signal.progress * SignalRepeats) < 0.6) 1.0 else 0.15
+
   def laneChangeSignal(
     signal: LaneChangeSignal,
     carLength: Double,
@@ -165,32 +194,69 @@ object Window {
         svgAttrs.points := chevron.points,
         svgAttrs.fill := "none",
         svgAttrs.stroke := SignalTint,
-        svgAttrs.strokeWidth := math.max(1.0, carWidth * 0.16).toString,
+        svgAttrs.strokeWidth := math.max(2.0, carWidth * 0.3).toString,
         svgAttrs.strokeLinecap := "round",
         svgAttrs.strokeLinejoin := "round",
         svgAttrs.opacity := chevron.opacity.toString
       )
     }
 
-    halo(signal, carLength, carWidth) +: chevrons
+    // Outermost first, so the car ends up sitting on top of its own warning rather than under it.
+    (pings(signal, carLength, carWidth) :+ halo(signal, carLength, carWidth)) ++ chevrons
   }
 
   /**
-    * A blinking outline round the car, on the same clock as the chevrons.
+    * Rings breaking off the car and running out across the tarmac, well past its own footprint.
     *
-    * The chevrons say which way and when; this says who, which matters most in the traffic
-    * this is for - a chevron on its own, in a queue of cars a few pixels apart, points at
-    * two of them. An outline rather than a wash of colour: filling the car's surroundings
-    * amber muddies the tarmac and fights with the green and red the car is already wearing,
-    * where a line around it reads at any size and leaves the road alone.
+    * This is the part that has to work at a glance across the whole ring, and nothing drawn
+    * inside a car's own outline can do that: at this scale a car is a smudge a few pixels
+    * across, and decorating a smudge gets you a slightly different smudge. Something several
+    * car lengths wide, expanding, is a different kind of event on the canvas - it is the only
+    * thing on screen that grows, and it is visible from the far side of the loop.
+    *
+    * Centred on the car and drawn round rather than along it, so which way the car happens to
+    * be pointing makes no difference to how findable it is.
+    */
+  private def pings(
+    signal: LaneChangeSignal,
+    carLength: Double,
+    carWidth: Double
+  ): Seq[JsDom.TypedTag[dom.svg.Element]] =
+    (0 until SignalPings).map { ring =>
+      // Spaced round the same clock as the chevrons, so one leaves as the one before it goes.
+      val phase = wrapped(signal.progress * SignalRepeats + ring.toDouble / SignalPings)
+
+      svgTags.circle(
+        svgAttrs.cx := (carLength / 2.0).toString,
+        svgAttrs.cy := (carWidth / 2.0).toString,
+        svgAttrs.r := (carLength * (0.5 + phase * PingReach)).toString,
+        svgAttrs.fill := "none",
+        svgAttrs.stroke := SignalTint,
+        // Thinning as it spreads, the way a ring of anything travelling outwards does.
+        svgAttrs.strokeWidth := math.max(1.5, carWidth * 0.5 * (1.0 - phase)).toString,
+        // Gone before it reaches its full radius, so the road isn't permanently hooped.
+        svgAttrs.opacity := (math.pow(1.0 - phase, 1.3) * intensityOf(signal)).toString
+      )
+    }
+
+  /**
+    * The car itself lit up, on the same clock as everything else.
+    *
+    * The pings say where to look and the chevrons say which way; this says which car, which is
+    * the question a ring of traffic makes hard - a ping centred between two cars a few pixels
+    * apart is a ping on both of them. It used to be an outline only, on the grounds that a
+    * wash of colour muddies the tarmac, but an outline two pixels wide loses to the green and
+    * red the cars are already wearing. Filling it and flashing it hard wins that argument: for
+    * the two thirds of each cycle it is lit, the car is plainly a different colour from every
+    * other car on the road.
     */
   private def halo(
     signal: LaneChangeSignal,
     carLength: Double,
     carWidth: Double
   ): JsDom.TypedTag[dom.svg.Element] = {
-    val spill = carWidth * 0.22
-    val blink = 0.55 + 0.45 * math.sin(2 * math.Pi * signal.progress * SignalRepeats)
+    val spill = carWidth * 0.5
+    val strength = flash(signal) * intensityOf(signal)
 
     svgTags.rect(
       svgAttrs.x := (-spill).toString,
@@ -198,10 +264,12 @@ object Window {
       svgAttrs.width := (carLength + 2 * spill).toString,
       svgAttrs.height := (carWidth + 2 * spill).toString,
       svgAttrs.rx := (carWidth / 2.0 + spill).toString, // A pill, so it hugs a car rather than boxing it.
-      svgAttrs.fill := "none",
+      svgAttrs.fill := SignalGlow,
+      svgAttrs.fillOpacity := (0.55 * strength).toString,
       svgAttrs.stroke := SignalTint,
-      svgAttrs.strokeWidth := math.max(1.0, carWidth * 0.12).toString,
-      svgAttrs.opacity := (blink * intensityOf(signal)).toString
+      svgAttrs.strokeWidth := math.max(2.0, carWidth * 0.28).toString,
+      // Never quite out, so between flashes it still says which car this is about.
+      svgAttrs.opacity := (0.3 + 0.7 * strength).toString
     )
   }
 
