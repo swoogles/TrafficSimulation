@@ -1,146 +1,184 @@
 package com.billding
 
-import scalatags.JsDom.all.{
-  cls => scalatagsCls,
-  div,
-  id,
-  input,
-  max,
-  min,
-  oninput,
-  step,
-  tpe,
-  value
-}
-import org.scalajs.dom.html.Div
-import org.scalajs.dom
-import com.raquo.laminar.api.L.Signal
-import com.raquo.airstream.ownership.Owner
-import org.scalajs.dom.html.{Input => HtmlInput}
-import OutterStyles.normalButton
-import OutterStyles.dangerButton
-import scalatags.JsDom.all._
-import scalatags.JsDom.TypedTag
+import com.raquo.laminar.api.L._
 
+/**
+  * The controls under the road.
+  *
+  * Everything here is arranged around one rule: the road stays on screen. A panel of ten
+  * scene buttons and four labelled sliders is most of a phone, and a control you cannot see
+  * the effect of is a control you have to operate twice - once to change it and once to find
+  * out what it did. So the settings are readings until you touch one, and only one of them
+  * opens at a time, in a strip below a row that never changes height.
+  *
+  * The whole thing is a Laminar tree with no imperative updating in it: labels follow the
+  * model's signals, the open panel is a Var that the markup reads, and the events go to the
+  * observers in [[ButtonBehaviors]]. It is mounted with `render`, which is what makes those
+  * bindings live - handing raw nodes to something else is what forced the old panel to
+  * subscribe by hand and left its labels blank.
+  */
 case class ControlElements(buttonBehaviors: ButtonBehaviors) {
 
-  val sceneSelections: List[HtmlInput] =
-    for (scene <- buttonBehaviors.model.preloadedScenes)
-      yield {
-        normalButton(scene.name, (e: dom.Event) => buttonBehaviors.model.loadNamedScene(scene.name))
+  private val model = buttonBehaviors.model
+
+  /** A number you can change while the traffic runs, and what it currently reads. */
+  private case class Dial(
+    name: String,
+    reading: Signal[String],
+    lowest: Int,
+    highest: Int,
+    step: Int,
+    position: Signal[Int],
+    set: Observer[Int]
+  )
+
+  private val speed = Dial(
+    "Speed",
+    model.carSpeedText,
+    20,
+    80,
+    5,
+    model.speed.signal.map(_.toKilometersPerHour.round.toInt),
+    buttonBehaviors.setSpeed
+  )
+
+  private val eagerness = Dial(
+    "Eagerness",
+    model.laneChangeEagernessText,
+    0,
+    100,
+    5,
+    model.laneChangeEagerness.signal.map(e => (e * 100).round.toInt),
+    buttonBehaviors.setEagerness
+  )
+
+  private val politeness = Dial(
+    "Politeness",
+    model.politenessText,
+    0,
+    100,
+    5,
+    model.politeness.signal.map(p => (p * 100).round.toInt),
+    buttonBehaviors.setPoliteness
+  )
+
+  private val carTiming = Dial(
+    "New cars",
+    model.carTimingText,
+    10,
+    50,
+    1,
+    model.carTiming.signal.map(t => (t.toSeconds * 10).round.toInt),
+    buttonBehaviors.setCarTiming
+  )
+
+  /** What is currently expanded, if anything. Only ever one thing. */
+  sealed private trait Panel
+  private case class Adjusting(dial: Dial) extends Panel
+  private case object ChoosingScene extends Panel
+
+  private val openPanel: Var[Option[Panel]] = Var(None)
+
+  private def toggle(panel: Panel): Observer[Any] =
+    Observer(_ => openPanel.update(current => if (current.contains(panel)) None else Some(panel)))
+
+  /**
+    * A ring has nowhere for new cars to arrive from, so it has no arrival timing to set.
+    *
+    * Taken off the scene, which changes sixty times a second, so it is reduced to the only
+    * question being asked of it before anything is allowed to depend on it - otherwise the
+    * controls would be rebuilt on every tick of the simulation.
+    */
+  private val trafficArrives: Signal[Boolean] =
+    model.sceneVar.signal.map(_.sourceTiming.isDefined).distinct
+
+  val layout: HtmlElement =
+    div(
+      cls := "controls",
+      // Nothing that would let a stale panel outlive the scene it belonged to.
+      trafficArrives.changes --> Observer[Any](_ => openPanel.set(None)),
+      div(
+        cls := "control-row",
+        action(child.text <-- model.pauseText, buttonBehaviors.togglePause),
+        action("Reset", buttonBehaviors.resetScene),
+        action("Brake a car", buttonBehaviors.brakeOneCar, cls := "disruptive"),
+        action("Force a lane change", buttonBehaviors.forceLaneChange, cls := "disruptive"),
+        action("Scenes", toggle(ChoosingScene), cls.toggle("open") <-- isOpen(ChoosingScene))
+      ),
+      div(
+        cls := "control-row",
+        readout(speed),
+        readout(eagerness),
+        readout(politeness),
+        child.maybe <-- trafficArrives.map(if (_) Some(readout(carTiming)) else None)
+      ),
+      child.maybe <-- openPanel.signal.map {
+        case Some(Adjusting(dial)) => Some(slider(dial))
+        case _                     => None
+      },
+      child.maybe <-- openPanel.signal.map {
+        case Some(ChoosingScene) => Some(scenePicker)
+        case _                   => None
       }
+    )
 
-  val buttons: Div =
+  private def isOpen(panel: Panel): Signal[Boolean] =
+    openPanel.signal.map(_.contains(panel))
+
+  private def action(label: Modifier[HtmlElement],
+                     clicked: Observer[Any],
+                     extra: Modifier[HtmlElement]*): HtmlElement =
+    button(cls := "action", label, extra, onClick --> clicked)
+
+  /**
+    * A setting at rest: its name, and what it says.
+    *
+    * This is the whole control until you touch it. Reading a value takes a glance, and a
+    * glance is all a setting deserves while you are watching the traffic rather than it.
+    */
+  private def readout(dial: Dial): HtmlElement =
+    button(
+      cls := "readout",
+      cls.toggle("open") <-- isOpen(Adjusting(dial)),
+      onClick --> toggle(Adjusting(dial)),
+      span(cls := "name", dial.name),
+      span(cls := "value", child.text <-- dial.reading)
+    )
+
+  /**
+    * The one open setting, in a strip of its own beneath the row.
+    *
+    * Below rather than over, because the point of opening it is to watch what it does to the
+    * road, and the road is above. Dragging this never moves anything above it.
+    */
+  private def slider(dial: Dial): HtmlElement =
     div(
-      scalatagsCls := "col-md-6 text-center"
-    )(
-      normalButton("Pause for Andrew", buttonBehaviors.togglePauseMethod),
-      normalButton("Reset the scene!", buttonBehaviors.initiateSceneReset),
-      /*
-      normalButton("Save the scene",
-                   buttonBehaviors.initiateSceneSerialization),
-      normalButton("Load the scene",
-                   buttonBehaviors.initiateSceneDeserialization),
+      cls := "dial",
+      label(cls := "name", dial.name),
+      input(
+        tpe := "range",
+        minAttr := dial.lowest.toString,
+        maxAttr := dial.highest.toString,
+        stepAttr := dial.step.toString,
+        controlled(
+          value <-- dial.position.map(_.toString),
+          onInput.mapToValue.map(_.toInt) --> dial.set
+        )
+      ),
+      span(cls := "value", child.text <-- dial.reading)
+    )
 
-       */
-//      dangerButton("Disrupt the flow", buttonBehaviors.toggleDisrupt),
-      dangerButton("Make 1 car brake", buttonBehaviors.toggleDisruptExisting),
-      dangerButton("Force a lane change", buttonBehaviors.forceLaneChange)
-    ).render
-
-  /*
-  Laminar only starts a `child.text <-- signal` binding when it mounts the element itself.
-  These labels are handed to scalatags as raw DOM nodes, which Laminar never sees, so the
-  binding stayed dormant and every slider sat under a blank pill. Subscribing directly with
-  an owner of our own keeps the labels reactive without pulling the whole panel into Laminar.
-   */
-  implicit private val owner: Owner = new Owner {}
-
-  private def reactiveLabel(text: Signal[String]): Div = {
-    val label = div(scalatagsCls := "col-md-12 text-center")().render
-    text.foreach { value =>
-      label.textContent = value
-    }
-    label
-  }
-
-  val timingLabel: Div = reactiveLabel(buttonBehaviors.model.carTimingText)
-
-  val speedLabel: Div = reactiveLabel(buttonBehaviors.model.carSpeedText)
-
-  val eagernessLabel: Div = reactiveLabel(buttonBehaviors.model.laneChangeEagernessText)
-
-  val politenessLabel: Div = reactiveLabel(buttonBehaviors.model.politenessText)
-
-  // Use scalatags for sliders since they're not reactive
-  val sliders: Div =
+  private def scenePicker: HtmlElement =
     div(
-      scalatagsCls := "col-md-6 text-center"
-    )(
-      timingLabel,
-      input(
-        tpe := "range",
-        min := 10,
-        max := 50,
-        value := 30,
-        oninput := buttonBehaviors.updateSlider
-      ),
-      speedLabel,
-      input(
-        id := "speedSlider",
-        tpe := "range",
-        min := 20,
-        max := 80,
-        value := 65,
-        step := 5,
-        oninput := buttonBehaviors.speedSliderUpdate
-      ),
-      // How readily a driver takes a gap at all. Turn it up and the lanes churn.
-      eagernessLabel,
-      input(
-        id := "eagernessSlider",
-        tpe := "range",
-        min := 0,
-        max := 100,
-        value := 50,
-        step := 5,
-        oninput := buttonBehaviors.eagernessSliderUpdate
-      ),
-      // How much a driver cares what its merge costs the car behind. Turn it down for waves.
-      politenessLabel,
-      input(
-        id := "politenessSlider",
-        tpe := "range",
-        min := 0,
-        max := 100,
-        value := 20,
-        step := 5,
-        oninput := buttonBehaviors.politenessSliderUpdate
-      )
-    ).render
-
-  def createLayout(): Div = {
-    val buttonPanel = div(
-      id := "button-panel",
-      scalatagsCls := "row"
-    )(buttons)
-
-    val sliderPanel = div(
-      id := "slider-panel",
-      scalatagsCls := "row"
-    )(sliders)
-
-    val preloadedScenesPanel = div(
-      id := "sample-scenes-panel",
-      scalatagsCls := "row"
-    )(sceneSelections)
-
-    div(
-      scalatagsCls := "container"
-    )(
-      buttonPanel,
-      sliderPanel,
-      preloadedScenesPanel
-    ).render
-  }
+      cls := "scene-picker",
+      model.preloadedScenes.map { scene =>
+        button(
+          cls := "scene",
+          cls.toggle("current") <-- model.currentSceneName.signal.map(_.contains(scene.name)),
+          scene.name,
+          onClick.mapTo(scene.name) --> buttonBehaviors.loadScene,
+          onClick --> Observer[Any](_ => openPanel.set(None))
+        )
+      }
+    )
 }

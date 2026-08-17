@@ -18,7 +18,7 @@ import org.scalajs.dom
 import org.scalajs.dom.raw.{Element, Node}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import com.raquo.laminar.api.L.{Observer, Signal}
+import com.raquo.laminar.api.L.{render, Observer, Signal}
 import com.raquo.airstream.ownership.Owner
 import play.api.libs.json.{Format, Json}
 import squants.{Mass, QuantityVector, Time, Velocity}
@@ -116,7 +116,9 @@ object Client {
   def run(): Unit = {
     println("DT: " + DT)
     val controlsContainer = dom.document.getElementById("controls-container")
-    controlsContainer.appendChild(controlElements.createLayout())
+    // Mounted by Laminar rather than appended as a node, which is what puts the bindings in
+    // the panel's labels under an owner and keeps them live.
+    val _ = render(controlsContainer, controlElements.layout)
     val svgContainerAttempt: Option[Element] = Option(dom.document.getElementById("svg-container"))
     svgContainerAttempt match {
       case Some(svgContainer) => setupSvgAndButtonResponses(svgContainer)
@@ -141,14 +143,25 @@ object Client {
     val topOfCanvas = svgContainer.getBoundingClientRect().top
     val window = dom.window.innerHeight
 
-    val toTheBottomOfTheWindow = window - topOfCanvas
-    val leavingRoomForTheControls = window * MostOfTheWindow
+    val toTheBottomOfTheWindow = window - topOfCanvas - RoomForTheControls
+    val neverMoreThanMostOfIt = window * MostOfTheWindow
 
-    math.max(MinimumCanvasHeight, math.min(toTheBottomOfTheWindow, leavingRoomForTheControls)).toInt
+    math.max(MinimumCanvasHeight, math.min(toTheBottomOfTheWindow, neverMoreThanMostOfIt)).toInt
   }
 
-  /** At most this much of the window goes to the road, so some of the controls stay in view. */
+  /** At most this much of the window goes to the road, however much room there is. */
   private val MostOfTheWindow = 0.68
+
+  /**
+    * Room kept below the road for the controls: the bar and the readings under it.
+    *
+    * A fixed reserve rather than the panel's measured height on purpose. The panel grows when
+    * you open a setting, and taking that off the road would resize the road at the exact
+    * moment you opened a control in order to watch the road - so this is what the controls
+    * take when none of them is open, and an opened one is allowed to run off the bottom of a
+    * short window instead.
+    */
+  private val RoomForTheControls = 140
 
   /** Below this the drawing is not worth looking at, whatever the window is doing. */
   private val MinimumCanvasHeight = 200

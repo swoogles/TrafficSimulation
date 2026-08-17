@@ -1,0 +1,195 @@
+/*
+ * The controls under the road.
+ *
+ * Sized for a thumb first and a mouse second: every target is at least 44px tall, the rows
+ * wrap rather than scroll sideways, and nothing here grows tall enough to push the road off
+ * the top of a phone. Written plainly rather than pulled from a framework, because it is one
+ * bar, two rows of pills and a list.
+ */
+
+:root {
+  --ink: #23282f;
+  --paper: #ffffff;
+  --edge: #d9dde3;
+  --quiet: #6b7480;
+  --live: #2f6fed;
+  --disruptive: #e8483c;
+  --signal: #ffc233;
+}
+
+.controls {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 8px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+}
+
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.controls button {
+  font: inherit;
+  font-size: 15px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--edge);
+  border-radius: 22px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.controls button:active {
+  transform: translateY(1px);
+}
+
+.controls .action.disruptive {
+  border-color: var(--disruptive);
+  color: var(--disruptive);
+}
+
+.controls .action.open {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* A setting at rest: its name, and what it currently reads. */
+.controls .readout {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.controls .readout .name {
+  color: var(--quiet);
+  font-size: 13px;
+}
+
+.controls .readout .value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.controls .readout.open {
+  border-color: var(--live);
+  box-shadow: inset 0 0 0 1px var(--live);
+}
+
+.controls .readout.open .value {
+  color: var(--live);
+}
+
+/* The one open setting. Below the road, so dragging it never moves the road. */
+.dial {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--live);
+  border-radius: 14px;
+  background: var(--paper);
+}
+
+.dial .name {
+  color: var(--quiet);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dial .value {
+  min-width: 4.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--live);
+}
+
+.dial input[type="range"] {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  accent-color: var(--live);
+}
+
+.scene-picker {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  background: var(--paper);
+}
+
+.scene-picker .scene {
+  text-align: left;
+  border-radius: 10px;
+}
+
+.scene-picker .scene.current {
+  border-color: var(--ink);
+  font-weight: 600;
+}
+
+/* The scene you are on keeps a marker, so the list says where you already are. */
+.scene-picker .scene.current::before {
+  content: "▸ ";
+  color: var(--signal);
+}
+
+@media (min-width: 560px) {
+  .scene-picker {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/*
+ * The page around the controls. The heading is the only thing competing with the road for
+ * the top of a phone, so it gives most of its room back.
+ */
+h2 {
+  margin: 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--quiet);
+}
+
+@media (max-width: 420px) {
+  .controls button {
+    font-size: 14px;
+    padding: 0 11px;
+  }
+
+  .controls .readout {
+    padding: 0 12px;
+    gap: 6px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e8ecf1;
+    --paper: #1b1f25;
+    --edge: #39414c;
+    --quiet: #98a2b0;
+  }
+
+  /* Bootstrap paints the body dark grey on white, which is unreadable the other way up. */
+  body {
+    background: #14171c;
+    color: var(--ink);
+  }
+}

@@ -1,87 +1,46 @@
 package com.billding
 
 import com.billding.uimodules.Model
-import org.scalajs.dom
-import org.scalajs.dom.Event
-import org.scalajs.dom.html.Input
-import org.scalajs.dom.raw.{HTMLInputElement, WheelEvent}
-import com.raquo.laminar.api.L.Var
+import com.raquo.laminar.api.L.{Observer, Var}
 import squants.motion.KilometersPerHour
 import squants.time.Seconds
 
+/**
+  * What the controls do, as somewhere for an event to go rather than as a handler.
+  *
+  * Laminar wires an event stream to an Observer, so a control is `onClick --> behaviour` and
+  * nothing in the markup needs to know what the behaviour is made of. Keeping them here also
+  * keeps the units in one place: the page deals in whole numbers because that is what a range
+  * input is, and this is where those become speeds, times and fractions.
+  */
 case class ButtonBehaviors(model: Model) {
 
-  def togglePauseMethod(e: dom.Event): Unit =
-    e.target match {
-      case elementClicked: HTMLInputElement => {
-        println("paused status: " + model.paused.now()) // why is this fuggin true??
-        model.togglePause()
-        // Update button text via signal - we can't access .now() on Signal directly
-        // The button will update reactively via Laminar bindings
-      }
-      case unrecognizedClickedElement =>
-        throw new RuntimeException(
-          "Must be an input element to toggle pausing. e.target: " + unrecognizedClickedElement
-        )
-    }
+  val togglePause: Observer[Any] = Observer(_ => model.togglePause())
 
-  // TODO make mousewheel behavior
-  private val onMouseWheelUp: (WheelEvent) => Unit =
-    (e) => println("mouse event! we should zoom in/out now!")
+  val resetScene: Observer[Any] = asks(model.resetScene)
 
-  private val resetToTrue: Var[Boolean] => Event => Unit =
-    (theBool: Var[Boolean]) => (_: Event) => theBool.set(true)
+  val brakeOneCar: Observer[Any] = asks(model.disruptions.disruptLaneExisting)
 
-  val toggleDisrupt =
-    resetToTrue(model.disruptions.disruptLane)
+  val forceLaneChange: Observer[Any] = asks(model.disruptions.forceLaneChange)
 
-  val toggleDisruptExisting =
-    resetToTrue(model.disruptions.disruptLaneExisting)
+  val loadScene: Observer[String] = Observer(model.loadNamedScene)
 
-  val forceLaneChange =
-    resetToTrue(model.disruptions.forceLaneChange)
+  /** Kilometres per hour, straight off the slider. */
+  val setSpeed: Observer[Int] = Observer(value => model.speed.set(KilometersPerHour(value)))
 
-  val initiateSceneReset =
-    resetToTrue(model.resetScene)
+  /** Tenths of a second between arriving cars, which is finer than a whole second. */
+  val setCarTiming: Observer[Int] = Observer(value => model.carTiming.set(Seconds(value) / 10))
 
-  val initiateSceneSerialization =
-    resetToTrue(model.serializeScene)
+  /** Both lane-change dials run 0 to 100 on the page and 0 to 1 in the model. */
+  val setEagerness: Observer[Int] =
+    Observer(value => model.laneChangeEagerness.set(value / 100.0))
 
-  // The pause belongs to the click, not to building this object. As a bare block it ran the
-  // moment ButtonBehaviors was constructed, which left the page paused before you touched it.
-  val initiateSceneDeserialization: Event => Unit = { event: Event =>
-    model.pause()
-    resetToTrue(model.deserializeScene)(event)
-  }
+  val setPoliteness: Observer[Int] = Observer(value => model.politeness.set(value / 100.0))
 
-  private def genericSlider: (Int => Unit) => Event => Unit =
-    (theBehavior: Int => Unit) =>
-      (e: Event) => {
-        val value = e.target match {
-          case inputElement: Input => inputElement.value.toInt
-        }
-        theBehavior(value)
-      }
-
-  val updateSlider: (Event) => Unit =
-    genericSlider(
-      (newTiming: Int) => model.carTiming.set(Seconds(newTiming) / 10)
-    )
-
-  val speedSliderUpdate: (Event) => Unit =
-    genericSlider(
-      (newSpeed: Int) => model.speed.set(KilometersPerHour(newSpeed))
-    )
-
-  /** Both lane-change sliders run 0 to 100 on the page and 0 to 1 in the model. */
-  val eagernessSliderUpdate: (Event) => Unit =
-    genericSlider(
-      (eagerness: Int) => model.laneChangeEagerness.set(eagerness / 100.0)
-    )
-
-  val politenessSliderUpdate: (Event) => Unit =
-    genericSlider(
-      (politeness: Int) => model.politeness.set(politeness / 100.0)
-    )
-
+  /**
+    * Some disruptions are requests rather than actions: the flag is raised here and lowered
+    * by whichever tick gets around to honouring it, because the scene it applies to only
+    * exists inside the simulation loop.
+    */
+  private def asks(request: Var[Boolean]): Observer[Any] = Observer(_ => request.set(true))
 }

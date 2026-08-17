@@ -60,20 +60,34 @@ case class Model(
     with ModelTrait {
   // TODO Make this private
   val sceneVar: Var[Scene] = Var(originalScene)
-  val carSpeedText: Signal[String] = speed.signal.map(s => s"Current car speed $s ")
+
+  /*
+  Readings rather than sentences. These sit on a control the size of a fingertip, next to the
+  name of the thing they are a reading of, so "Current car speed 50.0 km/h" was mostly words
+  the label beside it had already said.
+   */
+  val carSpeedText: Signal[String] = speed.signal.map(s => f"${s.toKilometersPerHour}%.0f km/h")
 
   val laneChangeEagernessText: Signal[String] =
-    laneChangeEagerness.signal.map(e => f"Lane change eagerness ${e * 100}%.0f%%")
+    laneChangeEagerness.signal.map(e => f"${e * 100}%.0f%%")
 
-  val politenessText: Signal[String] =
-    politeness.signal.map(p => f"Driver politeness ${p * 100}%.0f%%")
+  val politenessText: Signal[String] = politeness.signal.map(p => f"${p * 100}%.0f%%")
 
   // A ring has no source, so it has no timing to report - fall back to a sane slider value.
   val carTiming: Var[Time] = Var(originalScene.sourceTiming.getOrElse(Seconds(3)))
 
-  val carTimingText: Signal[String] = carTiming.signal.map(t => s"Current car timing $t ")
+  val carTimingText: Signal[String] = carTiming.signal.map(t => f"${t.toSeconds}%.1f s")
 
-  val pauseText: Signal[String] = paused.signal.map(p => if (p) "Unpause" else "Pause")
+  val pauseText: Signal[String] = paused.signal.map(p => if (p) "Play" else "Pause")
+
+  /**
+    * Which of the presets is on screen, so the picker can show you where you already are.
+    *
+    * Found by looking rather than passed in, because the scene the page starts on is one of
+    * the presets and there is no sense in naming it twice.
+    */
+  val currentSceneName: Var[Option[String]] =
+    Var(preloadedScenes.find(_.scene == originalScene).map(_.name))
 
   def togglePause(): Unit =
     paused.set(!paused.now())
@@ -81,16 +95,14 @@ case class Model(
   def pause(): Unit =
     paused.set(true)
 
-  def loadNamedScene(name: String): Unit = {
-    val retrievedSceneAttempt =
-      preloadedScenes.find(scene => scene.name.equals(name))
-    if (retrievedSceneAttempt.isDefined) {
-      loadScene(retrievedSceneAttempt.get.scene)
-    } else {
-      println("couldn't find a matching scene for name: " + name)
+  def loadNamedScene(name: String): Unit =
+    preloadedScenes.find(_.name == name) match {
+      case Some(named) =>
+        loadScene(named.scene)
+        currentSceneName.set(Some(name))
+      case None =>
+        println("couldn't find a matching scene for name: " + name)
     }
-
-  }
 
   /**
     * Picking a scene starts it, rather than laying it out and waiting to be told.
