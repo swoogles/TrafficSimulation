@@ -295,6 +295,108 @@ class TrackRoadSpec extends AnyFlatSpec with Matchers {
       .sum
   }
 
+  /** Run the road with the density dial held at one setting, the way the page does it. */
+  private def held(start: TrackRoad, perKm: Double, ticks: Int): TrackRoad =
+    (1 to ticks).foldLeft(start) { (current, _) =>
+      TrackRoad.update(TrackRoad.approaching(current, perKm), dt)
+    }
+
+  /**
+    * Density is the one setting that decides what the traffic is able to do rather than what
+    * it wants to. Every other dial adjusts a driver; this one adjusts the road, and no amount
+    * of eagerness gets a car into a gap that is not there.
+    */
+  "The density dial" should "count cars per kilometre of lane, however many lanes there are" in {
+    val oneLane = TrackRoad(List(TrackLane.evenlySpaced(RingPath.ofCircumference(Meters(400)), 20, limit, limit)))
+
+    oneLane.laneKilometres shouldBe 0.4 +- Tolerance
+    oneLane.density shouldBe 50.0 +- Tolerance
+
+    // A second lane is shorter, so it is road as well as cars that the reading is spread over.
+    val twoLanes = road(20, 20)
+    twoLanes.laneKilometres shouldBe (0.4 + (0.4 - 2 * math.Pi * 0.006)) +- Tolerance
+    twoLanes.density shouldBe (40 / twoLanes.laneKilometres) +- Tolerance
+  }
+
+  it should "arrive at whatever it is asked for, up and down" in {
+    val start = road(9, 5)
+
+    List(40.0, 5.0, 60.0, 20.0).foreach { target =>
+      val settled = held(start, target, 900)
+
+      withClue(s"asked for $target cars per km and got ${settled.density}: ") {
+        settled.vehicleCount shouldBe settled.carsFor(target)
+      }
+    }
+  }
+
+  /**
+    * A car at a time, so that dragging the dial is something you watch rather than something
+    * that has happened - and so each arrival is placed against the road the last one left.
+    */
+  it should "move the population by one car per tick" in {
+    val start = road(9, 5)
+    val once = TrackRoad.approaching(start, 60.0)
+
+    once.vehicleCount shouldBe start.vehicleCount + 1
+    TrackRoad.approaching(once, 60.0).vehicleCount shouldBe start.vehicleCount + 2
+
+    val shrinking = TrackRoad.approaching(start, 5.0)
+    shrinking.vehicleCount shouldBe start.vehicleCount - 1
+  }
+
+  it should "leave the road standing at every setting it passes through" in {
+    val filling = (1 to 900).foldLeft(road(9, 5)) { (current, _) =>
+      val next = TrackRoad.update(TrackRoad.approaching(current, TrackRoad.Densest), dt)
+      next.lanes.foreach { lane =>
+        withClue(s"cars overlapped while filling: ${lane.gaps.map(_.toMeters.round)} ") {
+          lane.gaps.foreach(_ should be > Meters(0))
+        }
+        roadAccountedFor(lane).toMeters shouldBe lane.path.totalLength.toMeters +- Tolerance
+      }
+      next
+    }
+
+    // And back down again, which is the direction that has to not lose track of anybody.
+    (1 to 900).foldLeft(filling) { (current, _) =>
+      val next = TrackRoad.update(TrackRoad.approaching(current, TrackRoad.Sparsest), dt)
+      next.vehicles.map(_.uuid).distinct.size shouldBe next.vehicleCount
+      next
+    }
+  }
+
+  /** Cars arriving after the fact are drivers the lane did not have, not copies of one it did. */
+  it should "give the cars it adds reasons of their own" in {
+    val filled = held(road(4, 4), 40.0, 900)
+
+    filled.lanes.foreach { lane =>
+      withClue(s"a lane of ${lane.vehicles.size} cars had one opinion between them: ") {
+        lane.vehicles.map(_.speedPreference).distinct.size should be > 1
+      }
+    }
+  }
+
+  /**
+    * The whole reason this dial is worth having. The crowded preset changes lanes not at all,
+    * and no other control on the page can do anything about it: at forty-odd cars to the
+    * kilometre there is no gap big enough to move into, whatever the drivers want. Thinning
+    * the traffic is the only thing that gives them the room, and it is now something you can
+    * do while watching rather than something you pick a different scene for.
+    */
+  it should "give a jammed road the room to change lanes again" in {
+    val jammed = road(21, 13)
+    jammed.density should be > 40.0
+
+    withClue("the crowded road was changing lanes already, so this proves nothing: ") {
+      changesOver(jammed, 1200) shouldBe 0
+    }
+
+    val thinned = held(jammed, 20.0, 600)
+    withClue("thinning the traffic did not get anybody moving between lanes: ") {
+      changesOver(thinned, 1200) should be > 0
+    }
+  }
+
   /**
     * The dial for traffic that does things nothing about the road accounts for.
     *

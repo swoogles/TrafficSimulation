@@ -91,7 +91,13 @@ case class TrackVehicle(
 case class TrackLane(
   path: Path,
   vehicles: List[TrackVehicle],
-  speedLimit: Velocity
+  speedLimit: Velocity,
+  /**
+    * The disagreement the lane was populated with, kept so it can make more cars like the
+    * ones it has. A lane that gains a car after the fact should gain one of its own drivers,
+    * not the one identical driver that every later arrival would otherwise be.
+    */
+  speedSpread: Double = 0.0
 ) {
 
   def gapAhead(index: Int): Length = TrackLane.gapAhead(this, index)
@@ -167,8 +173,65 @@ object TrackLane {
         speedPreference = preferenceAt(index, speedSpread)
       ).placedOn(path)
     }
-    TrackLane(path, vehicles, speedLimit)
+    TrackLane(path, vehicles, speedLimit, speedSpread)
   }
+
+  /** Room a car wants beyond its own length before it will be dropped into a gap. */
+  private val ArrivalClearance: Length = Meters(2)
+
+  /**
+    * One more car, dropped into the roomiest gap the lane has.
+    *
+    * The roomiest rather than anywhere, because a car appearing is a disturbance whatever you
+    * do with it, and the biggest gap is where it disturbs least - it is the one place on the
+    * loop where the traffic was not already using all the room it had.
+    *
+    * A lane with nowhere to put one comes back unchanged, which is how a road gets to be full:
+    * the dial goes on asking for more cars and the road goes on declining, rather than either
+    * of them having to know what full means.
+    */
+  def withOneMore(lane: TrackLane): TrackLane =
+    if (lane.vehicles.isEmpty)
+      lane.copy(vehicles = List(arrival(lane, Meters(0), lane.speedLimit)))
+    else {
+      val roomiest = lane.vehicles.indices.maxBy(index => gapAhead(lane, index).toMeters)
+      val gap = gapAhead(lane, roomiest)
+      val behind = lane.vehicles(roomiest)
+
+      if (gap <= behind.length + ArrivalClearance * 2.0) lane
+      else
+        lane.withVehicleAdded(
+          // Centred in the gap, and travelling with the car it is arriving behind.
+          arrival(lane, lane.path.normalize(behind.s + (gap + behind.length) / 2.0), behind.speed)
+        )
+    }
+
+  /**
+    * One car fewer, taken from the tightest spot on the loop.
+    *
+    * Every removal leaves a hole the traffic has to absorb, and the hole is the car's length
+    * plus whatever room it had. Taking the car that had least leaves the smallest one.
+    */
+  def withOneFewer(lane: TrackLane): TrackLane =
+    if (lane.vehicles.isEmpty) lane
+    else {
+      val tightest = lane.vehicles.indices.minBy(index => gapAhead(lane, index).toMeters)
+      lane.copy(vehicles = lane.vehicles.patch(tightest, Nil, 1))
+    }
+
+  /**
+    * A car joining traffic that is already running.
+    *
+    * Its speed preference carries on the sequence the lane was laid out with, so an arrival is
+    * a driver the lane did not have rather than a repeat of one it did.
+    */
+  private def arrival(lane: TrackLane, s: Length, speed: Velocity): TrackVehicle =
+    TrackVehicle(
+      commuterAt(lane.path, s, speed),
+      s,
+      speed,
+      speedPreference = preferenceAt(lane.vehicles.size, lane.speedSpread)
+    ).placedOn(lane.path)
 
   /**
     * The golden ratio's fractional multiples, which is the cheapest way to hand out a spread

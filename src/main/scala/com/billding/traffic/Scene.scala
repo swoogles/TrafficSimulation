@@ -45,6 +45,16 @@ sealed trait Scene {
 
   /** How often new cars arrive, for scenes that have anywhere for them to arrive from. */
   def sourceTiming: Option[Time]
+
+  /**
+    * Cars per kilometre of lane, for scenes whose population is yours to set.
+    *
+    * A street's population is whatever its sources have put on it and its exits have not yet
+    * taken off, so there is nothing to set - the control for that road is how often cars
+    * arrive. A ring holds exactly the cars you give it, which makes this the one dial that
+    * decides what the traffic is physically able to do.
+    */
+  def density: Option[Double]
 }
 
 case class StreetScene(
@@ -123,6 +133,8 @@ case class StreetScene(
 
   val sourceTiming: Option[Time] =
     streets.flatMap(street => street.lanes.map(lane => lane.vehicleSource.spacingInTime)).headOption
+
+  val density: Option[Double] = None
 }
 
 /**
@@ -207,6 +219,8 @@ case class RingScene(
   }
 
   val sourceTiming: Option[Time] = None
+
+  val density: Option[Double] = Some(road.density)
 
   /** Brake one car in the middle of the pack, so there are cars either side to watch. */
   def brakeOneCar(): RingScene = {

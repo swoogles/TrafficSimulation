@@ -427,6 +427,40 @@ class LaneChangeSignallingSpec extends AnyFlatSpec with Matchers {
     }
   }
 
+  /**
+    * The density dial reads the scene rather than imposing on it.
+    *
+    * A control that kept a value of its own would quietly overrule the scene picker: load the
+    * preset you chose for how tightly packed it is, and the dial would drag it straight back
+    * to wherever it was last left. The button would still be labelled with the scene's name
+    * and would no longer show it.
+    */
+  "The density dial" should "follow whichever scene is put on screen" in {
+    val model = Client.model
+
+    model.loadScene(scenes.waveProneTwoLaneRing.scene)
+    val crowded = model.density.now()
+
+    model.loadScene(scenes.quietTwoLaneRing.scene)
+    val free = model.density.now()
+
+    crowded shouldBe scenes.waveProneTwoLaneRing.scene.density.get +- 1e-9
+    free shouldBe scenes.quietTwoLaneRing.scene.density.get +- 1e-9
+    withClue("the crowded preset did not read as denser than the free-flowing one: ") {
+      crowded should be > free
+    }
+  }
+
+  /**
+    * A street's cars are whatever its sources have put there, so there is no population to
+    * set - and a dial that cannot do anything is one the page does not offer. The control
+    * reads this to decide whether to appear at all.
+    */
+  it should "have nothing to say about a road cars drive onto and off" in {
+    scenes.scene1.scene.density shouldBe None
+    scenes.quietTwoLaneRing.scene.density shouldBe defined
+  }
+
   /** Picking a preset means "show me this", not "lay this out and wait". */
   "Loading a scene" should "start it, even if the page was paused at the time" in {
     val model = Client.model

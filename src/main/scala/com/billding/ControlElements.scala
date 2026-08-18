@@ -1,5 +1,6 @@
 package com.billding
 
+import com.billding.traffic.TrackRoad
 import com.raquo.laminar.api.L._
 
 /**
@@ -80,6 +81,22 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
     buttonBehaviors.setWhimsy
   )
 
+  /**
+    * In cars per kilometre rather than on a nought-to-a-hundred scale, because unlike the
+    * others this one is a measurement of something. A road either has room for a lane change
+    * or it does not, and the number where that stops being true is a number worth being able
+    * to read off the control that set it.
+    */
+  private val density = Dial(
+    "Density",
+    model.densityText,
+    TrackRoad.Sparsest.toInt,
+    TrackRoad.Densest.toInt,
+    1,
+    model.density.signal.map(_.round.toInt),
+    buttonBehaviors.setDensity
+  )
+
   private val carTiming = Dial(
     "New cars",
     model.carTimingText,
@@ -110,6 +127,10 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
   private val trafficArrives: Signal[Boolean] =
     model.sceneVar.signal.map(_.sourceTiming.isDefined).distinct
 
+  /** A street's population is whatever has driven onto it, so there is nothing there to set. */
+  private val populationIsYours: Signal[Boolean] =
+    model.sceneVar.signal.map(_.density.isDefined).distinct
+
   val layout: HtmlElement =
     div(
       cls := "controls",
@@ -129,6 +150,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         readout(eagerness),
         readout(politeness),
         readout(whimsy),
+        child.maybe <-- populationIsYours.map(if (_) Some(readout(density)) else None),
         child.maybe <-- trafficArrives.map(if (_) Some(readout(carTiming)) else None)
       ),
       child.maybe <-- openPanel.signal.map {

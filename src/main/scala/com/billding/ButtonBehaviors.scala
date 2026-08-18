@@ -39,6 +39,9 @@ case class ButtonBehaviors(model: Model) {
 
   val setWhimsy: Observer[Int] = Observer(value => model.whimsy.set(value / 100.0))
 
+  /** Cars per kilometre of lane, straight off the slider, the way the speed dial works. */
+  val setDensity: Observer[Int] = Observer(value => model.density.set(value.toDouble))
+
   /**
     * Some disruptions are requests rather than actions: the flag is raised here and lowered
     * by whichever tick gets around to honouring it, because the scene it applies to only

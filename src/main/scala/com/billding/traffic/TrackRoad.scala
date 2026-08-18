@@ -81,6 +81,25 @@ case class TrackRoad(
   /** The outermost lane is the widest, so it is the one the canvas has to fit. */
   def extent: PathExtent = lanes.head.path.extent
 
+  /** Every lane's length added up, which is the road there is to put cars on. */
+  def laneKilometres: Double = lanes.map(_.path.totalLength.toKilometers).sum
+
+  /**
+    * Cars per kilometre of lane.
+    *
+    * The one number that decides what this traffic is allowed to do. Eight-metre cars wanting
+    * six metres at a standstill and a second of headway take about twenty-six metres each at
+    * speed, so somewhere around forty per kilometre the road stops having room for a lane
+    * change and no dial anywhere else on the page can put it back.
+    *
+    * Per lane rather than per road, so the reading means the same thing on a one-lane ring as
+    * on a two-lane one, and the same thing on lanes of different lengths.
+    */
+  def density: Double = if (laneKilometres <= 0) 0.0 else vehicleCount / laneKilometres
+
+  /** How many cars that density comes to on this particular road. */
+  def carsFor(perKm: Double): Int = math.max(0, math.round(perKm * laneKilometres).toInt)
+
   def withSpeedLimit(speedLimit: Velocity): TrackRoad =
     copy(lanes = lanes.map(_.copy(speedLimit = speedLimit)))
 
@@ -376,6 +395,60 @@ object TrackRoad {
           }
         }
     }
+
+  /**
+    * One car nearer whatever population is being asked for.
+    *
+    * A car at a time rather than all at once, so that dragging the dial across the range is
+    * something you watch happen rather than something that has happened - and so that each
+    * arrival is placed against the road as it stands after the last one, instead of a dozen
+    * cars all being dropped into the same gap because it was the roomiest when the batch
+    * started. At a frame a car this is still faster than anyone can drag a slider.
+    */
+  def approaching(road: TrackRoad, perKm: Double): TrackRoad = {
+    val target = road.carsFor(perKm)
+    if (target > road.vehicleCount) withOneMoreCar(road)
+    else if (target < road.vehicleCount) withOneFewerCar(road)
+    else road
+  }
+
+  /**
+    * Added to the emptiest lane, so the road fills evenly rather than stacking up in one.
+    *
+    * Lanes are tried in order of how full they are and the first that accepts wins, because a
+    * lane can be out of room while its neighbour is not - and a road that gave up on the first
+    * refusal would stop filling long before it was full.
+    */
+  private def withOneMoreCar(road: TrackRoad): TrackRoad =
+    road.lanes.indices
+      .sortBy(index => densityOf(road.lanes(index)))
+      .map(index => (index, TrackLane.withOneMore(road.lanes(index))))
+      .find { case (index, lane) => lane.vehicles.size > road.lanes(index).vehicles.size }
+      .fold(road) { case (index, lane) => road.copy(lanes = road.lanes.updated(index, lane)) }
+
+  /** Taken from the fullest lane, for the same reason. */
+  private def withOneFewerCar(road: TrackRoad): TrackRoad =
+    road.lanes.indices
+      .sortBy(index => -densityOf(road.lanes(index)))
+      .find(index => road.lanes(index).vehicles.nonEmpty)
+      .fold(road) { index =>
+        road.copy(lanes = road.lanes.updated(index, TrackLane.withOneFewer(road.lanes(index))))
+      }
+
+  private def densityOf(lane: TrackLane): Double =
+    lane.vehicles.size / lane.path.totalLength.toKilometers
+
+  /** The range the density dial covers, from nearly empty to nearly solid. */
+  val Sparsest: Double = 5.0
+
+  /**
+    * Past about seventy cars to the kilometre there is no road left to hand out - eight metres
+    * of car and six of gap is fourteen metres a car, and that is what a standstill looks like.
+    * The dial stops just short of it: the last cars in are declined for want of room rather
+    * than accepted into a road that has none, so the top of the range is where traffic stops
+    * rather than where the arithmetic does.
+    */
+  val Densest: Double = 70.0
 
   /** The rate whimsy is quoted in, so the dial means something a person can picture. */
   private val OncePerMinute: Time = Seconds(60)

@@ -96,6 +96,19 @@ case class Model(
   // A ring has no source, so it has no timing to report - fall back to a sane slider value.
   val carTiming: Var[Time] = Var(originalScene.sourceTiming.getOrElse(Seconds(3)))
 
+  /**
+    * How tightly packed the traffic is, in cars per kilometre of lane.
+    *
+    * Taken from whatever scene is on screen rather than kept at a value of its own, because
+    * the alternative is a control that quietly overrules the scene picker: load a preset
+    * chosen for its density and the dial would immediately drag it back to wherever it was
+    * last left, which is a scene button that does not do what it says.
+    */
+  val density: Var[Double] =
+    Var(originalScene.density.getOrElse(TrackRoad.Sparsest))
+
+  val densityText: Signal[String] = density.signal.map(d => f"$d%.0f/km")
+
   val carTimingText: Signal[String] = carTiming.signal.map(t => f"${t.toSeconds}%.1f s")
 
   val pauseText: Signal[String] = paused.signal.map(p => if (p) "Play" else "Pause")
@@ -135,11 +148,13 @@ case class Model(
   def loadScene(scene: Scene): Unit = {
     sceneVar.set(scene)
     scene.sourceTiming.foreach(carTiming.set)
+    scene.density.foreach(density.set)
     paused.set(false)
   }
 
   private def reset: Unit = {
     sceneVar.set(originalScene)
+    originalScene.density.foreach(density.set)
     resetScene.set(false)
   }
 
@@ -196,14 +211,13 @@ case class Model(
     case street: StreetScene => street.updateAllStreets(this.updateLane)
     case ring: RingScene =>
       val disrupted = forceLaneChangeIfRequested(brakeOneCarIfRequested(ring))
-      disrupted.copy(
-        road = disrupted.road
-          .withSpeedLimit(this.speed.now())
-          .copy(
-            mobil = this.laneChangeRules,
-            whimsy = TrackRoad.whimsyFor(this.whimsy.now())
-          )
-      )
+      val settings = disrupted.road
+        .withSpeedLimit(this.speed.now())
+        .copy(
+          mobil = this.laneChangeRules,
+          whimsy = TrackRoad.whimsyFor(this.whimsy.now())
+        )
+      disrupted.copy(road = TrackRoad.approaching(settings, this.density.now()))
   }
 
   /**
