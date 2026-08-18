@@ -156,6 +156,58 @@ class LaneChangeSignallingSpec extends AnyFlatSpec with Matchers {
   }
 
   /**
+    * The same promise, extracted from drivers who had no reason in the first place.
+    *
+    * A change made on a whim cannot be re-justified when its warning is up - there was never
+    * a justification - so it goes out under the same flag the button uses, and that flag is
+    * the one thing here that could plausibly let a car cross without announcing it first.
+    */
+  "A change made on a whim" should "still be announced before it happens" in {
+    val warningInTicks = ticksIn(warning)
+    val capricious = road(14, 6, orderly).copy(whimsy = TrackRoad.MostCapricious)
+    val history = (1 to 600).scanLeft(capricious)((current, _) => TrackRoad.update(current, dt))
+    val changes = changesIn(history)
+
+    withClue("nobody acted on a whim, so this proves nothing: ") {
+      changes should not be empty
+    }
+
+    changes.foreach {
+      case (uuid, at) =>
+        val landedIn = laneOf(history(at + 1), uuid)
+        ((at - warningInTicks + 1) to at).map(history).foreach { current =>
+          withClue(s"car $uuid crossed at tick $at on a whim it never indicated: ") {
+            current.vehicles.find(_.uuid == uuid).flatMap(_.intent).map(_.to) shouldBe Some(landedIn)
+          }
+        }
+    }
+  }
+
+  /**
+    * A driver that wants a gap that never opens gives up rather than indicating forever. It
+    * matters more for whims than for anything else: a whim has no reason to go away on its
+    * own, so without a deadline a road turned up to full would silt up with cars announcing
+    * changes they were never going to get to make.
+    */
+  it should "give up rather than indicate forever" in {
+    val capricious = road(14, 6, orderly).copy(whimsy = TrackRoad.MostCapricious)
+
+    val longestRun = (1 to 900)
+      .scanLeft((capricious, Map.empty[java.util.UUID, Int])) {
+        case ((current, runs), _) =>
+          val next = TrackRoad.update(current, dt)
+          val indicating = next.vehicles.filter(_.intent.isDefined).map(_.uuid)
+          (next, indicating.map(uuid => uuid -> (runs.getOrElse(uuid, 0) + 1)).toMap)
+      }
+      .flatMap(_._2.values)
+      .foldLeft(0)(math.max)
+
+    withClue(s"somebody indicated for $longestRun ticks without ever crossing: ") {
+      longestRun should be <= ticksIn(warning) * 2 + 1
+    }
+  }
+
+  /**
     * The reason a warning is a promise rather than a plan: a second is long enough for the
     * gap to be taken by somebody else, and a driver that crosses anyway is a collision.
     */

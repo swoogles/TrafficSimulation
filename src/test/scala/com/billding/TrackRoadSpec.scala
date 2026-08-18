@@ -279,6 +279,97 @@ class TrackRoadSpec extends AnyFlatSpec with Matchers {
     }
   }
 
+  /** How many cars ended a run in a different lane from the one they were in when it began. */
+  private def changesOver(start: TrackRoad, ticks: Int): Int = {
+    val was = positionsByCar(start)
+    (1 to ticks)
+      .scanLeft(start)((current, _) => TrackRoad.update(current, dt))
+      .sliding(2)
+      .map {
+        case Seq(before, after) =>
+          positionsByCar(after).count {
+            case (uuid, lane) => positionsByCar(before).getOrElse(uuid, lane) != lane
+          }
+        case _ => 0
+      }
+      .sum
+  }
+
+  /**
+    * The dial for traffic that does things nothing about the road accounts for.
+    *
+    * MOBIL only ever proposes the changes that pay, and the tightly packed presets are exactly
+    * where none of them do - so a road whose drivers are all being sensible is a road where
+    * the crowded scene never moves at all, however the other dials are set. This is the one
+    * control that reaches it, because it is the only one that never asks whether the change
+    * is worth making.
+    */
+  "A driver on a whim" should "change lanes where nothing about the road suggests it" in {
+    val sensible = road(11, 7, orderly)
+    val capricious = sensible.copy(whimsy = TrackRoad.MostCapricious)
+
+    withClue("these drivers were supposed to have no reasons of their own: ") {
+      changesOver(sensible, 600) shouldBe 0
+    }
+    withClue("nobody ever acted on a whim: ") {
+      changesOver(capricious, 600) should be > 0
+    }
+  }
+
+  /** Unreasonable is not the same as impossible: a whim still has to land on tarmac. */
+  it should "never put a car where a car already is" in {
+    (1 to 600).foldLeft(road(12, 8, orderly).copy(whimsy = TrackRoad.MostCapricious)) {
+      (current, _) =>
+        val next = TrackRoad.update(current, dt)
+        next.lanes.foreach { lane =>
+          withClue(s"cars overlapped: ${lane.gaps.map(_.toMeters.round)} ") {
+            lane.gaps.foreach(_ should be > Meters(0))
+          }
+        }
+        next
+    }
+  }
+
+  it should "keep every car it started with" in {
+    val settled =
+      tick(road(11, 7, orderly).copy(whimsy = TrackRoad.MostCapricious), 600)
+
+    settled.vehicleCount shouldBe 18
+    settled.vehicles.map(_.uuid).distinct.size shouldBe 18
+  }
+
+  /**
+    * Unpredictable to watch and identical to re-run, which is the only way a test can say
+    * anything about it: the road carries its own seed rather than reaching for a global one.
+    */
+  it should "be the same run twice" in {
+    def outcome: List[Int] =
+      tick(road(11, 7, orderly).copy(whimsy = TrackRoad.MostCapricious), 600).lanes
+        .map(_.vehicles.size)
+
+    outcome shouldBe outcome
+  }
+
+  it should "do more of it the further the dial is turned" in {
+    val gentle = changesOver(road(11, 7, orderly).copy(whimsy = 0.2), 1200)
+    val full = changesOver(road(11, 7, orderly).copy(whimsy = TrackRoad.MostCapricious), 1200)
+
+    full should be > gentle
+  }
+
+  "The whimsy dial" should "run from off to the top of its range, and no further" in {
+    TrackRoad.whimsyFor(0.0) shouldBe 0.0
+    TrackRoad.whimsyFor(1.0) shouldBe TrackRoad.MostCapricious
+    TrackRoad.whimsyFor(2.0) shouldBe TrackRoad.MostCapricious // A dial has an end.
+    TrackRoad.whimsyFor(-1.0) shouldBe 0.0
+  }
+
+  /** Off unless somebody asks for it, so a preset is still traffic that can be accounted for. */
+  it should "be off on every preset as built" in {
+    road(11, 7).whimsy shouldBe 0.0
+    TrackRoad.ring(Circumference, List(9, 5), limit, limit).whimsy shouldBe 0.0
+  }
+
   /**
     * The single-lane demonstrations are tuned around identical drivers - their waves come from
     * a car being braked, not from the traffic's own variety - so the spread is something a

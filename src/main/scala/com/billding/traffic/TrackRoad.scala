@@ -6,6 +6,7 @@ import com.billding.physics.{Path, PathExtent, RingPath}
 import com.billding.svgRendering.RoadShape
 import squants.motion.MetersPerSecond
 import squants.space.{Length, Meters}
+import squants.time.Seconds
 import squants.{Acceleration, Time, Velocity}
 
 /**
@@ -36,10 +37,30 @@ case class TrackRoad(
     * canvas somewhere to point before anything moves, and gives the driver a moment to think
     * better of it - the decision is re-examined against the road when the warning is up.
     */
-  laneChangeWarning: Option[Time] = None
+  laneChangeWarning: Option[Time] = None,
+  /**
+    * How often a driver changes lane for no reason at all, in changes per driver per minute.
+    *
+    * MOBIL only ever produces the changes that pay, and traffic made purely of those is
+    * traffic that behaves better than any traffic does. Real roads are full of moves nobody
+    * can account for - a driver who wanted the other lane, and took it - and those are the
+    * ones that start the waves. This is the dial for them, and it is deliberately not part of
+    * [[MOBIL]]: that is the model of a driver weighing something up, and the whole point of
+    * these is that nothing was weighed.
+    */
+  whimsy: Double = 0.0,
+  /**
+    * Where the arbitrary changes are drawn from.
+    *
+    * Carried in the road rather than reached for globally so a run stays reproducible: the
+    * same road ticked the same number of times gives the same traffic, which is what lets a
+    * test say anything at all about drivers who are supposed to be unpredictable.
+    */
+  entropy: Long = TrackRoad.FirstSeed
 ) {
 
   require(lanes.nonEmpty, "a road needs at least one lane")
+  require(whimsy >= 0.0, "a driver cannot change lanes arbitrarily less often than never")
 
   def speedLimit: Velocity = lanes.head.speedLimit
 
@@ -149,7 +170,7 @@ object TrackRoad {
   val DefaultSpeedSpread: Double = 0.15
 
   def update(road: TrackRoad, dt: Time): TrackRoad = {
-    val afterChanges = withLaneChanges(road)
+    val afterChanges = withLaneChanges(road, dt)
     afterChanges.copy(
       lanes = afterChanges.lanes.map(lane => TrackLane.update(settle(afterChanges, lane, dt), dt))
     )
@@ -161,14 +182,15 @@ object TrackRoad {
     * On a road with no warning period the two halves collapse into the one they always were,
     * since a driver that never announces anything has no promise outstanding to keep.
     */
-  private def withLaneChanges(road: TrackRoad): TrackRoad = {
+  private def withLaneChanges(road: TrackRoad, dt: Time): TrackRoad = {
     val afterPromises = ranked(ripeProposals(road)).foldLeft(road)(reconsider)
     val fresh = ranked(freshProposals(afterPromises))
 
-    road.laneChangeWarning match {
+    val afterReasons = road.laneChangeWarning match {
       case None           => fresh.foldLeft(afterPromises)(reconsider)
       case Some(duration) => fresh.foldLeft(afterPromises)(announce(duration))
     }
+    withWhimsy(afterReasons, dt)
   }
 
   /**
@@ -282,6 +304,118 @@ object TrackRoad {
           _.copy(intent = Some(LaneChangeIntent(proposal.to, duration)))
         )
     }
+
+  /**
+    * The changes nobody can account for: a driver moving over because it felt like it.
+    *
+    * Everything else on this road is a driver being sensible. MOBIL proposes only the moves
+    * that pay, so traffic built out of it alone is better-behaved than traffic is, and the
+    * interesting things - a gap taken badly, a wave nobody can trace - come from exactly the
+    * moves it will not make. The button does one of those on demand; this is the same idea
+    * left running, at whatever rate the road is set to.
+    *
+    * Drawn per driver rather than per road, so the rate reads the same whether you are
+    * watching ten cars or forty: a road of twice as many drivers has twice as many whims.
+    *
+    * These go out under the same [[LaneChangeIntent.insistent]] flag the button uses, and for
+    * the same reason. A change made for no reason cannot be re-examined for its reasons when
+    * the warning is up - MOBIL would refuse every one of them, and the dial would do nothing
+    * but light up indicators.
+    */
+  private def withWhimsy(road: TrackRoad, dt: Time): TrackRoad = {
+    val chance = road.whimsy * (dt / OncePerMinute)
+    if (chance <= 0.0) road
+    else {
+      // Gathered before any of them is acted on, so that a whim can only ever cost its own
+      // driver a turn - who else is asked this tick does not depend on who went first.
+      val asking = for {
+        (lane, from) <- road.lanes.zipWithIndex
+        vehicle      <- lane.vehicles
+        if vehicle.mayChangeLane
+      } yield (from, vehicle.uuid)
+
+      val (indulged, entropy) = asking.foldLeft((road, road.entropy)) {
+        case ((current, seed), (from, uuid)) =>
+          val wanted = stirred(seed)
+          val which = stirred(wanted)
+          if (unitOf(wanted) >= chance) (current, which)
+          else (whim(current, from, uuid, unitOf(which)), which)
+      }
+      indulged.copy(entropy = entropy)
+    }
+  }
+
+  /** One driver acting on a whim, if there is anywhere it could go. */
+  private def whim(road: TrackRoad, from: Int, uuid: UUID, draw: Double): TrackRoad =
+    road.lanes(from).vehicles.indexWhere(_.uuid == uuid) match {
+      case -1 => road // Somebody else's change has already moved it.
+      case index =>
+        val mover = road.lanes(from).vehicles(index)
+        /*
+        Unreasonable is not the same as impossible. A whim ignores whether the change is worth
+        making and who it inconveniences, which is the point of it, but a car still has to land
+        on tarmac rather than on a bumper - so this asks the one question the button also asks.
+         */
+        val somewhereToGo = road.neighboursOf(from).filter { to =>
+          fits(
+            road.lanes(to),
+            road.transpose(road.lanes(from).path, road.lanes(to).path, mover.s),
+            mover.length
+          )
+        }
+
+        if (somewhereToGo.isEmpty) road
+        else {
+          val to = somewhereToGo(math.min((draw * somewhereToGo.size).toInt, somewhereToGo.size - 1))
+          road.laneChangeWarning match {
+            case None => move(road, from, index, to)
+            case Some(duration) =>
+              withVehicleAt(road, from, index)(
+                _.copy(intent = Some(LaneChangeIntent(to, duration, insistent = true)))
+              )
+          }
+        }
+    }
+
+  /** The rate whimsy is quoted in, so the dial means something a person can picture. */
+  private val OncePerMinute: Time = Seconds(60)
+
+  /**
+    * Xorshift, which is all the randomness a lane change needs and is worth having in full
+    * sight: it is a pure function of the seed, so a road carries its own unpredictability
+    * around with it and two runs of the same road are the same run.
+    */
+  private def stirred(seed: Long): Long = {
+    // Zero is xorshift's one fixed point, and a road that reached it would quietly stop having
+    // whims at all rather than fail - so it is stepped over on the way past.
+    val from = if (seed == 0L) FirstSeed else seed
+    val a = from ^ (from << 13)
+    val b = a ^ (a >>> 7)
+    b ^ (b << 17)
+  }
+
+  /** A seed as a number from 0 to 1, taken off the top bits, which are the well-mixed ones. */
+  private def unitOf(seed: Long): Double =
+    (seed >>> 11).toDouble / (1L << 53).toDouble
+
+  /**
+    * Any non-zero start will do, since xorshift is stuck at zero and indifferent otherwise.
+    */
+  val FirstSeed: Long = 0x5DEECE66DL
+
+  /**
+    * The most capricious a road can be set: two arbitrary changes per driver per minute.
+    *
+    * A driver is busy for about six seconds per change once the indicating, the crossing and
+    * the settling afterwards are counted, so ten a minute is the most any car could physically
+    * manage. Two is the top of the dial because past it the traffic stops being traffic that
+    * sometimes does something inexplicable and becomes traffic that does nothing else.
+    */
+  val MostCapricious: Double = 2.0
+
+  /** Turn a 0-to-1 dial into the rate it means. */
+  def whimsyFor(dial: Double): Double =
+    MostCapricious * math.max(0.0, math.min(1.0, dial))
 
   private def withVehicleAt(road: TrackRoad, lane: Int, index: Int)(
     change: TrackVehicle => TrackVehicle

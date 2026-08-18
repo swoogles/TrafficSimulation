@@ -37,6 +37,8 @@ case class ButtonBehaviors(model: Model) {
 
   val setPoliteness: Observer[Int] = Observer(value => model.politeness.set(value / 100.0))
 
+  val setWhimsy: Observer[Int] = Observer(value => model.whimsy.set(value / 100.0))
+
   /**
     * Some disruptions are requests rather than actions: the flag is raised here and lowered
     * by whichever tick gets around to honouring it, because the scene it applies to only

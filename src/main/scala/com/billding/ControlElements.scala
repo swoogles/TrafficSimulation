@@ -62,6 +62,24 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
     buttonBehaviors.setPoliteness
   )
 
+  /**
+    * Deliberately the one dial that starts at nothing.
+    *
+    * The others adjust drivers who are being sensible; this one decides how much of the
+    * traffic is not. Landing with it above zero would mean the road you first see is already
+    * doing things that cannot be accounted for, which is a poor way to introduce a simulation
+    * whose whole claim is that it accounts for things.
+    */
+  private val whimsy = Dial(
+    "Whimsy",
+    model.whimsyText,
+    0,
+    100,
+    5,
+    model.whimsy.signal.map(w => (w * 100).round.toInt),
+    buttonBehaviors.setWhimsy
+  )
+
   private val carTiming = Dial(
     "New cars",
     model.carTimingText,
@@ -110,6 +128,7 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
         readout(speed),
         readout(eagerness),
         readout(politeness),
+        readout(whimsy),
         child.maybe <-- trafficArrives.map(if (_) Some(readout(carTiming)) else None)
       ),
       child.maybe <-- openPanel.signal.map {

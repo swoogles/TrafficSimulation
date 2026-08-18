@@ -9,7 +9,8 @@ import com.billding.traffic.{
   PilotedVehicle,
   RingScene,
   Scene,
-  StreetScene
+  StreetScene,
+  TrackRoad
 }
 import com.raquo.laminar.api.L.{Signal, Var}
 import squants.Time
@@ -55,7 +56,16 @@ case class Model(
   /** 0 to 1, where 1 takes any gap that leaves the driver the least bit better off. */
   laneChangeEagerness: Var[Double] = Var(0.5),
   /** 0 to 1, how much of the cost to everyone else a driver counts against its own gain. */
-  politeness: Var[Double] = Var(MOBIL.DefaultPoliteness)
+  politeness: Var[Double] = Var(MOBIL.DefaultPoliteness),
+  /**
+    * 0 to 1, how often drivers change lanes for no reason at all.
+    *
+    * Off to begin with, so the road you land on is still one where every change that happens
+    * is a change somebody could account for. It is worth turning up: it is the only control
+    * here that gets the tightly packed presets moving, because it is the only one that does
+    * not ask whether the move is worth making.
+    */
+  whimsy: Var[Double] = Var(0.0)
 ) extends Serialization
     with ModelTrait {
   // TODO Make this private
@@ -72,6 +82,16 @@ case class Model(
     laneChangeEagerness.signal.map(e => f"${e * 100}%.0f%%")
 
   val politenessText: Signal[String] = politeness.signal.map(p => f"${p * 100}%.0f%%")
+
+  /*
+  Read out as what it does rather than as a percentage of an abstraction. "20%" of whimsy is
+  20% of a number the reader has no way to picture; a rate per driver per hour is the thing
+  itself, and is a number you can check against the road in front of you.
+   */
+  val whimsyText: Signal[String] = whimsy.signal.map { w =>
+    val perHour = TrackRoad.whimsyFor(w) * 60
+    if (perHour <= 0) "off" else f"$perHour%.0f/h each"
+  }
 
   // A ring has no source, so it has no timing to report - fall back to a sane slider value.
   val carTiming: Var[Time] = Var(originalScene.sourceTiming.getOrElse(Seconds(3)))
@@ -179,7 +199,10 @@ case class Model(
       disrupted.copy(
         road = disrupted.road
           .withSpeedLimit(this.speed.now())
-          .copy(mobil = this.laneChangeRules)
+          .copy(
+            mobil = this.laneChangeRules,
+            whimsy = TrackRoad.whimsyFor(this.whimsy.now())
+          )
       )
   }
 
