@@ -14,7 +14,17 @@ case class Lane(
   vehicleSource: VehicleSourceImpl,
   beginning: Spatial,
   end: Spatial,
-  speedLimit: Velocity
+  speedLimit: Velocity,
+  /**
+    * How many cars have driven off the end of this lane.
+    *
+    * A running total carried by the lane itself, because the lane is the only thing that ever
+    * sees a car leave: [[Lane.update]] filters the finishers out and nothing downstream is
+    * told which ones went. Counting them here rather than diffing the traffic from outside
+    * also keeps the number honest about what it means - cars that finished, not cars that are
+    * no longer on the list.
+    */
+  completed: Int = 0
 ) {
 
   val length: Length = beginning.distanceTo(end)
@@ -98,12 +108,19 @@ object Lane {
 
   val MAX_VEHICLES_PER_LANE = 60
 
+  /**
+    * A lane described by where it runs and how often cars arrive, rather than by its fields.
+    *
+    * Its vehicles are spelt out by every caller rather than defaulted, because Scala allows
+    * only one of a name's overloads to carry default arguments and the case class's own
+    * constructor is the one that needs them - it is what every `copy` goes through.
+    */
   def apply(
     sourceTiming: Time,
     beginning: Spatial,
     end: Spatial,
     speedLimit: Velocity,
-    vehicles: List[PilotedVehicle] = Nil
+    vehicles: List[PilotedVehicle]
   ): Lane = {
     // TODO Get this speed updated via some nifty RX variables in the GUI
     val directionForSource: QuantityVector[Distance] = beginning.vectorTo(end)
@@ -160,7 +177,18 @@ object Lane {
     val vehiclesThatHaveNotReachedDestination =
       newVehicles.filter(vehicle => vehicle.distanceTo(vehicle.destination) > Meters(40))
 
-    laneWithNewVehicle.copy(vehicles = vehiclesThatHaveNotReachedDestination)
+    /*
+    Only the cars that drove to the end count. The overflow drop above takes cars off the
+    front of the list, which is the end of the road, so they are the nearly-finished ones -
+    but they were removed because the lane ran out of room to hold them rather than because
+    they got anywhere, and a counter that includes them is counting the simulation's
+    housekeeping.
+     */
+    laneWithNewVehicle.copy(
+      vehicles = vehiclesThatHaveNotReachedDestination,
+      completed = lane.completed +
+        (newVehicles.size - vehiclesThatHaveNotReachedDestination.size)
+    )
   }
 
   def responsesInOneLanePrep(lane: Lane): List[Acceleration] =

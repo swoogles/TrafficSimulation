@@ -1,6 +1,7 @@
 package com.billding
 
 import com.billding.svgRendering.{
+  CountingLine,
   DividerRing,
   LaneChangeSignal,
   Motion,
@@ -33,6 +34,16 @@ object Window {
 
   /** Dashed lane markings are yellower and dimmer than the solid white at the kerb. */
   private val DividerLine = "#d8c56a"
+
+  /**
+    * The counting line, in the same blue the readings under the road are picked out in.
+    *
+    * Blue because nothing else out here is: the tarmac is dark, the paint is white and
+    * yellow-grey, and a car is green, red or amber. It is also the only marking that runs
+    * across the road rather than along it, so it cannot be mistaken for road furniture - and
+    * matching the counter's colour is what says the line and the number are the same fact.
+    */
+  private val CountingLinePaint = "#5b9cff"
 
   /*
   The sprite is a light silver car, so multiplying it by a colour keeps its shading and its
@@ -293,7 +304,7 @@ object Window {
 }
 
 class Window(scene: Scene, canvasWidth: Int, availableHeight: Int) {
-  import Window.{edgeLineWidth, DividerLine, EdgeLine, EdgeLineInset, Tarmac}
+  import Window.{edgeLineWidth, CountingLinePaint, DividerLine, EdgeLine, EdgeLineInset, Tarmac}
 
   private val projection: Projection = scene.project(canvasWidth, availableHeight)
 
@@ -370,6 +381,21 @@ class Window(scene: Scene, canvasWidth: Int, availableHeight: Int) {
             svgAttrs.stroke := DividerLine,
             svgAttrs.strokeWidth := lineWidth.toString,
             svgAttrs.strokeDasharray := s"$dash $dash"
+          )
+        )
+
+      case CountingLine(from, to, width) =>
+        svgTags.g(cls := "counting-line")(
+          svgTags.line(
+            svgAttrs.x1 := projection.xOf(from).toString,
+            svgAttrs.y1 := projection.yOf(from).toString,
+            svgAttrs.x2 := projection.xOf(to).toString,
+            svgAttrs.y2 := projection.yOf(to).toString,
+            svgAttrs.stroke := CountingLinePaint,
+            // Its own width rather than a share of the road's, because unlike the lines that
+            // run along the road this one's length is the road's width already.
+            svgAttrs.strokeWidth := math.max(2.0, projection.across(width)).toString,
+            svgAttrs.strokeLinecap := "butt"
           )
         )
 

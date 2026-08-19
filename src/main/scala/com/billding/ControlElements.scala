@@ -136,6 +136,13 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
       cls := "controls",
       // Nothing that would let a stale panel outlive the scene it belonged to.
       trafficArrives.changes --> Observer[Any](_ => openPanel.set(None)),
+      // Directly under the road, because these two are the road describing itself: they sit
+      // nearer the traffic they are counting than any of the controls that shape it.
+      div(
+        cls := "tally",
+        reading("Completed", model.completedText),
+        reading("Rate", model.completionRateText)
+      ),
       div(
         cls := "control-row",
         action(child.text <-- model.pauseText, buttonBehaviors.togglePause),
@@ -170,6 +177,20 @@ case class ControlElements(buttonBehaviors: ButtonBehaviors) {
                      clicked: Observer[Any],
                      extra: Modifier[HtmlElement]*): HtmlElement =
     button(cls := "action", label, extra, onClick --> clicked)
+
+  /**
+    * A number the simulation is telling you, as opposed to one you are telling it.
+    *
+    * Not a button, and not shaped like one. Everything else in these rows can be pressed and
+    * does something when it is; a reading that looked the same and did nothing would be worse
+    * than one that plainly never could be.
+    */
+  private def reading(name: String, value: Signal[String]): HtmlElement =
+    div(
+      cls := "reading",
+      span(cls := "name", name),
+      span(cls := "value", child.text <-- value)
+    )
 
   /**
     * A setting at rest: its name, and what it says.

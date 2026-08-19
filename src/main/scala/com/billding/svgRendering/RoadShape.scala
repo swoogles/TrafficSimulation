@@ -39,10 +39,27 @@ case class DividerRing(
   width: Length
 ) extends RoadShape
 
+/**
+  * The line the traffic is counted at, painted across the road rather than along it.
+  *
+  * Drawn because a counter with no line is a number you have to take on trust: the point of
+  * marking it is that you can watch a car go over it and see the count go up. Given as the
+  * two ends of the stripe rather than as an angle on a ring, so the canvas draws it the same
+  * way whatever road it is measuring.
+  */
+case class CountingLine(
+  from: QuantityVector[Distance],
+  to: QuantityVector[Distance],
+  width: Length
+) extends RoadShape
+
 object RoadShape {
 
   /** Wide enough for the 4m cars, and the same 6m that Street uses to space its lanes. */
   val LaneWidth: Length = Meters(6)
+
+  /** How thick the counting line is painted - about a quarter of a car, so it reads as paint. */
+  val CountingLineWidth: Length = Meters(1.5)
 
   /** The tarmac a path implies. Cars drive along the middle of it. */
   def of(path: Path, width: Length = LaneWidth): RoadShape = path match {

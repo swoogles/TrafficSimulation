@@ -68,6 +68,15 @@ case class TrackRoad(
 
   def vehicleCount: Int = lanes.map(_.vehicles.size).sum
 
+  /**
+    * How many laps' worth of cars have gone past the counting line, over all the lanes.
+    *
+    * Added up rather than counted per lane, because the line is one line drawn across the
+    * whole road: what a driver on a two-lane ring has done is a lap of the road, and which
+    * lane it happened to be in at the time is not what is being counted.
+    */
+  def completed: Int = lanes.map(_.passes).sum
+
   def meanSpeed: Velocity = {
     val all = vehicles
     if (all.isEmpty) MetersPerSecond(0)

@@ -2,6 +2,7 @@ package com.billding.traffic
 
 import com.billding.physics.RingPath
 import com.billding.svgRendering.{
+  CountingLine,
   DividerRing,
   LaneChangeSignal,
   Motion,
@@ -55,6 +56,17 @@ sealed trait Scene {
     * decides what the traffic is physically able to do.
     */
   def density: Option[Double]
+
+  /**
+    * How many cars have finished the course, counting from when the scene was laid out.
+    *
+    * What finishing means is the one thing the two shapes of road genuinely disagree about. A
+    * street has an end, so a car finishes by driving off it and is gone. A ring has no end, so
+    * a lap is the nearest thing to finishing there is, and the same car finishes over and over.
+    * Both are the same question asked of the road you are looking at - how much traffic has
+    * this road got through - which is why they are one number rather than two.
+    */
+  def completed: Int
 }
 
 case class StreetScene(
@@ -135,6 +147,8 @@ case class StreetScene(
     streets.flatMap(street => street.lanes.map(lane => lane.vehicleSource.spacingInTime)).headOption
 
   val density: Option[Double] = None
+
+  def completed: Int = streets.flatMap(_.lanes).map(_.completed).sum
 }
 
 /**
@@ -168,7 +182,8 @@ case class RingScene(
     )
 
   /**
-    * One band of tarmac across all the lanes, with a dashed line on each interior boundary.
+    * One band of tarmac across all the lanes, with a dashed line on each interior boundary and
+    * the counting line painted across the lot.
     *
     * Drawing a separate strip per lane would paint an edge line down every boundary, which
     * reads as two roads that happen to touch rather than as one road you may change lanes on.
@@ -186,8 +201,29 @@ case class RingScene(
       val dividers = rings.tail.map { ring =>
         DividerRing(ring.center, ring.radius + road.laneWidth / 2.0, road.laneWidth)
       }
-      tarmac :: dividers
+      tarmac :: (dividers :+ countingLine(rings.head, rings.last))
     }
+  }
+
+  /**
+    * The counting line, from the outer kerb to the inner one.
+    *
+    * Every lane counts at the same arc length, and on a ring an arc length is an angle - the
+    * same angle whatever the radius - so the several lines the lanes each keep are one line
+    * across the road, and are worth drawing as one. The ends are found by asking a ring of the
+    * right radius where that arc length falls, which is also the only statement of why this
+    * works: change where a lane counts and both the count and the paint move together.
+    */
+  private def countingLine(outer: RingPath, inner: RingPath): CountingLine = {
+    val half = road.laneWidth / 2.0
+    def edgeAt(radius: Length) =
+      RingPath(outer.center, radius).pointAt(TrackLane.CountingLine)
+
+    CountingLine(
+      edgeAt(outer.radius + half),
+      edgeAt(inner.radius - half),
+      RoadShape.CountingLineWidth
+    )
   }
 
   /**
@@ -221,6 +257,8 @@ case class RingScene(
   val sourceTiming: Option[Time] = None
 
   val density: Option[Double] = Some(road.density)
+
+  def completed: Int = road.completed
 
   /** Brake one car in the middle of the pack, so there are cars either side to watch. */
   def brakeOneCar(): RingScene = {

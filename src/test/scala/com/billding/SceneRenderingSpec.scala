@@ -1,7 +1,7 @@
 package com.billding
 
 import com.billding.physics.RingPath
-import com.billding.svgRendering.{RoadRing, RoadShape, RoadStrip}
+import com.billding.svgRendering.{CountingLine, RoadRing, RoadShape, RoadStrip}
 import com.billding.traffic.{RingScene, StreetScene, TrackLane, TrackRoad}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -83,9 +83,10 @@ class SceneRenderingSpec extends AnyFlatSpec with Matchers {
     * of the road, so their distance from the centre has to be the road's own radius.
     */
   it should "lay a road down under the traffic" in {
+    // The tarmac comes first and the counting line is painted on top of it.
     val road = ringScene.roadShapes match {
-      case List(ring: RoadRing) => ring
-      case other                => fail(s"expected a single ring of road, got $other")
+      case List(ring: RoadRing, _: CountingLine) => ring
+      case other                                 => fail(s"expected a ring of road, got $other")
     }
 
     road.center shouldBe RingPath.ORIGIN
@@ -96,6 +97,28 @@ class SceneRenderingSpec extends AnyFlatSpec with Matchers {
     pixelPositions.map(pixelRadiusOf).foreach { carRadius =>
       carRadius shouldBe roadRadiusInPixels +- 1e-9
     }
+  }
+
+  /**
+    * The counting line has to cross the road the cars are counted at, which is the one thing
+    * about it that can be silently wrong: a stripe painted at the wrong angle is a perfectly
+    * convincing marker for a place nothing is happening at.
+    */
+  it should "paint the counting line across the road, where the lane counts" in {
+    val line = ringScene.roadShapes.collect { case line: CountingLine => line } match {
+      case List(only) => only
+      case other      => fail(s"expected one counting line, got $other")
+    }
+
+    val road = ringScene.roadShapes.head.asInstanceOf[RoadRing]
+
+    // Arc length nought is 3 o'clock, so both ends sit level with the centre, out to one side.
+    line.from.coordinates(1).toMeters shouldBe 0.0 +- 1e-9
+    line.to.coordinates(1).toMeters shouldBe 0.0 +- 1e-9
+
+    // From one kerb to the other, so it spans the tarmac rather than a slice of it.
+    line.from.coordinates.head shouldBe (road.radius + road.width / 2.0)
+    line.to.coordinates.head shouldBe (road.radius - road.width / 2.0)
   }
 
   it should "keep the road inside the canvas, edge lines and all" in {

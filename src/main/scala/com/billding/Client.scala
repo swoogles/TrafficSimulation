@@ -165,8 +165,11 @@ object Client {
     * moment you opened a control in order to watch the road - so this is what the controls
     * take when none of them is open, and an opened one is allowed to run off the bottom of a
     * short window instead.
+    *
+    * Three rows now, not two: the counter and the rate sit above the buttons, so the reserve
+    * went up by a row's worth when they arrived.
     */
-  private val RoomForTheControls = 140
+  private val RoomForTheControls = 180
 
   /** Below this the drawing is not worth looking at, whatever the window is doing. */
   private val MinimumCanvasHeight = 200

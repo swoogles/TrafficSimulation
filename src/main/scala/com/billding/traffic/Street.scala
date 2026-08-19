@@ -30,7 +30,7 @@ object Street {
       // TODO Fix hard-coded reference
       val newBeginning = beginning.move(Orientation.South, offset)
       val newEnd = end.move(Orientation.South, offset)
-      Lane(sourceTiming, newBeginning, newEnd, speed)
+      Lane(sourceTiming, newBeginning, newEnd, speed, Nil)
     }
     Street(lanes, beginning, end)
   }

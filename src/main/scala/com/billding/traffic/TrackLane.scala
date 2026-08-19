@@ -97,7 +97,20 @@ case class TrackLane(
     * ones it has. A lane that gains a car after the fact should gain one of its own drivers,
     * not the one identical driver that every later arrival would otherwise be.
     */
-  speedSpread: Double = 0.0
+  speedSpread: Double = 0.0,
+  /**
+    * How many cars have driven past [[TrackLane.CountingLine]] since the lane was laid out.
+    *
+    * A closed road has no end to disappear off, so there is nothing to count by watching the
+    * traffic thin out - a ring holds the same cars from the first tick to the last. What it
+    * has instead is a place, and a car that keeps going comes back to it, which is what makes
+    * a loop measurable at all: one point on the tarmac, and a count of who has been over it.
+    *
+    * Cars arriving and leaving by other means don't touch this. A lane change carries the
+    * count nowhere - each lane counts its own line - and a car the density dial adds or takes
+    * away has neither finished a lap nor undone one.
+    */
+  passes: Int = 0
 ) {
 
   def gapAhead(index: Int): Length = TrackLane.gapAhead(this, index)
@@ -250,12 +263,41 @@ object TrackLane {
     1.0 - spread + 2 * spread * place
   }
 
+  /**
+    * Where on a closed lane the cars are counted.
+    *
+    * Arc length nought, which on a ring is the 3 o'clock position and is the same angle
+    * whatever a lane's radius is - so on concentric lanes the lines are one line across the
+    * road rather than several scattered round it, and the canvas can draw it as such.
+    */
+  val CountingLine: Length = Meters(0)
+
   def update(lane: TrackLane, dt: Time): TrackLane = {
     val moved = lane.vehicles.zip(accelerations(lane)).map {
       case (vehicle, acceleration) => advance(vehicle, acceleration, dt, lane.path)
     }
-    lane.copy(vehicles = moved)
+    lane.copy(vehicles = moved, passes = lane.passes + crossings(lane, moved))
   }
+
+  /**
+    * How many of this step's movements took a car over the counting line.
+    *
+    * Read off where each car was and where it ended up rather than out of [[advance]],
+    * because arc length is the only thing that knows a lap happened: a car's position wraps
+    * from just short of the loop's length back to nearly nothing, and the distance it covered
+    * getting there is exactly the forward gap between the two.
+    *
+    * The stretch counted is open at the start and closed at the end, so a car sitting on the
+    * line is not over it until it moves - otherwise every lane would count its own starting
+    * grid on the first tick, and a car stopped on the line would count once per frame forever.
+    */
+  private def crossings(lane: TrackLane, moved: List[TrackVehicle]): Int =
+    lane.vehicles.zip(moved).count {
+      case (before, after) =>
+        val travelled = lane.path.forwardGap(before.s, after.s)
+        val toTheLine = lane.path.forwardGap(before.s, CountingLine)
+        toTheLine > Meters(0) && toTheLine <= travelled
+    }
 
   def accelerations(lane: TrackLane): List[Acceleration] =
     lane.vehicles.indices.toList.map(accelerationAt(lane, _))

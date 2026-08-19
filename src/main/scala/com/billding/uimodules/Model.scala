@@ -3,6 +3,7 @@ package com.billding.uimodules
 import com.billding.{NamedScene, SerializationFeatures}
 import com.billding.physics.Spatial
 import com.billding.traffic.{
+  CompletionTally,
   IntelligentDriverModelImpl,
   Lane,
   MOBIL,
@@ -70,6 +71,25 @@ case class Model(
     with ModelTrait {
   // TODO Make this private
   val sceneVar: Var[Scene] = Var(originalScene)
+
+  /**
+    * How much traffic the road has got through, and how fast it is getting through it.
+    *
+    * Kept here rather than in the scene because only half of it belongs to the simulation. The
+    * running total does - a lane knows when a car has left it - and the scene is asked for that
+    * every tick. The rate does not: it is that total differenced against a stretch of time the
+    * page picked, which makes it a reading rather than a fact about the traffic.
+    */
+  val tally: Var[CompletionTally] = Var(CompletionTally())
+
+  val completedText: Signal[String] = tally.signal.map(_.total.toString)
+
+  /*
+  Blank rather than nought for the first few seconds. A rate needs some time behind it, and
+  "0/min" on a road that has plainly just started is a claim rather than a reading.
+   */
+  val completionRateText: Signal[String] =
+    tally.signal.map(_.perMinute.fold("--")(rate => f"$rate%.0f/min"))
 
   /*
   Readings rather than sentences. These sit on a control the size of a fingertip, next to the
@@ -149,12 +169,14 @@ case class Model(
     sceneVar.set(scene)
     scene.sourceTiming.foreach(carTiming.set)
     scene.density.foreach(density.set)
+    tally.set(CompletionTally())
     paused.set(false)
   }
 
   private def reset: Unit = {
     sceneVar.set(originalScene)
     originalScene.density.foreach(density.set)
+    tally.set(CompletionTally())
     resetScene.set(false)
   }
 
@@ -250,7 +272,20 @@ case class Model(
       val newScene = applyInputTo(this.sceneVar.now())
       this.sceneVar.set(newScene)
       this.updateScene(this.sceneVar.now().speedLimit)
+      this.countFinishers()
     }
+
+  /**
+    * Bring the tally up to date with the scene, once the scene has been advanced.
+    *
+    * Only while running, because a paused road is not finishing cars and its clock is not
+    * moving either - counting a stopped simulation would drag the rate towards nothing for as
+    * long as you left it paused.
+    */
+  private def countFinishers(): Unit = {
+    val scene = this.sceneVar.now()
+    this.tally.update(_.observing(scene.completed, scene.t))
+  }
 
   def respondToAllInput()(implicit format: Format[StreetScene]): Unit = {
     this.resetIfNecessary()

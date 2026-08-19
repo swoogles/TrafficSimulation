@@ -65,6 +65,42 @@
   color: var(--paper);
 }
 
+/*
+ * The road's own numbers, sat between the traffic and the controls.
+ *
+ * Bigger than the settings below them and with no pill around them, because they are the one
+ * thing in this panel that is not a control: nothing here is pressable, so nothing here is
+ * dressed as a button. The value takes the same blue as the counting line painted across the
+ * road, which is what says the two are about each other.
+ */
+.controls .tally {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 28px;
+}
+
+.controls .reading {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.controls .reading .name {
+  color: var(--quiet);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.controls .reading .value {
+  /* Tabular figures so a counter that is climbing every frame doesn't wobble sideways. */
+  font-variant-numeric: tabular-nums;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--live);
+}
+
 /* A setting at rest: its name, and what it currently reads. */
 .controls .readout {
   display: inline-flex;
@@ -177,6 +213,14 @@ h2 {
     padding: 0 12px;
     gap: 6px;
   }
+
+  .controls .tally {
+    gap: 6px 18px;
+  }
+
+  .controls .reading .value {
+    font-size: 19px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -185,6 +229,9 @@ h2 {
     --paper: #1b1f25;
     --edge: #39414c;
     --quiet: #98a2b0;
+    /* The daylight blue is too dark to read against a dark panel, so it is lifted to the
+       same brighter blue the counting line is painted in. */
+    --live: #5b9cff;
   }
 
   /* Bootstrap paints the body dark grey on white, which is unreadable the other way up. */
