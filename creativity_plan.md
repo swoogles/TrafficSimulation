@@ -13,7 +13,12 @@ recommendations, and unresolved choices.
 - Track each piece's connection points, lane directions, and vehicle input/output.
 - Keep traffic and controls understandable on approximately five-inch screens.
 - Build and watch on phones in the first version (confirmed by the user).
+- Prioritize plausible individual drivers and believable congestion when realism
+  and ease of experimentation conflict (confirmed by the user).
 - Support quick experiments: change a layout or traffic demand and see the result.
+- Make creating and arranging roads fun and engaging, not merely possible.
+- Keep traffic running during geometry edits and preserve vehicles wherever
+  possible (confirmed by the user).
 
 The user requested planning and brainstorming first. No road-model or UI changes
 are part of this draft.
@@ -54,14 +59,111 @@ queues and competing merges need a view of the connected network.
 | --- | --- | --- |
 | Equal square tiles, fixed lane slots | Easy snapping, rotation, touch placement and validation | Large curves and ramps need many tiles; catalog grows with lane counts and orientations |
 | Grid with parameterized pieces spanning several cells | Lego feel plus long tapers, broad bends and reusable interchange assemblies | Footprint/overlap checking and port compatibility are more involved |
-| Freely placed spline roads with snapping endpoints | Natural geometry and arbitrary junction angles | Harder touch editing, intersection generation, and geometry validation |
+| Rigid pieces freely positioned, snapping compatible ports | Less grid restriction; automatic alignment to an existing road | Closing loops and joining two existing branches may require a different piece or moving an assembly |
+| Adjustable curves with snapping endpoints | Natural geometry and arbitrary junction angles | Harder touch editing, curve generation, and geometry validation |
 
-**Recommendation, awaiting confirmation:** start with the second approach. Use
-grid placement as an editor constraint; express actual connectivity through
-explicit ports. That leaves free placement possible later without redesigning
-the traffic model. Rotate whole pieces; initially restrict rotation to supported
-grid orientations. Mirroring must regenerate lane directions and mappings, not
-just flip the artwork.
+**Working recommendation, awaiting confirmation:** make ports authoritative and
+compare grid assembly with growing roads from ports before choosing the default
+placement interaction. Optional grid/angle guides could organize space without
+constraining every road. Parameterized pieces spanning several cells remain a
+useful grid candidate. Mirroring must regenerate lane directions and mappings,
+not just flip the artwork.
+
+### Discussion: which placement system is more fun?
+
+The user explicitly values fun and engagement. Grid placement is still open;
+the initial grid recommendation has been broadened to compare port-first placement.
+The predictions below are design judgments to test on a phone.
+
+Three independent choices are easy to confuse:
+
+1. **Position:** on a grid or anywhere in the world.
+2. **Shape:** fixed piece, adjustable length/radius, or freely drawn curve.
+3. **Connection:** explicit compatible lane endpoints in all cases.
+
+A freely positioned fixed bend cannot necessarily join two already placed ends.
+Snapping one end determines its position and orientation; the other end may
+still miss. Connecting both ends needs suitable geometry, adjustment of other
+pieces, or an explicit generated connector. This is the largest hidden cost of
+free placement, particularly when closing loops or completing an interchange.
+
+| Experience | Grid snapping | Free placement with port snapping |
+| --- | --- | --- |
+| Source of enjoyment | Quick assembly, clear choices, a satisfying construction puzzle | Shaping a place, sweeping curves, more personal-looking layouts |
+| First successful road | A small compatible kit can make this very quick | Growing from an existing port can also be quick if rotation aligns automatically |
+| Building neighborhoods | Repeated blocks and parallel streets are straightforward | Irregular streets feel natural; parallelism and equal spacing need optional guides |
+| Building highways | Predictable modules, but ramps may feel constrained by the grid | Broad bends and oblique ramps are easier to express with adjustable geometry |
+| Common frustration | The layout wanted is between cells, or the catalog lacks a fitting piece | A nearly connected join, ambiguous snap target, or a loop that will not close |
+| Phone interaction | Coarse cells reduce positioning precision, though a finger can still obscure the preview | Large magnetic targets and alignment previews reduce precision; raw rotate/drag handles would be cumbersome |
+| Supporting complexity | Compatible footprints, lane slots and a useful piece catalog | Snap-target selection, rotation, collision checking, and potentially a curve/constraint solver |
+
+Neither placement system by itself solves merges, lane-count mismatches or
+intersection conflicts. Both produce the same lane graph. A grid only helps
+connections fit when the kit's dimensions and ports were designed to fit it.
+
+**Candidate interaction A: assemble pieces.** Choose a straight, bend or ramp;
+preview it at a compatible grid location; tap to place; rotate using a button.
+Make common pieces adjustable in bounded increments so the fun is not interrupted
+by hunting through dozens of nearly identical tiles.
+
+**Candidate interaction B: grow from a connection.** Tap an open road end, choose
+straight/bend/ramp, and drag or tap the desired extent. The starting end stays
+attached and its heading aligns automatically. Nearby compatible ends attract
+the preview. Length/radius adjustments create geometry within defined constraints.
+This is more guided than placing arbitrary floating pieces, and could be the more
+engaging highway interaction if it remains easy to control on a phone.
+
+**Possible combination:** use ports as the connection authority, offer grid and
+angle guides for organizing space, and let a compatible port alignment override
+a guide. Show a stable preview before committing. Do not switch snap targets
+with tiny finger movements; retain the selected target until the user moves away.
+Expose a simple way to choose a different nearby target. A combination is useful
+only if it feels like one predictable interaction, not two competing snap systems.
+
+The confirmed simulation priority is plausible drivers and believable congestion.
+The editor may propose a valid curve or longer taper automatically; it must show
+the resulting shape before accepting it. Do not silently shrink physical queue
+storage, remove vehicles, or create an instantaneous merge to make a join appear
+successful. Curve speeds and acceleration-lane lengths need coherent world units,
+even if the displayed cars or selection handles are enlarged for readability.
+
+Before settling placement, compare A and B on the same touch tasks: extend a
+highway, attach an on-ramp, close a loop, build a block, then change a road already
+connected at both ends. Assess time to first working traffic, accidental edits,
+undo/correction frequency, and whether the user wants to keep experimenting.
+Prototypes can initially use static roads and a preview vehicle; a full simulation
+rewrite is not needed to discover which editor interaction feels better.
+
+### Live edits while traffic keeps running
+
+Confirmed: keep traffic running and preserve vehicles wherever possible. This
+rules out resetting the whole simulation as the normal geometry-edit workflow.
+
+Proposed mechanics, still to validate:
+
+- Manipulate a preview while the current network runs. Commit a valid graph and
+  its vehicle-state migration together at a simulation-step boundary; traffic
+  must never observe a half-connected network.
+- Preserve stable lane/vehicle IDs, current traffic and queues on unaffected roads.
+  Recompute affected route continuations and adjacency when topology changes.
+- Adding an empty branch is the simplest case. Shortening an occupied road,
+  changing lane count, or moving a connected endpoint needs an explicit policy
+  for cars, rear-body occupancy, in-progress lane changes and insufficient space.
+- Candidate policy for disruptive edits: prevent new entry to affected sections,
+  let them clear while the rest of the network runs, then apply the change. Show
+  that an edit is pending and allow cancellation. Blocked traffic might never
+  clear, so this cannot be the only policy.
+- Decide alternatives for edits that cannot preserve all cars: reject the edit
+  with an explanation, allow explicit removal with accounting, or another user-
+  chosen behavior. Do not silently teleport cars into a safe-looking gap.
+- Undoing geometry is also a live network change. It cannot restore old vehicle
+  positions without rewinding traffic; distinguish geometry undo from replay.
+
+This increases the value of bounded local edits. Grid pieces help constrain an
+edit's footprint, but deleting an occupied grid tile still needs migration rules.
+With free placement, moving a road can also reshape its neighbors; show exactly
+which sections will change rather than silently adjusting a large connected area.
+Growing a new branch from an open port is a promising common interaction for both.
 
 ### How traffic moves through them
 
@@ -276,23 +378,27 @@ demand and random seed. These are ideas, not commitments.
 | R3 | Required | Small-screen legibility is an architectural concern |
 | P1 | Prior decision in TILES.md; reconfirm | Grid placement with lane ports on each side |
 | P2 | Prior decision needs revision | Geometry-only joined paths cannot alone represent branching traffic |
-| D1 | Recommended; pending | Multi-cell parameterized pieces compile to a directed lane graph |
+| D1 | Recommended; pending | Port-connected parameterized pieces compile to a directed lane graph; compare placement interactions before choosing a default |
 | D2 | Recommended; pending | Separate definitions/geometry, runtime traffic and viewport state |
 | D3 | Recommended; pending | Physical following and receiving space determine flow; meters are explicit optional rules |
 | D4 | Confirmed by user | Build and watch on phones in the first version |
-| D5 | Open | Pause/reset, pause/preserve, or live editing of occupied roads |
+| D5 | Confirmed by user; migration policy open | Keep traffic running and preserve vehicles wherever possible during geometry edits |
 | D6 | Open | Fit-everything bounded play area versus zoomable overview/detail |
 | D7 | Open | Split probabilities versus destinations and route planning |
 | D8 | Open | Overpasses in the first highway kit |
 | D9 | Open | First useful scenario, network size, vehicle count and target phone |
-| D10 | Open | Playful plausibility versus calibrated traffic-engineering accuracy |
+| D10 | Confirmed by user | Plausible individual drivers and believable congestion |
+| D11 | Confirmed priority; interaction open | Road creation should be fun and engaging; compare piece assembly with growing roads from ports |
 
 ## Questions for our next passes
 
 First batch has been asked: phone editing, placement style, fidelity, editing live
 traffic, first map/scale, and what capacity means. Second batch: mobile viewing,
-branch choices and overpasses. Phone building and viewing are confirmed; the
-remaining answers are pending. Recommendations are not recorded as user decisions.
+branch choices and overpasses. Phone building/viewing and plausible individual
+drivers with believable congestion, and live editing with vehicle preservation
+are confirmed. Placement is under active
+discussion with fun and engagement as explicit priorities; other answers remain
+pending. Recommendations are not recorded as user decisions.
 
 Further questions to work through after those:
 
@@ -319,12 +425,14 @@ Further questions to work through after those:
 - [x] Inspect current path, lane, scene and rendering assumptions.
 - [x] Read the earlier tile proposal and identify the branching conflict.
 - [x] Record architectural alternatives and ask the first design questions.
-- [ ] Record the user's answers and resolve D1–D10 before treating them as settled.
+- [ ] Record the user's answers and resolve D1–D11 before treating them as settled.
 - [ ] Pick one demo map and explicit phone/network/vehicle performance targets.
 - [ ] Reconcile decisions with TILES.md without silently discarding earlier work.
 
 ### 1. Prove assembly and mobile readability
 
+- [ ] Compare grid assembly and growing from ports on the same phone editing tasks;
+  record which is more enjoyable and where each causes correction or confusion.
 - [ ] Define stable piece/port/lane IDs, units, transforms and connection rules.
 - [ ] Build a small static straight/bend/ramp arrangement with port visualization.
 - [ ] Validate rotated port positions, direction, lane mapping and curve continuity.
@@ -361,6 +469,9 @@ Further questions to work through after those:
 
 - [ ] Add palette, snapping preview, rotate, remove, undo/redo and useful invalid-join feedback.
 - [ ] Apply network edits as a validated transaction using the chosen traffic policy.
+- [ ] Keep simulation running through edit previews and atomic commits; test
+  occupied-road shortening/removal, in-progress lane changes, changed routes,
+  pending edits that cannot drain, and geometry undo while traffic advances.
 - [ ] Save/load versioned network documents, demand settings and seeds; keep camera
   preferences separate and runtime snapshots optional.
 - [ ] Offer simple measurements and repeatable before/after scenario resets.
