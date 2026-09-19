@@ -749,3 +749,72 @@ without implementing the standard in the first editor.
 Performance targets, a safe numerical timestep, calibrated highway capacities,
 and the best phone interaction have not been established by this review. They
 need agreed scenarios and measurements, not assumptions embedded in the API.
+
+## Build state
+
+Updated 2026-09-19, against [IMPLEMENTATION_TASKS.md](IMPLEMENTATION_TASKS.md).
+Cards are listed by that file's ids. Everything below is committed and pushed to
+`master`, each card its own commit, and every commit left `sbt test` at the
+documented six baseline failures and nothing more.
+
+**Phase A · Geometry - complete.**
+
+- A1 `ArcPath`, a finite circular arc with signed sweep. Its normal is the left
+  of travel in both sweep directions, which is the sign phase F depends on.
+- A2 `PathGrowth.straightFrom`/`arcFrom` plus `endPoint`/`endHeading`. Proven
+  continuous to a millimetre and 1e-9 rad across a three-growth chain.
+- A3 `PathExtent.union` and `PathExtent.covering`, the fold a camera fit is.
+
+**Phase B · The lane graph - complete.** This is the fundamental piece, and it is
+now the primary model: a `LaneSection` is a directed path with a width, a speed
+limit and a layer, and it owns no cars.
+
+- B1 `LaneSection`, `SectionId`, `MovementId`.
+- B2 `Movement` (Continuation/Merge/Diverge/Turn, Uncontrolled/Stop/Yield) and
+  `RoadNetwork`. A road seam is an Uncontrolled Continuation by construction.
+- B3 `NetworkIndex`, adjacency precomputed once per network version.
+- B4 `NetworkValidation`: position, tangent, layer and width continuity, at
+  0.05 m and 0.02 rad. A cross-layer movement is a fault, as D8 requires.
+- B5 `LaneNeighbour`: adjacency as an explicit interval plus offset. This is the
+  replacement for whole-lane normalized progress that ramps needed.
+- B6 `NetworkFixtures`: `straightChain`, `ySplit`, `rampMerge`, `tJunction`, each
+  grown with `PathGrowth` and each asserting no validation faults before it
+  returns.
+
+**Phase C · Traffic on the graph - in progress.**
+
+- C1 `NetworkVehicle`/`NetworkTraffic`. The vehicle keeps its `PilotedVehicle`
+  whole, so driver parameters, dimensions, uuid and rendering read what they
+  always read. `next`/`route`/`destination` exist unused, as the seam that lets
+  C2 and C3 be built before routing.
+- C2 `Lookahead.leaderOf`, which walks downstream sections until it finds a
+  leader or exhausts its distance budget. A stopped leader just past a seam is
+  a leader. Hop cap 20 guards zero-length cycles.
+- C3, C4, C5 outstanding.
+
+**Phase D · See it run - started.**
+
+- D1 `RoadArc`/`DividerArc` and the SVG `A` command, with the `d` string as a
+  pure testable function. Each emit site asserts the projection scales both axes
+  equally; a network scene must not take the stretched-axis projection.
+- D2, D3 outstanding. Nothing network-shaped is on the page yet.
+
+**Phase F · Lane changes - started.**
+
+- F1 `LaneMapping.neighbourAt`, over B5's intervals rather than `transpose`.
+
+### Two findings worth carrying forward
+
+- **Validation is uniform across movement kinds.** `NetworkValidation` applies
+  its heading check to every `Movement`, so an intersection Turn modelled as a
+  literal heading kink at the movement boundary will fault. `tJunction` avoids
+  this by putting the whole heading change inside the turning arm's own arc.
+  Phase H must either keep doing that or relax the check for Turn, Merge and
+  Diverge - a decision worth making deliberately rather than at the first red
+  test.
+- **A ramp merge is adjacency, not an endpoint join.** `rampMerge` deliberately
+  has no movement from the ramp into the mainline; the merge is entirely the
+  `LaneNeighbour` window between the acceleration lane and the mainline. A
+  driver who never takes the window runs out of pavement, which W5 counts as an
+  implicit sink. That matches the plan's insistence that a merge is behaviour
+  rather than a connector, and it is what G2 will lean on.
