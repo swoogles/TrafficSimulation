@@ -472,6 +472,11 @@ Required simulation behavior:
 - Treat ordinary continuation differently from yielding: road seams do not add stops.
 - Define merge priority and starvation behavior. Compare mainline priority, zipper
   alternation and gap acceptance as explicit experiment choices.
+- Let the connection preview choose a stop/yield priority preset for a new simple
+  intersection. The preset is part of the proposed network change, is visible in
+  the preview, and becomes the junction's initial right-of-way rule when applied.
+  It must affect legal turning movements and conflict admission, not merely the
+  sign drawn beside the road. Preserve an explicit override for later editing.
 - Choose a split continuation before the last moment. Keep that choice stable;
   repeatedly drawing a random branch while waiting creates erratic behavior.
 - Define what happens when a driver misses an exit. Proposed default: continue
@@ -591,6 +596,7 @@ demand and random seed. These are ideas, not commitments.
 | D13 | Desired interaction; detailed mappings open | On contact with a road, quickly choose intersection, merge, overpass or underpass |
 | D14 | Confirmed by user | Simple right-angle intersections with stop/yield rules ship in the first version |
 | D15 | Confirmed by user | Connection fitting may reshape a larger connected area; expose the affected area and migrate live traffic safely |
+| D16 | Confirmed by user; preset catalog open | Choose a stop/yield priority preset in the connection preview; apply it to the new intersection's movements and conflicts |
 
 ## Questions for our next passes
 
@@ -600,8 +606,8 @@ The latest question batch is answered: single-finger growth first, simple stop/y
 intersections in the first version, and permission to reshape a larger connected
 area when fitting connections. Future multitouch shortcuts remain provisional.
 Disruptive edits are now decided: apply valid edits and visibly count vehicles
-that cannot be safely retained. Default junction priority is still awaiting an
-answer. Recommendations are distinct from confirmed choices.
+that cannot be safely retained. Junction priority is chosen as a stop/yield preset
+in the connection preview. Recommendations are distinct from confirmed choices.
 
 Further questions to work through after those:
 
@@ -628,7 +634,7 @@ Further questions to work through after those:
 - [x] Inspect current path, lane, scene and rendering assumptions.
 - [x] Read the earlier tile proposal and identify the branching conflict.
 - [x] Record architectural alternatives and ask the first design questions.
-- [ ] Record the user's answers and resolve D1–D15 before treating them as settled.
+- [ ] Record the user's answers and resolve D1–D16 before treating them as settled.
 - [ ] Pick one demo map and explicit phone/network/vehicle performance targets.
 - [ ] Reconcile decisions with TILES.md without silently discarding earlier work.
 
@@ -681,7 +687,10 @@ Further questions to work through after those:
 - [ ] Test simultaneous arrivals, yield fairness, queues reaching upstream forks,
   blocked sinks, missed exits and repeatability with the same seed.
 - [ ] Implement initial T-junction/crossing turning movements, conflict clearance,
-  full stops and yield admission, with explicit priority and tie handling.
+  full stops and yield admission, with the selected stop/yield preset and explicit
+  priority and tie handling.
+- [ ] Preview each stop/yield preset's signs, lane arrows and conflict behavior;
+  verify changing the preset changes admission decisions before commit.
 - [ ] Test simultaneous conflicting arrivals, a blocked exit, stopped versus
   yielding approaches, turning routes and activation of a junction on occupied roads.
 - [ ] Check conservation: admitted = active + departed + explicitly removed;
