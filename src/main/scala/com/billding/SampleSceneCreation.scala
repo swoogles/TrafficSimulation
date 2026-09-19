@@ -1,9 +1,10 @@
 package com.billding
 
-import com.billding.physics.{RingPath, Spatial}
+import com.billding.network._
+import com.billding.physics.{PathGrowth, RingPath, Spatial}
 import com.billding.traffic._
-import squants.Length
-import squants.motion.{DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
+import squants.{DoubleVector, Length, QuantityVector}
+import squants.motion.{Distance, DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
 import squants.space.{Kilometers, Meters}
 import squants.time.{Milliseconds, Seconds, Time}
 
@@ -202,6 +203,106 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
   val lopsidedTwoLaneRing =
     NamedScene("2 lanes, all in the right one", twoLaneRing(18, 2, Meters(400)))
+
+  /*
+  The first road that isn't one straight or one closed loop: a single lane, grown the way the
+  editor (phase J) eventually will, that leaves a straight approach, bends broadly left, and
+  straightens out again before it runs out. It exists to answer one question the rings and the
+  street never had to - does the network layer, the arc it draws and the traffic tick that
+  moves cars across a seam actually look like a road once it's on the page - so it is built the
+  same way `NetworkFixtures` builds every graph phase C and D are tested against: grown with
+  `PathGrowth` so each piece starts exactly where the last one left off, and checked against
+  `NetworkValidation` before it is trusted to a `NamedScene`.
+
+  Three sections, one-way (W4), right-hand traffic:
+
+    - "approach", a 100 m straight, so there is somewhere to watch a car hold its lane before
+      the road asks anything of it;
+    - "bend", a 350 m radius arc sweeping 30 degrees left (`PathGrowth.arcFrom`'s positive
+      sweep) for about 183 m of curved pavement. 350 m is a highway radius, not a driveway
+      one - at the 90 km/h posted limit below that is under 0.2 g of lateral acceleration,
+      comfortably inside what a driver takes without noticing, which is what "broad" means
+      here as opposed to a tight, hairpin turn;
+    - "departure", another 100 m straight, so the bend has somewhere to unwind into rather than
+      ending the road the moment it stops curving.
+
+  Total road length is about 383 m - the "few hundred metres" the card asks for.
+
+  Seven cars are seeded across all three sections rather than bunched onto the approach, so the
+  bend already has traffic on it - the arc is the whole point of this scene - the moment the
+  page loads rather than after however many ticks it takes the front of a queue to reach it.
+  Within each section they sit roughly 45-60 m apart: at the 90 km/h limit an IDM commuter's
+  own steady-state gap (minimum distance plus one second of following time, `Driver.commuter`)
+  works out to a little over 30 m centre-to-centre once the 8 m car length is added back in, so
+  this spacing reads as cars keeping a comfortable interval rather than as a clump released all
+  at once. They start a little under the limit, at 80 km/h, so the first several ticks show
+  them easing up to speed instead of sitting there already at it.
+   */
+  private val networkSpeedLimit: Velocity = KilometersPerHour(90)
+  private val networkStartingSpeed: Velocity = KilometersPerHour(80)
+
+  private def networkVehicleAt(s: Length): PilotedVehicle = {
+    val spatial = Spatial.withVecs(QuantityVector[Distance](s, Meters(0), Meters(0)))
+    PilotedVehicle.commuter2(spatial, PilotedVehicle.idm, spatial)
+  }
+
+  private def buildSingleRoadNetwork(): NetworkScene = {
+    val east: DoubleVector = DoubleVector(1.0, 0.0, 0.0)
+    val origin: QuantityVector[Distance] = QuantityVector[Distance](Meters(0), Meters(0), Meters(0))
+
+    val approachLength = Meters(100)
+    val bendRadius = Meters(350)
+    val bendSweep = math.Pi / 6 // 30 degrees left
+    val departureLength = Meters(100)
+
+    val approachPath = PathGrowth.straightFrom(origin, east, approachLength)
+    val bendPath =
+      PathGrowth.arcFrom(PathGrowth.endPoint(approachPath), PathGrowth.endHeading(approachPath), bendRadius, bendSweep)
+    val departurePath =
+      PathGrowth.straightFrom(PathGrowth.endPoint(bendPath), PathGrowth.endHeading(bendPath), departureLength)
+
+    val approachId = SectionId("approach")
+    val bendId = SectionId("bend")
+    val departureId = SectionId("departure")
+
+    val laneWidth: Length = Meters(3.5)
+    val sections = Map(
+      approachId -> LaneSection(approachId, approachPath, laneWidth, networkSpeedLimit, layer = 0),
+      bendId -> LaneSection(bendId, bendPath, laneWidth, networkSpeedLimit, layer = 0),
+      departureId -> LaneSection(departureId, departurePath, laneWidth, networkSpeedLimit, layer = 0)
+    )
+    val movements = List(
+      Movement.continuation(MovementId("approach-bend"), approachId, bendId),
+      Movement.continuation(MovementId("bend-departure"), bendId, departureId)
+    )
+
+    val network = RoadNetwork(sections, movements)
+    val faults = NetworkValidation.faults(network)
+    require(faults.isEmpty, s"network demo scene produced a broken network: ${faults.map(_.message).mkString("; ")}")
+
+    val index = NetworkIndex(network)
+
+    val placements: List[(SectionId, Length)] = List(
+      (approachId, Meters(15)),
+      (approachId, Meters(60)),
+      (bendId, Meters(20)),
+      (bendId, Meters(70)),
+      (bendId, Meters(120)),
+      (departureId, Meters(10)),
+      (departureId, Meters(55))
+    )
+    val vehicles = placements.map {
+      case (section, s) =>
+        NetworkVehicle.enteringAt(networkVehicleAt(s), section, s, networkStartingSpeed, index)
+    }
+
+    NetworkScene(network, index, NetworkTraffic.of(vehicles), Seconds(0), DT, networkSpeedLimit)
+  }
+
+  val singleRoadNetworkScene: NetworkScene = buildSingleRoadNetwork()
+
+  val singleRoadNetwork: NamedScene =
+    NamedScene("network, single road", singleRoadNetworkScene)
 }
 
 object SampleSceneCreation {
