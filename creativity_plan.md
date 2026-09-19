@@ -33,6 +33,12 @@ recommendations, and unresolved choices.
 - Prefer growing roads from endpoints as the main creation interaction (confirmed
   by the user). Explore multitouch shaping and a quick choice of connection type
   when the growing road contacts an existing road: intersection, merge, over/under.
+- Start with single-finger road growth and establish the basic flow before adding
+  multitouch shaping shortcuts (confirmed by the user).
+- Include simple right-angle intersections with stop/yield rules in the first
+  version (confirmed by the user).
+- Allow the editor to reshape a larger connected area to accommodate a new
+  connection (confirmed by the user), with the proposed result visible before commit.
 
 The user requested planning and brainstorming first. No road-model or UI changes
 are part of this draft.
@@ -152,8 +158,10 @@ rewrite is not needed to discover which editor interaction feels better.
 ### Growing roads, gestures and choosing a connection
 
 The desired experience is growing a road and quickly deciding what happens when
-it meets another road. Exact gestures and the first intersection's scope are
-still open. A proposed sequence:
+it meets another road. Single-finger growth comes first; multitouch shaping
+shortcuts follow only after the basic flow works. Simple stop/yield intersections
+are in initial scope. Exact gesture thresholds remain a prototype question.
+A proposed sequence:
 
 ```mermaid
 flowchart LR
@@ -197,16 +205,53 @@ traffic through cars already occupying the new junction.
 The contact operation may generate a reusable junction/ramp assembly from several
 primitives. The gesture describes the intended result; it need not correspond to
 exactly one tile. The user should be able to inspect and adjust the generated
-result later. Any adjustment to existing roads must be visible in the preview;
-how much adjustment to allow is a pending user question.
+result later. The user allows reshaping a larger connected area to make a
+connection fit; this is not limited to the new road or immediate neighbors.
+Any adjustment to existing roads must be visible in the preview.
 
-Multitouch candidates, all provisional:
+Proposed approach to that broader reshaping:
+
+- Start with a small affected region and expand along connected roads if the
+  requested geometry cannot fit. Prefer the smallest changes that satisfy the
+  user's intent; permission for broad reshaping does not require changing everything.
+- Preserve existing connectivity, directions, lane counts and levels except where
+  the chosen operation explicitly changes them. Moving road geometry does not
+  silently authorize creating unrelated merges or deleting turns.
+- Offer an explicit way to anchor selected roads/junctions if needed. Treat pinned
+  locations, valid curve/taper geometry and occupied space as constraints. Pins
+  are a proposed usability aid, not yet a user requirement.
+- Show the full changed region, with old/new geometry distinguishable and its
+  extent visible on the overview map. If several solutions fit, offer a small
+  number of previews rather than demanding manual adjustment of every curve.
+- Live previews leave the current traffic network running. At acceptance, rerun
+  migration and admission checks against the latest tick; traffic has moved since
+  the proposal was computed. Apply all affected geometry and vehicle mappings
+  together, or keep the change pending/rejected according to the chosen policy.
+- Preserve vehicle identity, route intent, longitudinal order and safe spacing.
+  Deformation that shortens storage below current occupancy cannot safely keep
+  every car in place; revise the geometry or use the agreed disruptive-edit policy.
+  Repositioning a road must not be counted as vehicle travel or a completed trip.
+- Treat accepting one generated solution as one geometry-undo operation, including
+  all roads it changed. Undo still uses live migration rather than old car positions.
+
+This requires a constrained geometry-fitting step in addition to snapping: the
+system must find a valid arrangement, not merely align two endpoints. Prototype
+that on a few bounded connected arrangements before promising arbitrary networks.
+
+The initial flow must work with one finger: drag out a preview, release, adjust a
+visible bend/endpoint handle or control, then select a connection and apply it.
+Releasing the finger preserves the draft rather than demanding one uninterrupted
+gesture. Keep shape controls reachable when zoomed in and near screen edges.
+
+Gesture candidates below are provisional. Two-finger shaping and radial flick
+shortcuts are deferred; conventional camera navigation is separate from those
+shortcuts and must not be overloaded with road editing.
 
 | Context | Proposed interaction | Alternative / risk |
 | --- | --- | --- |
 | Selected open endpoint | One finger pulls out the road preview; release leaves it editable | Tap an endpoint and then tap the intended end for more deliberate placement |
 | Camera navigation | Two fingers pan/pinch the camera, including while a road preview exists | Making generic pinch resize roads could interfere with required close editing zoom |
-| Explicit road shaping handles | A second finger on a visible bend or tangent handle adjusts curvature/heading while the first controls the endpoint | Requires deliberate handle acquisition; test occlusion and comfort on a small phone |
+| Explicit road shaping handles, later | A second finger on a visible bend or tangent handle adjusts curvature/heading while the first controls the endpoint | Deferred until sequential single-finger handle adjustment is comfortable |
 | Candidate contact | Release reveals large connection choices; tapping one previews it | A radial flick may be a later shortcut, but needs forgiving sectors and an equivalent visible action |
 
 Choose gesture ownership from the initial targets and hold it for the gesture;
@@ -216,11 +261,13 @@ camera's automatic follow suspended during manipulation while traffic continues.
 Provide visible single-touch controls for all operations; gestures should improve
 speed without making the editor undiscoverable or unusable with one hand.
 
-Scope question: the user suggested right-angle intersections as a desired contact
-choice, but has not yet specified whether their traffic behavior belongs in the
-first highway release. Even a simple T-junction needs legal turns, conflict rules
-and yielding. If included initially, move that work into the first network slice;
-a chooser that draws crossing asphalt without those rules is not a working junction.
+Confirmed scope: simple right-angle intersections with stop/yield rules belong in
+the first version. Include T-junction and crossing geometry, legal turning paths,
+conflict checks and downstream clearance in the initial network work. Stop control
+requires a full stop before safe admission; yield control admits a vehicle only
+when conflicting traffic allows it. Define priorities and deterministic tie
+handling rather than treating every approach as equally free to enter. Exact
+priority defaults remain open. Traffic signals are a later extension.
 
 ### Live edits while traffic keeps running
 
@@ -247,10 +294,10 @@ Proposed mechanics, still to validate:
 - Undoing geometry is also a live network change. It cannot restore old vehicle
   positions without rewinding traffic; distinguish geometry undo from replay.
 
-This increases the value of bounded local edits. Grid pieces help constrain an
+This increases the value of understandable edit previews. Grid pieces help constrain an
 edit's footprint, but deleting an occupied grid tile still needs migration rules.
-With free placement, moving a road can also reshape its neighbors; show exactly
-which sections will change rather than silently adjusting a large connected area.
+With free placement, moving a road can also reshape its neighbors. Broader
+reshaping is now explicitly allowed; show exactly which sections will change.
 Growing a new branch from an open port is a promising common interaction for both.
 
 ### How traffic moves through them
@@ -393,6 +440,7 @@ Proposed first kit:
 5. On-ramp assembly: approach, acceleration lane, merge region.
 6. Off-ramp assembly: approach, diverge region, exit branch.
 7. Simple bridge/overpass layers and explicit transitions between levels.
+8. Simple right-angle junctions with stop/yield control and legal turning movements.
 
 Offer convenient ramp pieces in the palette, but allow them to be made from the
 same underlying sections and rules. Later, users can save groups as reusable
@@ -420,7 +468,7 @@ Required simulation behavior:
 - Support mandatory lane changes for an ending lane or planned exit, in addition
   to MOBIL's discretionary incentive to change lane.
 
-For future neighborhood intersections, a movement also needs crossing conflicts,
+For the initial simple intersections, a movement also needs crossing conflicts,
 right-of-way and downstream-clearance rules. These are distinct from endpoint
 connectivity. SUMO documents this distinction through internal junction links and
 intersection behavior.
@@ -528,15 +576,20 @@ demand and random seed. These are ideas, not commitments.
 | D9 | Scenario confirmed; budgets open | Several highway merges and splits; exact piece/vehicle counts and target phone remain open |
 | D10 | Confirmed by user | Plausible individual drivers and believable congestion |
 | D11 | Confirmed by user | Grow roads from endpoints as the preferred creation interaction |
-| D12 | Confirmed interest; mappings open | Explore multitouch gestures for shaping roads and interacting with pieces |
-| D13 | Desired interaction; detailed scope open | On contact with a road, quickly choose intersection, merge, overpass or underpass; decide when at-grade junction simulation ships |
+| D12 | Confirmed by user; future mappings open | Establish single-finger growth first; add multitouch shaping shortcuts after the basic flow works |
+| D13 | Desired interaction; detailed mappings open | On contact with a road, quickly choose intersection, merge, overpass or underpass |
+| D14 | Confirmed by user | Simple right-angle intersections with stop/yield rules ship in the first version |
+| D15 | Confirmed by user | Connection fitting may reshape a larger connected area; expose the affected area and migrate live traffic safely |
 
 ## Questions for our next passes
 
 Confirmed answers are in the decision register. Endpoint growth is now the chosen
 creation direction; grid constraints and exact gesture mappings remain open.
-Current questions: when simple intersections ship, how much existing roads may be
-reshaped to accommodate a connection, and how multitouch shaping coexists with zoom.
+The latest question batch is answered: single-finger growth first, simple stop/yield
+intersections in the first version, and permission to reshape a larger connected
+area when fitting connections. Future multitouch shortcuts remain provisional.
+Next decisions include edits that cannot preserve all cars and default junction
+priority. Recommendations are still distinct from confirmed choices.
 
 Further questions to work through after those:
 
@@ -545,8 +598,8 @@ Further questions to work through after those:
   deliberately imperfect human gap acceptance?
 - Is right-hand traffic sufficient initially, and are opposite directions needed
   in the first kit?
-- Do neighborhood streets eventually include signals, stop signs, roundabouts,
-  parked cars, pedestrians and bicycles? Which is the first necessary addition?
+- Beyond the confirmed stop/yield intersections, which additions matter first:
+  signals, roundabouts, parked cars, pedestrians or bicycles?
 - Should each piece have a fixed physical size, or should users stretch lengths
   while preserving valid curves and taper geometry?
 - Should disconnected pieces be allowed in drafts, with only runnable connected
@@ -563,16 +616,19 @@ Further questions to work through after those:
 - [x] Inspect current path, lane, scene and rendering assumptions.
 - [x] Read the earlier tile proposal and identify the branching conflict.
 - [x] Record architectural alternatives and ask the first design questions.
-- [ ] Record the user's answers and resolve D1–D13 before treating them as settled.
+- [ ] Record the user's answers and resolve D1–D15 before treating them as settled.
 - [ ] Pick one demo map and explicit phone/network/vehicle performance targets.
 - [ ] Reconcile decisions with TILES.md without silently discarding earlier work.
 
 ### 1. Prove assembly and mobile readability
 
-- [ ] Prototype endpoint growth with optional grid/angle guides; evaluate gesture
-  ownership, finger occlusion, camera zoom and single-touch alternatives on a phone.
+- [ ] Prototype the full single-finger flow with optional grid/angle guides:
+  grow, release, adjust handles, choose contact type, preview and apply. Evaluate
+  finger occlusion, camera zoom, cancellation and edge-of-screen editing on a phone.
 - [ ] Prototype contact previews and the intersection/merge/over/under chooser;
   test accidental crossings, rejected connections, cancellation and edge-of-screen use.
+- [ ] Prototype fitting a connection by reshaping several connected roads; show
+  old/new geometry, candidate solutions and the full affected region on the overview.
 - [ ] Define stable piece/port/lane IDs, units, transforms and connection rules.
 - [ ] Build a small static straight/bend/ramp arrangement with port visualization.
 - [ ] Validate rotated port positions, direction, lane mapping and curve continuity.
@@ -601,7 +657,7 @@ Further questions to work through after those:
 - [ ] Gate: splitting one physical road into more pieces does not materially change
   its traffic behavior, and each vehicle advances once per tick.
 
-### 3. Prove merges, splits and demand
+### 3. Prove merges, splits, intersections and demand
 
 - [ ] Implement explicit source demand, blocked-entry queues and sink accounting.
 - [ ] Implement acceleration-lane merging, lane drops and downstream blocking.
@@ -612,13 +668,15 @@ Further questions to work through after those:
   verify that a planned road route is feasible through its lane connections.
 - [ ] Test simultaneous arrivals, yield fairness, queues reaching upstream forks,
   blocked sinks, missed exits and repeatability with the same seed.
-- [ ] If intersections are in the first release, implement turning movements,
-  conflict clearance and the selected stop/yield rules before enabling that contact
-  choice for running traffic. Otherwise defer it explicitly to the street phase.
+- [ ] Implement initial T-junction/crossing turning movements, conflict clearance,
+  full stops and yield admission, with explicit priority and tie handling.
+- [ ] Test simultaneous conflicting arrivals, a blocked exit, stopped versus
+  yielding approaches, turning routes and activation of a junction on occupied roads.
 - [ ] Check conservation: admitted = active + departed + explicitly removed;
   requested demand is separately accounted for as admitted, pending or dropped.
-- [ ] Gate: the merge laboratory and split/rejoin experiments work without vehicle
-  duplication, disappearance, unsafe seam admission or hidden teleports.
+- [ ] Gate: the merge laboratory, split/rejoin and stop/yield intersection
+  experiments work without vehicle duplication, disappearance, unsafe conflict
+  admission or hidden teleports.
 
 ### 4. Make experimentation comfortable
 
@@ -627,17 +685,22 @@ Further questions to work through after those:
 - [ ] Keep simulation running through edit previews and atomic commits; test
   occupied-road shortening/removal, in-progress lane changes, changed routes,
   pending edits that cannot drain, and geometry undo while traffic advances.
+- [ ] Validate broad geometry deformations against current occupancy at commit,
+  preserving vehicle order and spacing and preventing false travel/completion counts.
 - [ ] Save/load versioned network documents, demand settings and seeds; keep camera
   preferences separate and runtime snapshots optional.
 - [ ] Offer simple measurements and repeatable before/after scenario resets.
+- [ ] After the single-finger flow is comfortable, test optional multitouch shaping
+  shortcuts without removing the visible controls or interfering with camera zoom.
 - [ ] Retain static rendering, cull offscreen artwork and profile on the target phone.
 - [ ] Gate: the agreed map remains readable and meets an agreed frame-time budget
   under a crowded-merge workload, with reproducible simulation results.
 
 ### 5. Extend toward streets after the highway contract holds
 
-- [ ] Add opposite directions, priority T-junctions and explicit turning movements.
-- [ ] Add conflict zones, stop/yield rules and signals according to selected scope.
+- [ ] Expand the initial stop/yield junctions to richer street layouts, opposite-
+  direction road assemblies and additional turning configurations as needed.
+- [ ] Add signals and other junction controls according to the next selected scope.
 - [ ] Expand bridge assemblies and reusable multi-piece assemblies beyond the
   initial simple layer/transition support.
 - [ ] Revisit pedestrians, bicycles, parking and import/export only against an actual
