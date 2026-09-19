@@ -39,6 +39,8 @@ recommendations, and unresolved choices.
   version (confirmed by the user).
 - Allow the editor to reshape a larger connected area to accommodate a new
   connection (confirmed by the user), with the proposed result visible before commit.
+- Apply valid live edits even when not all vehicles can be preserved; remove the
+  vehicles that cannot be safely retained and visibly count them (confirmed by the user).
 
 The user requested planning and brainstorming first. No road-model or UI changes
 are part of this draft.
@@ -226,10 +228,11 @@ Proposed approach to that broader reshaping:
 - Live previews leave the current traffic network running. At acceptance, rerun
   migration and admission checks against the latest tick; traffic has moved since
   the proposal was computed. Apply all affected geometry and vehicle mappings
-  together, or keep the change pending/rejected according to the chosen policy.
+  together. For valid geometry, remove and visibly count vehicles that cannot be
+  safely retained; invalid geometry still needs correction before it can apply.
 - Preserve vehicle identity, route intent, longitudinal order and safe spacing.
   Deformation that shortens storage below current occupancy cannot safely keep
-  every car in place; revise the geometry or use the agreed disruptive-edit policy.
+  every car in place; retain safely placeable vehicles and count necessary removals.
   Repositioning a road must not be counted as vehicle travel or a completed trip.
 - Treat accepting one generated solution as one geometry-undo operation, including
   all roads it changed. Undo still uses live migration rather than old car positions.
@@ -281,16 +284,24 @@ Proposed mechanics, still to validate:
   must never observe a half-connected network.
 - Preserve stable lane/vehicle IDs, current traffic and queues on unaffected roads.
   Recompute affected route continuations and adjacency when topology changes.
-- Adding an empty branch is the simplest case. Shortening an occupied road,
-  changing lane count, or moving a connected endpoint needs an explicit policy
-  for cars, rear-body occupancy, in-progress lane changes and insufficient space.
-- Candidate policy for disruptive edits: prevent new entry to affected sections,
-  let them clear while the rest of the network runs, then apply the change. Show
-  that an edit is pending and allow cancellation. Blocked traffic might never
-  clear, so this cannot be the only policy.
-- Decide alternatives for edits that cannot preserve all cars: reject the edit
-  with an explanation, allow explicit removal with accounting, or another user-
-  chosen behavior. Do not silently teleport cars into a safe-looking gap.
+- Adding an empty branch is the simplest case. For occupied-road shortening,
+  lane removal, deformation and in-progress lane changes, preserve vehicles that
+  can be migrated safely and remove only those that cannot. Consider each car's
+  full body and resulting gaps, not only whether its center fits on a road.
+- Confirmed disruptive-edit policy: apply valid edits at the next safe simulation
+  boundary and visibly count necessary vehicle removals. Do not wait for the
+  affected roads to drain as the normal workflow. Do not reset unaffected traffic
+  or teleport cars into an unsafe gap to avoid reporting removals.
+- Proposed feedback: an immediate message such as "Road updated · 3 vehicles
+  removed" plus a cumulative scenario count labeled "Removed by edits". Record
+  the actual count from the committed migration; any preview count is an estimate
+  because traffic continues moving. The exact presentation remains a UI proposal.
+- Track removals separately from completed trips, sink throughput and successful
+  travel-time statistics. Account for each vehicle once; geometry undo must not
+  silently resurrect removed vehicles or decrement this historical count.
+- Determine survivors reproducibly and preserve their order, speed, destination
+  and identity where feasible. A changed or unreachable destination route alone
+  is a separate routing-policy question, not a reason to silently discard a car.
 - Undoing geometry is also a live network change. It cannot restore old vehicle
   positions without rewinding traffic; distinguish geometry undo from replay.
 
@@ -569,7 +580,7 @@ demand and random seed. These are ideas, not commitments.
 | D2 | Recommended; pending | Separate definitions/geometry, runtime traffic and viewport state |
 | D3 | Confirmed by user | Lane connections and available space determine capacity; traffic flow emerges naturally, with no initial per-piece throughput caps |
 | D4 | Confirmed by user | Build and watch on phones in the first version |
-| D5 | Confirmed by user; migration policy open | Keep traffic running and preserve vehicles wherever possible during geometry edits |
+| D5 | Confirmed by user | Keep traffic running; preserve vehicles where possible, and apply edits with visible counts of necessary vehicle removals |
 | D6 | Confirmed by user; interaction details open | Follow a vehicle or hotspot with a small overview map; allow close zoom for editing and retain context across several merges/splits |
 | D7 | Confirmed by user; routing policy details open | Each vehicle has a destination and plans its route in the first version |
 | D8 | Confirmed by user | Simple bridge layers in the 2D editor belong in the first highway kit |
@@ -588,8 +599,9 @@ creation direction; grid constraints and exact gesture mappings remain open.
 The latest question batch is answered: single-finger growth first, simple stop/yield
 intersections in the first version, and permission to reshape a larger connected
 area when fitting connections. Future multitouch shortcuts remain provisional.
-Next decisions include edits that cannot preserve all cars and default junction
-priority. Recommendations are still distinct from confirmed choices.
+Disruptive edits are now decided: apply valid edits and visibly count vehicles
+that cannot be safely retained. Default junction priority is still awaiting an
+answer. Recommendations are distinct from confirmed choices.
 
 Further questions to work through after those:
 
@@ -675,8 +687,8 @@ Further questions to work through after those:
 - [ ] Check conservation: admitted = active + departed + explicitly removed;
   requested demand is separately accounted for as admitted, pending or dropped.
 - [ ] Gate: the merge laboratory, split/rejoin and stop/yield intersection
-  experiments work without vehicle duplication, disappearance, unsafe conflict
-  admission or hidden teleports.
+  experiments work without vehicle duplication, unaccounted disappearance, unsafe
+  conflict admission or hidden teleports. Edit removals are separately counted.
 
 ### 4. Make experimentation comfortable
 
@@ -684,7 +696,10 @@ Further questions to work through after those:
 - [ ] Apply network edits as a validated transaction using the chosen traffic policy.
 - [ ] Keep simulation running through edit previews and atomic commits; test
   occupied-road shortening/removal, in-progress lane changes, changed routes,
-  pending edits that cannot drain, and geometry undo while traffic advances.
+  safe survivor placement and geometry undo while traffic advances.
+- [ ] Show per-edit and cumulative vehicle-removal counts. Test zero-removal edits,
+  occupied-road deletion, shortened queues, exact-once accounting and exclusion
+  of removed vehicles from completed-trip and sink-throughput readings.
 - [ ] Validate broad geometry deformations against current occupancy at commit,
   preserving vehicle order and spacing and preventing false travel/completion counts.
 - [ ] Save/load versioned network documents, demand settings and seeds; keep camera
