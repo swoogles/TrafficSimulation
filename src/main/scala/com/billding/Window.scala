@@ -2,11 +2,13 @@ package com.billding
 
 import com.billding.svgRendering.{
   CountingLine,
+  DividerArc,
   DividerRing,
   LaneChangeSignal,
   Motion,
   Projection,
   RenderedVehicle,
+  RoadArc,
   RoadRing,
   RoadShape,
   RoadStrip
@@ -365,6 +367,41 @@ class Window(scene: Scene, canvasWidth: Int, availableHeight: Int) {
           ring(radius - width * EdgeLineInset, EdgeLine, lineWidth)
         )
 
+      case RoadArc(center, radius, startAngle, sweep, width) =>
+        // A single radius only draws a true arc when both axes share a scale - on a
+        // stretched-axis projection (the kind StreetScene allows itself) it would come out
+        // an ellipse. A network scene must always fit with Projection.fitting, never that.
+        assert(
+          projection.metersPerPixelAcross == projection.metersPerPixelDown,
+          "RoadArc needs one scale for both axes; a stretched projection would bend it into an ellipse"
+        )
+
+        val cx = projection.xOf(center)
+        val cy = projection.yOf(center)
+
+        def bend(atRadius: Length, colour: String, thickness: Double) =
+          svgTags.path(
+            svgAttrs.d := RoadShape.arcPathData(
+              cx,
+              cy,
+              projection.across(atRadius),
+              startAngle,
+              sweep
+            ),
+            svgAttrs.fill := "none",
+            svgAttrs.stroke := colour,
+            svgAttrs.strokeWidth := thickness.toString
+          )
+
+        val tarmacWidth = projection.across(width)
+        val lineWidth = edgeLineWidth(tarmacWidth)
+
+        svgTags.g(cls := "roadway")(
+          bend(radius, Tarmac, tarmacWidth),
+          bend(radius + width * EdgeLineInset, EdgeLine, lineWidth),
+          bend(radius - width * EdgeLineInset, EdgeLine, lineWidth)
+        )
+
       case DividerRing(center, radius, width) =>
         val renderedRadius = projection.across(radius)
         val lineWidth = edgeLineWidth(projection.across(width))
@@ -377,6 +414,32 @@ class Window(scene: Scene, canvasWidth: Int, availableHeight: Int) {
             svgAttrs.cx := projection.xOf(center).toString,
             svgAttrs.cy := projection.yOf(center).toString,
             svgAttrs.r := renderedRadius.toString,
+            svgAttrs.fill := "none",
+            svgAttrs.stroke := DividerLine,
+            svgAttrs.strokeWidth := lineWidth.toString,
+            svgAttrs.strokeDasharray := s"$dash $dash"
+          )
+        )
+
+      case DividerArc(center, radius, startAngle, sweep, width) =>
+        assert(
+          projection.metersPerPixelAcross == projection.metersPerPixelDown,
+          "DividerArc needs one scale for both axes; a stretched projection would bend it into an ellipse"
+        )
+
+        val renderedRadius = projection.across(radius)
+        val lineWidth = edgeLineWidth(projection.across(width))
+        val dash = math.max(4.0, renderedRadius * 0.05)
+
+        svgTags.g(cls := "lane-divider")(
+          svgTags.path(
+            svgAttrs.d := RoadShape.arcPathData(
+              projection.xOf(center),
+              projection.yOf(center),
+              renderedRadius,
+              startAngle,
+              sweep
+            ),
             svgAttrs.fill := "none",
             svgAttrs.stroke := DividerLine,
             svgAttrs.strokeWidth := lineWidth.toString,
