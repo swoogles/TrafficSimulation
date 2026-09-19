@@ -241,8 +241,11 @@ case class Model(
           whimsy = TrackRoad.whimsyFor(this.whimsy.now())
         )
       disrupted.copy(road = TrackRoad.approaching(settings, this.density.now()))
-    // A network scene has no lanes to disrupt and, for now, no source to hand a rate to -
-    // the speed control is the only dial that reaches it.
+    // A network scene has no lanes to disrupt, and its `Source`s (card E1) carry their own
+    // fixed arrival rate rather than reading one off a control - so, for now, the speed
+    // control is the only dial that reaches it. `network.copy` here only ever touches
+    // `speedLimit`; whatever `sources` the scene already has ride along unchanged, which is
+    // what carries a `Source`'s `seed` forward from tick to tick rather than restarting it.
     case network: NetworkScene => network.copy(speedLimit = this.speed.now())
   }
 

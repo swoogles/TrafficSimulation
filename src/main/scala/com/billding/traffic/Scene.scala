@@ -1,6 +1,6 @@
 package com.billding.traffic
 
-import com.billding.network.{NetworkIndex, NetworkTick, NetworkTraffic, RoadNetwork}
+import com.billding.network.{Boundary, NetworkIndex, NetworkTick, NetworkTraffic, RoadNetwork, Source}
 import com.billding.physics.{PathExtent, RingPath}
 import com.billding.svgRendering.{
   CountingLine,
@@ -14,6 +14,7 @@ import com.billding.svgRendering.{
   RoadStrip
 }
 import squants.motion.MetersPerSecond
+import squants.time.Seconds
 import squants.{Length, Time, Velocity}
 
 /**
@@ -298,6 +299,11 @@ object RingScene {
   * [[com.billding.network.NetworkTick.advance]] only ever reports the departures of the one
   * tick it just ran - the same way `Lane.completed` accumulates a count `TrackLane.update`
   * has no memory of itself.
+  *
+  * `sources` defaults to empty, the way a network scene behaved before card E1's [[Source]]
+  * existed at all: nothing arrives, the seven cars a demo seeds it with eventually drive off
+  * the far end, and the road sits empty - correct, and exactly the "unwatchable" scene E1
+  * closes the gap on for any scene that opts in by naming at least one section to arrive at.
   */
 case class NetworkScene(
   network: RoadNetwork,
@@ -306,12 +312,31 @@ case class NetworkScene(
   t: Time,
   dt: Time,
   speedLimit: Velocity,
+  sources: List[Source] = Nil,
   completed: Int = 0
 ) extends Scene {
 
+  /**
+    * Advance every source by one tick before the network's own physics runs, the same order
+    * [[Boundary]]'s own spec drives a source in - admit or queue this tick's arrival first,
+    * then let [[com.billding.network.NetworkTick.advance]] move everybody (newly admitted
+    * cars included) so an admitted vehicle is never left sitting untouched at the boundary
+    * for a full extra tick.
+    *
+    * Each `Source`'s returned state is threaded through the fold and kept in the copy below -
+    * the whole point of a `Source` carrying its own `seed` is that it is a value carried
+    * forward tick over tick, not a fresh generator started from scratch each time.
+    */
   def updateWithSpeedLimit(speedLimit: Velocity): NetworkScene = {
-    val result = NetworkTick.advance(traffic, index, dt)
+    val (nextSources, trafficAfterArrivals) =
+      sources.foldLeft((List.empty[Source], traffic)) {
+        case ((admittedSoFar, currentTraffic), source) =>
+          val (nextSource, nextTraffic, _) = Boundary.tick(source, currentTraffic, index, dt)
+          (admittedSoFar :+ nextSource, nextTraffic)
+      }
+    val result = NetworkTick.advance(trafficAfterArrivals, index, dt)
     copy(
+      sources = nextSources,
       traffic = result.traffic,
       t = t + dt,
       speedLimit = speedLimit,
@@ -374,8 +399,24 @@ case class NetworkScene(
         Projection(pixelWidth, math.max(1, availableHeight), 1.0, 1.0, (pixelWidth / 2.0, availableHeight / 2.0))
     }
 
-  // Demand (source arrival timing, sink-set density) isn't modelled yet - phase E's job.
-  val sourceTiming: Option[Time] = None
+  /**
+    * The mean time between arrivals at the first source that has one, in the same "spacing in
+    * time" units [[StreetScene.sourceTiming]] reports - the reading the speed-control panel's
+    * `carTiming` slider already expects, whichever shape of road it is looking at.
+    *
+    * A [[Source]] is a Poisson process, so there is no single fixed spacing the way a street's
+    * `VehicleSourceImpl` has one - `1 / meanRate` is the mean of that process, the honest
+    * single number to show for a rate that is actually randomised tick to tick.
+    *
+    * `None` for a source-free scene (the default), which is exactly the old behaviour: a
+    * network with nothing arriving has no timing to report, same as before E1.
+    */
+  val sourceTiming: Option[Time] =
+    sources.headOption.map(source => Seconds(1.0 / source.meanRate.toHertz))
+
+  // Sink-set density isn't modelled yet - a network scene's population is whatever its
+  // sources (if any) have put on it, the same reasoning `Scene.density`'s doc gives for why a
+  // street reports none either.
   val density: Option[Double] = None
 }
 

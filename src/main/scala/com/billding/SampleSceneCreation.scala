@@ -6,7 +6,7 @@ import com.billding.traffic._
 import squants.{DoubleVector, Length, QuantityVector}
 import squants.motion.{Distance, DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
 import squants.space.{Kilometers, Meters}
-import squants.time.{Milliseconds, Seconds, Time}
+import squants.time.{Hertz, Milliseconds, Seconds, Time}
 
 class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
@@ -237,9 +237,35 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
   this spacing reads as cars keeping a comfortable interval rather than as a clump released all
   at once. They start a little under the limit, at 80 km/h, so the first several ticks show
   them easing up to speed instead of sitting there already at it.
+
+  Those seven, though, are a one-time seed rather than a supply: with nowhere for a car to
+  arrive from, all seven drive off the departure end within about the road's own ~15 s crossing
+  time (383 m at 90 km/h is Meters(383) / KilometersPerHour(90) =~ Seconds(15.3)) and the road
+  sits empty ever after - correct, and exactly the unwatchable demo card E1 exists to fix. A
+  `Source` on `approach` (card E1's own admit-or-queue boundary, `Boundary.tick`) keeps the
+  seed from being the only traffic the scene ever has.
+
+  The arrival rate is worked back from how many cars should be on the road at once rather than
+  picked by feel: Little's law says the steady-state count on the road is (arrival rate) x
+  (time spent on it), so wanting "a handful" - call it four or five cars, enough to watch
+  without the road ever reading as jammed - at the ~15.3 s crossing time means a rate of
+  roughly 4.5 / 15.3 s =~ 0.3 Hz, one car every ~3.3 s. That is comfortably below the rate a
+  packed road could actually swallow: at the ~30 m steady-state centre-to-centre spacing noted
+  above and the 90 km/h limit (25 m/s), cars can arrive as fast as one every 30 m / 25 m/s =
+  1.2 s (~0.83 Hz) before a new one would have nowhere safe to enter - `Boundary.tick`'s own
+  gap check (`Lookahead.leaderOf` within `minimumDistance`) would simply hold the excess in
+  `queued` rather than jam the road, but 0.3 Hz never gets near testing that: it is chosen to
+  keep the road busy, not to see it back up.
    */
   private val networkSpeedLimit: Velocity = KilometersPerHour(90)
   private val networkStartingSpeed: Velocity = KilometersPerHour(80)
+
+  /**
+    * One car every ~3.3 s, on average - see the comment above `buildSingleRoadNetwork` for the
+    * Little's-law arithmetic (~4.5 cars x ~15.3 s crossing time) that this rate is worked back
+    * from, and for why it sits well clear of the rate that would actually pack the road solid.
+    */
+  private val networkArrivalRate: squants.time.Frequency = Hertz(0.3)
 
   private def networkVehicleAt(s: Length): PilotedVehicle = {
     val spatial = Spatial.withVecs(QuantityVector[Distance](s, Meters(0), Meters(0)))
@@ -296,7 +322,20 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
         NetworkVehicle.enteringAt(networkVehicleAt(s), section, s, networkStartingSpeed, index)
     }
 
-    NetworkScene(network, index, NetworkTraffic.of(vehicles), Seconds(0), DT, networkSpeedLimit)
+    // A fixed seed rather than a wall-clock one, so the scene the page loads is the same
+    // sequence of arrivals on every reload - the same determinism `BoundarySpec` relies on to
+    // check a `Source`'s count against a Poisson expectation at all.
+    val approachSource = Source(at = approachId, meanRate = networkArrivalRate, seed = 20260919L)
+
+    NetworkScene(
+      network,
+      index,
+      NetworkTraffic.of(vehicles),
+      Seconds(0),
+      DT,
+      networkSpeedLimit,
+      sources = List(approachSource)
+    )
   }
 
   val singleRoadNetworkScene: NetworkScene = buildSingleRoadNetwork()

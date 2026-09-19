@@ -5,7 +5,7 @@ import org.scalatest.matchers.should.Matchers
 
 import squants.motion.{Distance, KilometersPerHour, MetersPerSecond}
 import squants.space.Meters
-import squants.time.Seconds
+import squants.time.{Hertz, Seconds}
 import squants.{QuantityVector, Velocity}
 
 import com.billding.network._
@@ -131,5 +131,59 @@ class NetworkSceneSpec extends AnyFlatSpec with Matchers {
     // A further tick with nobody left on the network must not lose the earlier count.
     val stillOne = afterDeparture.updateWithSpeedLimit(afterDeparture.speedLimit)
     stillOne.completed shouldBe 1
+  }
+
+  it should "report the mean time between arrivals for a scene that has a source, in seconds like a street does" in {
+    val (network, index) = NetworkFixtures.straightChain(1, Meters(200))
+    val section0 = SectionId("mainline-0")
+    val source = Source(at = section0, meanRate = Hertz(0.25), seed = 1L)
+    val scene = sceneOn(network, index, NetworkTraffic.empty).copy(sources = List(source))
+
+    // Hertz(0.25) is one arrival every four seconds on average - `1 / meanRate` is exactly
+    // that, the same "spacing in time" a street's own `sourceTiming` reports.
+    scene.sourceTiming shouldBe Some(Seconds(4))
+  }
+
+  // The bug this closes: the "network, single road" demo started with seven cars and no
+  // source, all seven drove off the far end within seconds, and the road sat empty with
+  // nothing further to watch. A source-free scene reproduces exactly that; a scene with a
+  // source must not.
+  it should "leave the road empty once the initial cars have gone, when it has no source at all" in {
+    val (network, index) = NetworkFixtures.straightChain(1, Meters(200))
+    val section0 = SectionId("mainline-0")
+    val seedVehicle = NetworkVehicle.enteringAt(commuterAt(Meters(190)), section0, Meters(190), startingSpeed, index)
+    val scene = sceneOn(network, index, NetworkTraffic.of(List(seedVehicle)))
+
+    scene.sources shouldBe empty
+
+    // 40 ticks of 0.5 s is 20 s of simulated time, comfortably past however long the seed
+    // car takes to cross the last 10 m of a 200 m road - long enough that, with no source,
+    // nothing is left.
+    val advanced = (1 to 40).foldLeft(scene) { (s, _) => s.updateWithSpeedLimit(s.speedLimit) }
+
+    advanced.traffic.all shouldBe empty
+    advanced.completed shouldBe 1
+    advanced.sources shouldBe empty
+  }
+
+  it should "keep traffic on the road after the initial cars have gone, when it has a source" in {
+    val (network, index) = NetworkFixtures.straightChain(1, Meters(400))
+    val section0 = SectionId("mainline-0")
+    val seedVehicle = NetworkVehicle.enteringAt(commuterAt(Meters(380)), section0, Meters(380), startingSpeed, index)
+
+    // A certain arrival every tick (meanRate * dt clipped to 1.0 in `Boundary.arrival`)
+    // rather than a rate close to the demo's real one, so this test is not at the mercy of
+    // a particular seed's draw sequence landing an arrival inside the window - only whether
+    // `Boundary.tick` is actually wired into `updateWithSpeedLimit` matters here.
+    val source = Source(at = section0, meanRate = Hertz(10), seed = 99L)
+    val scene = sceneOn(network, index, NetworkTraffic.of(List(seedVehicle))).copy(sources = List(source))
+
+    val advanced = (1 to 40).foldLeft(scene) { (s, _) => s.updateWithSpeedLimit(s.speedLimit) }
+
+    advanced.sources should have size 1
+    advanced.sources.head.admitted should be > 0
+    // The seed car is long gone, but the source has kept the road from reading empty -
+    // exactly the difference from the no-source case above.
+    advanced.traffic.all should not be empty
   }
 }

@@ -6,7 +6,7 @@ import org.scalatest.matchers.should.Matchers
 import squants.space.Kilometers
 import squants.time.{Milliseconds, Time}
 
-import com.billding.network.NetworkValidation
+import com.billding.network.{NetworkValidation, SectionId}
 import com.billding.physics.Spatial
 import com.billding.svgRendering.{RoadArc, RoadStrip}
 
@@ -50,11 +50,34 @@ class SampleSceneCreationNetworkSpec extends AnyFlatSpec with Matchers {
 
     advanced.t.toSeconds shouldBe 5.0 +- 1e-9
     // Five seconds at highway speed is well short of the ~383 m road, so nobody should have
-    // fallen off the far end yet - this is a test of ticking safely, not of finishing the course.
-    advanced.traffic.all.size + advanced.completed shouldBe 7
+    // fallen off the far end yet - this is a test of ticking safely, not of finishing the
+    // course. The scene's source may have admitted a car or two in those five seconds, so
+    // the conservation check is against the seven seeds plus whatever it let in, not a bare
+    // seven - a hard-coded 7 here would make this test fail the moment E1's source below is
+    // doing its job rather than when a car is actually lost.
+    val admitted = advanced.sources.map(_.admitted).sum
+    advanced.traffic.all.size + advanced.completed shouldBe 7 + admitted
 
     // Every car that is still on the road must have landed somewhere `renderables` can place -
     // the same "poses on the road" guarantee `NetworkSceneSpec` checks for a fixture network.
     advanced.renderables.size shouldBe advanced.traffic.all.size
+  }
+
+  it should "keep a source arriving on the approach section, so the road doesn't sit empty once the seed cars leave" in {
+    val start = scenes.singleRoadNetworkScene
+
+    start.sources.map(_.at) shouldBe List(SectionId("approach"))
+    // A source reports a meaningful mean arrival spacing, the same units `StreetScene` uses -
+    // this is the "stop being None" half of card E1's `sourceTiming` change.
+    start.sourceTiming shouldBe defined
+
+    // 700 ticks of the page's own 100 ms tick is 70 s of simulated time - long past the
+    // ~15 s the seven seed cars take to cross the whole ~383 m road, so by then every one of
+    // the original seven is gone. This is the regression test for the bug being fixed:
+    // without a source, this is exactly the point where the road went, and stayed, empty.
+    val advanced = (1 to 700).foldLeft(start) { (scene, _) => scene.updateWithSpeedLimit(scene.speedLimit) }
+
+    advanced.sources.head.admitted should be > 0
+    advanced.traffic.all should not be empty
   }
 }
