@@ -50,7 +50,46 @@ sealed trait Path {
 }
 
 /** The world rectangle a path occupies. */
-case class PathExtent(center: QuantityVector[Distance], width: Length, height: Length)
+case class PathExtent(center: QuantityVector[Distance], width: Length, height: Length) {
+
+  /** The smallest rectangle covering both this extent and `other`. */
+  def union(other: PathExtent): PathExtent = {
+    val thisMinX = center.coordinates.head - width / 2.0
+    val thisMaxX = center.coordinates.head + width / 2.0
+    val thisMinY = center.coordinates(1) - height / 2.0
+    val thisMaxY = center.coordinates(1) + height / 2.0
+
+    val otherMinX = other.center.coordinates.head - other.width / 2.0
+    val otherMaxX = other.center.coordinates.head + other.width / 2.0
+    val otherMinY = other.center.coordinates(1) - other.height / 2.0
+    val otherMaxY = other.center.coordinates(1) + other.height / 2.0
+
+    val minX = if (thisMinX < otherMinX) thisMinX else otherMinX
+    val maxX = if (thisMaxX > otherMaxX) thisMaxX else otherMaxX
+    val minY = if (thisMinY < otherMinY) thisMinY else otherMinY
+    val maxY = if (thisMaxY > otherMaxY) thisMaxY else otherMaxY
+
+    PathExtent(
+      QuantityVector[Distance](
+        (minX + maxX) / 2.0,
+        (minY + maxY) / 2.0,
+        (center.coordinates(2) + other.center.coordinates(2)) / 2.0
+      ),
+      maxX - minX,
+      maxY - minY
+    )
+  }
+}
+
+object PathExtent {
+
+  /** The smallest rectangle covering every path's extent, or `None` for an empty set. */
+  def covering(paths: Iterable[Path]): Option[PathExtent] = {
+    val extents = paths.map(_.extent)
+    if (extents.isEmpty) None
+    else Some(extents.reduce(_ union _))
+  }
+}
 
 final case class StraightPath(
   beginning: QuantityVector[Distance],
@@ -144,6 +183,80 @@ final case class RingPath(
   def forwardGap(from: Length, to: Length): Length = normalize(to - from)
 
   val extent: PathExtent = PathExtent(center, radius * 2.0, radius * 2.0)
+}
+
+/**
+  * A finite circular arc: `radius` out from `center`, sweeping from `startAngle` through
+  * `sweep` radians. Signed `sweep` carries direction - positive is counter-clockwise,
+  * negative clockwise - the way a growth gesture in phase J would bend a road left or right.
+  */
+final case class ArcPath(
+  center: QuantityVector[Distance],
+  radius: Length,
+  startAngle: Double,
+  sweep: Double
+) extends Path {
+
+  val totalLength: Length = radius * sweep.abs
+
+  val isClosed: Boolean = false
+
+  /** +1 sweeping counter-clockwise, -1 sweeping clockwise. */
+  private val direction: Double = if (sweep < 0) -1.0 else 1.0
+
+  private def angleAt(s: Length): Double = startAngle + direction * (s / radius)
+
+  private def pointAtAngle(angle: Double): QuantityVector[Distance] =
+    center + QuantityVector[Distance](radius * cos(angle), radius * sin(angle), Meters(0))
+
+  def pointAt(s: Length): QuantityVector[Distance] = pointAtAngle(angleAt(s))
+
+  def headingAt(s: Length): DoubleVector = {
+    val angle = angleAt(s)
+    DoubleVector(-direction * sin(angle), direction * cos(angle), 0.0)
+  }
+
+  /** The left of travel: at the centre sweeping counter-clockwise, away from it sweeping clockwise. */
+  def normalAt(s: Length): DoubleVector = {
+    val angle = angleAt(s)
+    DoubleVector(-direction * cos(angle), -direction * sin(angle), 0.0)
+  }
+
+  def normalize(s: Length): Length =
+    if (s < Meters(0)) Meters(0)
+    else if (s > totalLength) totalLength
+    else s
+
+  def forwardGap(from: Length, to: Length): Length = to - from
+
+  /** True when angle (mod a full turn) falls somewhere within the swept range. */
+  private def sweptOver(angle: Double): Boolean = {
+    val lo = math.min(startAngle, startAngle + sweep)
+    val hi = math.max(startAngle, startAngle + sweep)
+    val turn = 2 * Pi
+    val kLow = math.ceil((lo - angle) / turn).toInt
+    val kHigh = math.floor((hi - angle) / turn).toInt
+    kLow <= kHigh
+  }
+
+  val extent: PathExtent = {
+    val cardinalPoints =
+      Seq(0.0, Pi / 2, Pi, 3 * Pi / 2).filter(sweptOver).map(pointAtAngle)
+    val points = Seq(pointAt(Meters(0)), pointAt(totalLength)) ++ cardinalPoints
+
+    val xs = points.map(_.coordinates.head)
+    val ys = points.map(_.coordinates(1))
+    val minX = xs.minBy(_.toMeters)
+    val maxX = xs.maxBy(_.toMeters)
+    val minY = ys.minBy(_.toMeters)
+    val maxY = ys.maxBy(_.toMeters)
+
+    PathExtent(
+      QuantityVector[Distance]((minX + maxX) / 2.0, (minY + maxY) / 2.0, center.coordinates(2)),
+      maxX - minX,
+      maxY - minY
+    )
+  }
 }
 
 object RingPath {

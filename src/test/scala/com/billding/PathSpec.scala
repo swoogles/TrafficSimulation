@@ -1,6 +1,6 @@
 package com.billding
 
-import com.billding.physics.{RingPath, StraightPath}
+import com.billding.physics.{PathExtent, RingPath, StraightPath}
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import squants.motion.Distance
@@ -109,5 +109,39 @@ class PathSpec extends AnyFlatSpec with Matchers {
 
   it should "report a negative gap to a car that is behind" in {
     straight.forwardGap(Meters(40), Meters(10)).toMeters shouldBe -30.0 +- Tolerance
+  }
+
+  private val leftExtent =
+    PathExtent(QuantityVector[Distance](Meters(0), Meters(0), Meters(0)), Meters(10), Meters(10))
+  private val rightExtent =
+    PathExtent(QuantityVector[Distance](Meters(20), Meters(0), Meters(0)), Meters(10), Meters(10))
+
+  "A path extent" should "combine with a disjoint extent to cover both corners exactly" in {
+    val combined = leftExtent.union(rightExtent)
+
+    combined.width.toMeters shouldBe 30.0 +- Tolerance
+    combined.height.toMeters shouldBe 10.0 +- Tolerance
+    metersFrom(combined.center) shouldBe Seq(10.0, 0.0, 0.0)
+  }
+
+  it should "stay unchanged when it already contains the other" in {
+    val outer =
+      PathExtent(QuantityVector[Distance](Meters(0), Meters(0), Meters(0)), Meters(20), Meters(20))
+    val inner =
+      PathExtent(QuantityVector[Distance](Meters(2), Meters(2), Meters(0)), Meters(4), Meters(4))
+
+    val combined = outer.union(inner)
+
+    combined.width.toMeters shouldBe 20.0 +- Tolerance
+    combined.height.toMeters shouldBe 20.0 +- Tolerance
+    metersFrom(combined.center) shouldBe Seq(0.0, 0.0, 0.0)
+  }
+
+  "PathExtent.covering" should "be nothing for no paths at all" in {
+    PathExtent.covering(Nil) shouldBe None
+  }
+
+  it should "be the union of every path's own extent" in {
+    PathExtent.covering(List(straight, ring)) shouldBe Some(straight.extent.union(ring.extent))
   }
 }
