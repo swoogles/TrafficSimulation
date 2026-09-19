@@ -781,27 +781,65 @@ limit and a layer, and it owns no cars.
   grown with `PathGrowth` and each asserting no validation faults before it
   returns.
 
-**Phase C · Traffic on the graph - in progress.**
+**Phase C · Traffic on the graph - complete, and gated.**
 
 - C1 `NetworkVehicle`/`NetworkTraffic`. The vehicle keeps its `PilotedVehicle`
   whole, so driver parameters, dimensions, uuid and rendering read what they
-  always read. `next`/`route`/`destination` exist unused, as the seam that lets
-  C2 and C3 be built before routing.
-- C2 `Lookahead.leaderOf`, which walks downstream sections until it finds a
-  leader or exhausts its distance budget. A stopped leader just past a seam is
-  a leader. Hop cap 20 guards zero-length cycles.
-- C3, C4, C5 outstanding.
+  always read.
+- C2 `Lookahead.leaderOf`, walking downstream until it finds a leader or
+  exhausts a distance budget. A stopped leader just past a seam is a leader.
+- C3 `NetworkTick.advance`, staged read / integrate / commit from one immutable
+  snapshot, so no vehicle is advanced twice by iteration order. Departures are
+  returned beside the traffic, since W5's implicit sinks must be countable.
+- C4 `occupiedSpan`, and a leader search that sees a body whose rear has not yet
+  cleared the seam. This also turned up a real bug in C2: the walk gave up when
+  reaching a section's own end exceeded the budget, even when a car's overhang
+  reached back inside it.
+- C5 **gate passed.** 200 ticks on one 600 m section and on six 100 m sections
+  agree to within a millimetre per vehicle, in free flow and through a
+  stop-and-go wave. Phase C is trustworthy.
 
-**Phase D · See it run - started.**
+**Phase D · See it run - complete.**
 
-- D1 `RoadArc`/`DividerArc` and the SVG `A` command, with the `d` string as a
-  pure testable function. Each emit site asserts the projection scales both axes
-  equally; a network scene must not take the stretched-axis projection.
-- D2, D3 outstanding. Nothing network-shaped is on the page yet.
+- D1 `RoadArc`/`DividerArc` and the SVG `A` command, `d` string as a pure
+  testable function, each emit site asserting an equal-scale projection.
+- D2 `NetworkScene`, ticking through `NetworkTick.advance` and fitting
+  `PathExtent.covering` at one scale for both axes.
+- D3 **gate passed.** `"network, single road"` is in the scene picker: 100 m
+  straight, a 350 m-radius bend through 30 degrees, 100 m straight. Verified in
+  a real browser over the devtools protocol, not only by spec.
 
-**Phase F · Lane changes - started.**
+**Phase E · Demand and routes - E1, E2, E3 done; E4 in progress.**
+
+- E1 `Source`/`Sink`. The refusal is the interesting part: no safe gap means the
+  car is held in `queued` and retried, bounded, counting drops past the bound.
+  The seed is the whole RNG state, threaded and returned advanced.
+- E2 `Routing.planRoute`, Dijkstra over movements weighted by free-flow travel
+  time, with ties broken on section id so a seed replays identically.
+- E3 `NetworkVehicle.chooseNext`, shared by `enteringAt` and the tick's landing
+  step. `next` is touched only on landing, never redrawn while a car queues, so
+  the plan's stability requirement falls out rather than being bolted on. A
+  missed exit replans; a failed replan sets a sticky `routeFailed` and the car
+  keeps driving rather than vanishing.
+
+**Phase F · Lane changes - F1 done, F2 in progress.**
 
 - F1 `LaneMapping.neighbourAt`, over B5's intervals rather than `transpose`.
+
+**Phase H, I - started.** H1 conflicts and I1 camera are in progress.
+
+### What watching it in a browser changed
+
+Phase D's demo passed every spec and was still wrong to watch: with nothing
+arriving, its seven seed cars drove off the end inside the road's own 15-second
+crossing time and left an empty road. The specs could not see that, because
+"traffic advances correctly" and "there is traffic to look at" are different
+claims. E1's `Source` is now wired into `NetworkScene`, at a rate worked back
+from Little's law rather than guessed - about 0.3 Hz for four or five cars on a
+383 m road - and the scene sustains itself.
+
+Worth keeping as a habit for later phases: a card whose gate is visual is not
+finished when its spec is green.
 
 ### Two findings worth carrying forward
 
