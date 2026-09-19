@@ -629,6 +629,13 @@ Further questions to work through after those:
 
 ## Implementation checklist and gates
 
+The checklist below stays as the design-level gate list. It is cut into ordered,
+individually startable cards in [IMPLEMENTATION_TASKS.md](IMPLEMENTATION_TASKS.md),
+which also adopts working defaults for the open questions that would otherwise
+block a card, and inverts one ordering: it builds the lane graph and connected
+traffic before the mobile-readability prototype, so interaction questions can be
+tested against a real network rather than a mockup.
+
 ### 0. Agree on a small, testable product slice
 
 - [x] Inspect current path, lane, scene and rendering assumptions.
