@@ -1,6 +1,7 @@
 package com.billding.traffic
 
-import com.billding.physics.RingPath
+import com.billding.network.{NetworkIndex, NetworkTick, NetworkTraffic, RoadNetwork}
+import com.billding.physics.{PathExtent, RingPath}
 import com.billding.svgRendering.{
   CountingLine,
   DividerRing,
@@ -282,5 +283,104 @@ case class RingScene(
 object RingScene {
 
   /** Breathing room around the ring, so cars aren't clipped by the edge of the canvas. */
+  val Padding: Double = 1.12
+}
+
+/**
+  * A lane graph with traffic on it - a street's cars entering and leaving, but over a
+  * network of sections and movements rather than a single straight road.
+  *
+  * `index` is carried alongside `network` rather than rebuilt every tick: [[NetworkIndex]]
+  * groups every movement by its endpoints once, and [[com.billding.network.NetworkTick.advance]]
+  * (via [[com.billding.network.Lookahead]]) leans on that grouping once per vehicle per tick.
+  *
+  * `completed` is a running total kept here rather than asked of the traffic, because
+  * [[com.billding.network.NetworkTick.advance]] only ever reports the departures of the one
+  * tick it just ran - the same way `Lane.completed` accumulates a count `TrackLane.update`
+  * has no memory of itself.
+  */
+case class NetworkScene(
+  network: RoadNetwork,
+  index: NetworkIndex,
+  traffic: NetworkTraffic,
+  t: Time,
+  dt: Time,
+  speedLimit: Velocity,
+  completed: Int = 0
+) extends Scene {
+
+  def updateWithSpeedLimit(speedLimit: Velocity): NetworkScene = {
+    val result = NetworkTick.advance(traffic, index, dt)
+    copy(
+      traffic = result.traffic,
+      t = t + dt,
+      speedLimit = speedLimit,
+      completed = completed + result.departures.size
+    )
+  }
+
+  /**
+    * Every vehicle placed on its section's path, the same `pointAt`/`normalAt` composition
+    * [[TrackVehicle.placedOn]] uses to turn an along-the-road position into a point in space.
+    *
+    * A vehicle whose section the network no longer knows about (it shouldn't happen, but
+    * `section` is a lookup rather than a reference) is simply left off the canvas rather than
+    * crashing the render.
+    */
+  def renderables: List[RenderedVehicle] =
+    traffic.all.flatMap { vehicle =>
+      network.section(vehicle.section).map { section =>
+        val path = section.path
+        val position = path.pointAt(vehicle.s) + path.normalAt(vehicle.s).map { component: Double =>
+          vehicle.lateral * component
+        }
+        RenderedVehicle(
+          position,
+          path.headingAt(vehicle.s),
+          vehicle.piloted.width,
+          vehicle.piloted.height,
+          vehicle.piloted.uuid,
+          Motion.of(vehicle.speed, vehicle.acceleration)
+        )
+      }
+    }
+
+  /** One shape per section - `RoadShape.of` already knows straight, arc and ring paths. */
+  def roadShapes: List[RoadShape] =
+    network.sections.values.map(section => RoadShape.of(section.path, section.width)).toList
+
+  /**
+    * Fit every section's path into the box the page has room for, at one scale for both
+    * axes - never the stretched-axis treatment `StreetScene` allows itself, because an arc
+    * drawn with a single radius is only correct under an even scale.
+    *
+    * Letterboxed the same way [[RingScene.project]] is: a network only ever takes as much
+    * height as its own proportions can use, so the controls stay tucked up underneath rather
+    * than pushed down past a band of whitespace a tall, narrow network would otherwise leave.
+    */
+  def project(pixelWidth: Int, availableHeight: Int): Projection =
+    PathExtent.covering(network.sections.values.map(_.path)) match {
+      case Some(shape) =>
+        val tallestWorthHaving = pixelWidth * (shape.height / shape.width)
+        Projection.fitting(
+          shape,
+          pixelWidth,
+          math.max(1, math.min(availableHeight, tallestWorthHaving.toInt)),
+          NetworkScene.Padding
+        )
+      case None =>
+        // No sections at all - nothing to fit, so fall back to a plain 1:1 canvas rather
+        // than dividing by an extent that doesn't exist.
+        Projection(pixelWidth, math.max(1, availableHeight), 1.0, 1.0, (pixelWidth / 2.0, availableHeight / 2.0))
+    }
+
+  // Demand (source arrival timing, sink-set density) isn't modelled yet - phase E's job.
+  val sourceTiming: Option[Time] = None
+  val density: Option[Double] = None
+}
+
+object NetworkScene {
+
+  /** Breathing room around the network, so cars aren't clipped by the edge of the canvas. */
   val Padding: Double = 1.12
 }

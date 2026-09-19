@@ -1,6 +1,6 @@
 package com.billding
 
-import com.billding.traffic.StreetScene
+import com.billding.traffic.{NetworkScene, StreetScene}
 import com.billding.uimodules.Model
 import org.scalajs.dom.ext.Ajax
 import play.api.libs.json.{Format, Json}
@@ -47,6 +47,11 @@ class SerializationFeatures(hostName: String, port: Int, protocol: String) {
           }
         // A ring is built from a car count and a circumference rather than a list of
         // vehicles, so there is nothing worth shipping to the server yet.
+        case _: NetworkScene =>
+          // No-op for now: a lane graph's serialization format is card K1's job, not this
+          // one's. Falling through to the catch-all below would still work, but would print
+          // a message that reads as a bug report for something nobody has built yet.
+          ()
         case other => println("can only serialize street scenes so far, not: " + other)
       }
       model.serializeScene.set(false)

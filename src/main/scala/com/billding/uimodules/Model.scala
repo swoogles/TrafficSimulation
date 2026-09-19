@@ -7,6 +7,7 @@ import com.billding.traffic.{
   IntelligentDriverModelImpl,
   Lane,
   MOBIL,
+  NetworkScene,
   PilotedVehicle,
   RingScene,
   Scene,
@@ -240,6 +241,9 @@ case class Model(
           whimsy = TrackRoad.whimsyFor(this.whimsy.now())
         )
       disrupted.copy(road = TrackRoad.approaching(settings, this.density.now()))
+    // A network scene has no lanes to disrupt and, for now, no source to hand a rate to -
+    // the speed control is the only dial that reaches it.
+    case network: NetworkScene => network.copy(speedLimit = this.speed.now())
   }
 
   /**
