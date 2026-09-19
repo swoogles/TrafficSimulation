@@ -22,6 +22,14 @@ recommendations, and unresolved choices.
 - Comfortably view several highway merges and splits together; allow creators
   to zoom in closely for detailed editing (confirmed by the user). Exact road
   piece counts, vehicle counts and target device remain open.
+- Express input/output capacity through lane connections and available space;
+  let flow emerge naturally (confirmed by the user).
+- Prefer a main view following a vehicle or traffic hotspot, with a small overview
+  map for context (confirmed by the user).
+- Give each vehicle a destination and a planned route in the first version
+  (confirmed by the user).
+- Include simple bridge layers in the 2D editor for the first highway maps
+  (confirmed by the user).
 
 The user requested planning and brainstorming first. No road-model or UI changes
 are part of this draft.
@@ -232,12 +240,30 @@ Snapping proposes connections; validation makes them real. Crossing artwork neve
 automatically means connected roads. Overpasses need explicit layer separation;
 same-level crossings need junction geometry and conflict rules.
 
+Bridge layers are confirmed for the initial kit. Layer belongs to physical lane
+connectivity, not merely drawing order. Connections require matching endpoint
+layers; changing layers needs an explicit ramp/transition. A piece may have ports
+on different layers if its geometry describes that transition. Distinct-layer
+crossings have no merge or intersection conflict solely because their plan views
+overlap. The first representation can be a 2D drawing with discrete levels; grade
+physics and full 3D elevation profiles are not yet scoped.
+
+For touch selection, provide an active layer or a chooser where roads overlap.
+Bridge drawing needs readable deck/underpass cues, and a selected route should
+remain traceable beneath a bridge. Decide how vehicle follow presents temporary
+occlusion; do not mistake invisibility under the deck for a lost vehicle.
+
 Local speed rules and junction controls may be authored on a piece and compiled
 into the network. Keeping live vehicles outside pieces does not require pieces
 to be restricted to geometry alone. This is a proposed revision of TILES.md's
 stronger geometry-only restriction.
 
 ## Capacity: four different quantities
+
+Confirmed: the initial road pieces express lane connections and available space,
+with throughput emerging naturally. They do not need configurable per-piece flow
+caps. Source demand is separate: how many cars try to enter does not guarantee how
+many can fit or pass through.
 
 Do not assign a single number called capacity and use it for everything.
 
@@ -248,9 +274,10 @@ Do not assign a single number called capacity and use it for everything.
 | Demand / admission limit | Traffic wanting to enter, or a deliberate metering rule | Source requests 20 vehicles/minute; ramp meter limits admission |
 | Observed throughput | Vehicles actually crossing a detector per unit simulation time | Congestion reduces completed departures despite unchanged demand |
 
-Physical throughput should emerge from following distances, speeds, merging and
-downstream space. An optional numeric cap can represent deliberate metering; it
-does not override the need for a safe gap. Incoming capacity is shared when
+Physical throughput emerges from following distances, speeds, merging and
+downstream space. Deliberate ramp metering is a possible later traffic-control
+feature, not an initial per-piece capacity setting; it would still require safe
+admission space. Incoming capacity is shared when
 several approaches compete for the same downstream lane.
 
 Unadmitted demand needs an explicit policy: queue outside the modeled network,
@@ -264,6 +291,21 @@ A highway on-ramp usually needs an acceleration lane and a region where drivers
 seek a gap. A two-to-one lane drop is a different primitive. A Y split must give
 drivers enough advance knowledge to reach a permitted exit lane.
 
+Confirmed routing model: each vehicle has a destination and plans a route, rather
+than choosing branches by percentages. Destinations initially can be explicit
+sinks. Demand needs origin/destination choices as well as an arrival process.
+Only admit vehicles with an initially reachable destination; separately report
+unserviceable demand instead of repeatedly spawning stranded vehicles.
+
+Proposed routing baseline: choose routes using physical travel-time estimates and
+permitted lane movements. A coarse road route is useful only if the driver can
+reach its required lanes; plan lane preparation early enough for realistic gaps.
+Preserve destination and intended route across ticks. Recheck affected routes
+after network edits or missed exits. If no legal route remains, surface that
+condition and apply an explicit policy rather than silently changing destination.
+Congestion-aware rerouting is a later choice; it needs a switching threshold or
+other stabilization so drivers do not oscillate between nearly equal routes.
+
 Proposed first kit:
 
 1. Source and sink boundaries with configurable demand and destinations.
@@ -273,7 +315,7 @@ Proposed first kit:
 4. Lane addition and lane drop with a taper of nonzero length.
 5. On-ramp assembly: approach, acceleration lane, merge region.
 6. Off-ramp assembly: approach, diverge region, exit branch.
-7. Optional simple overpass, depending on the first-map requirements.
+7. Simple bridge/overpass layers and explicit transitions between levels.
 
 Offer convenient ramp pieces in the palette, but allow them to be made from the
 same underlying sections and rules. Later, users can save groups as reusable
@@ -309,12 +351,13 @@ intersection behavior.
 
 ## Geometry and five-inch screens
 
-**Confirmed viewing goal:** several highway merges and splits should be comfortably
-visible together; creators may zoom in closely to edit. An overview and detailed
-editing view therefore fit the stated goal. Exactly how much individual-car detail
-must remain visible in the overview is still open. Arbitrarily large maps cannot
-show every car readably on a small screen. Physical diagonal size also does not
-specify CSS viewport size.
+**Confirmed viewing goal:** comfortably understand a network containing multiple
+highway merges and splits and zoom closely for editing. The preferred phone view
+follows a vehicle or traffic hotspot, with a small overview map. These are
+complementary: the main view shows readable local traffic while the overview
+preserves the larger network context. Exact individual-car detail in the overview
+remains open. Arbitrarily large maps cannot show every car readably on a small
+screen. Physical diagonal size also does not specify CSS viewport size.
 
 Recommended starting direction, awaiting confirmation:
 
@@ -327,8 +370,17 @@ Recommended starting direction, awaiting confirmation:
 - Large highway curves and acceleration lanes span multiple grid cells. Tight toy
   geometry at highway speeds needs either speed constraints or an explicitly
   schematic display mode; decide this deliberately rather than hiding it in scale.
-- Provide overview, pinch zoom, pan, fit-map and focus-selection. Preserve camera
-  position between ticks. A follow-vehicle mode is an optional experiment.
+- Provide follow-vehicle and focus-hotspot viewing with an overview map, plus pinch
+  zoom, pan, fit-map and focus-selection. Preserve camera state between ticks;
+  following changes its target position intentionally rather than refitting the
+  scene on every frame.
+- Show the main viewport on the overview map and let a tap relocate the main view.
+  Proposed interaction: manipulating geometry temporarily suspends camera follow,
+  without pausing traffic; a visible action resumes following. Avoid automatic
+  switching between hotspots while a person is inspecting or editing one.
+- Define follow behavior when a vehicle exits, its route changes, or an edited road
+  moves. Proposed fallback on exit: keep the last location until a new target is
+  chosen, rather than unexpectedly jumping across the map.
 - Keep selection stable across large zoom changes. At overview scale, select a
   road or junction and focus it; at close scale, expose its lane connections and
   geometry handles. Returning to overview should restore useful context. Zooming
@@ -390,12 +442,12 @@ demand and random seed. These are ideas, not commitments.
 | P2 | Prior decision needs revision | Geometry-only joined paths cannot alone represent branching traffic |
 | D1 | Recommended; pending | Port-connected parameterized pieces compile to a directed lane graph; compare placement interactions before choosing a default |
 | D2 | Recommended; pending | Separate definitions/geometry, runtime traffic and viewport state |
-| D3 | Recommended; pending | Physical following and receiving space determine flow; meters are explicit optional rules |
+| D3 | Confirmed by user | Lane connections and available space determine capacity; traffic flow emerges naturally, with no initial per-piece throughput caps |
 | D4 | Confirmed by user | Build and watch on phones in the first version |
 | D5 | Confirmed by user; migration policy open | Keep traffic running and preserve vehicles wherever possible during geometry edits |
-| D6 | Confirmed goal; visual detail open | View multiple merges/splits comfortably and zoom in closely to edit; overview car detail and map limits remain open |
-| D7 | Open | Split probabilities versus destinations and route planning |
-| D8 | Open | Overpasses in the first highway kit |
+| D6 | Confirmed by user; interaction details open | Follow a vehicle or hotspot with a small overview map; allow close zoom for editing and retain context across several merges/splits |
+| D7 | Confirmed by user; routing policy details open | Each vehicle has a destination and plans its route in the first version |
+| D8 | Confirmed by user | Simple bridge layers in the 2D editor belong in the first highway kit |
 | D9 | Scenario confirmed; budgets open | Several highway merges and splits; exact piece/vehicle counts and target phone remain open |
 | D10 | Confirmed by user | Plausible individual drivers and believable congestion |
 | D11 | Confirmed priority; interaction open | Road creation should be fun and engaging; compare piece assembly with growing roads from ports |
@@ -409,7 +461,14 @@ drivers with believable congestion, and live editing with vehicle preservation
 are confirmed. The first useful map shows multiple highway merges and splits,
 with close zoom available for detailed editing. Placement is under active
 discussion with fun and engagement as explicit priorities; other answers remain
-pending. Recommendations are not recorded as user decisions.
+pending. Capacity is confirmed as lane connections and available space, with
+natural flow. Recommendations are not recorded as user decisions.
+The preferred phone viewing behavior is also confirmed: follow a vehicle or
+traffic hotspot with a small overview map.
+Destination-based routing is confirmed for the first version; branch percentages
+are not the driving model.
+Simple bridge layers are also confirmed for the first highway maps. The remaining
+placement discussion distinguishes fixed-piece assembly from shaping roads.
 
 Further questions to work through after those:
 
@@ -447,9 +506,13 @@ Further questions to work through after those:
 - [ ] Define stable piece/port/lane IDs, units, transforms and connection rules.
 - [ ] Build a small static straight/bend/ramp arrangement with port visualization.
 - [ ] Validate rotated port positions, direction, lane mapping and curve continuity.
+- [ ] Represent bridge layers and layer transitions; validate disconnected
+  crossings, reject incompatible-layer joins and make overlapping roads selectable.
 - [ ] Prototype camera and selected-piece controls at the agreed phone sizes.
 - [ ] Demonstrate several merges/splits in one useful overview, then focus a lane
   connection for detailed touch editing and return without losing context.
+- [ ] Prototype vehicle/hotspot follow, an overview map with viewport indication,
+  stable camera during geometry manipulation, and explicit resumption of follow.
 - [ ] Decide physical scale, minimum readable detail and overview representation.
 - [ ] Gate: using touch alone, a person can place and rotate a ramp, connect it,
   inspect its lanes, move the camera without accidental edits, and undo a mistake.
@@ -470,7 +533,11 @@ Further questions to work through after those:
 
 - [ ] Implement explicit source demand, blocked-entry queues and sink accounting.
 - [ ] Implement acceleration-lane merging, lane drops and downstream blocking.
-- [ ] Implement stable route/split intent and mandatory lane preparation for exits.
+- [ ] Implement destination assignment, reachable routes and mandatory lane
+  preparation for exits; preserve route intent across ticks and recalculate
+  affected routes after edits or missed exits.
+- [ ] Define and test unreachable destinations at spawning and after live edits;
+  verify that a planned road route is feasible through its lane connections.
 - [ ] Test simultaneous arrivals, yield fairness, queues reaching upstream forks,
   blocked sinks, missed exits and repeatability with the same seed.
 - [ ] Check conservation: admitted = active + departed + explicitly removed;
@@ -496,7 +563,8 @@ Further questions to work through after those:
 
 - [ ] Add opposite directions, priority T-junctions and explicit turning movements.
 - [ ] Add conflict zones, stop/yield rules and signals according to selected scope.
-- [ ] Add overpasses if deferred, then reusable multi-piece assemblies.
+- [ ] Expand bridge assemblies and reusable multi-piece assemblies beyond the
+  initial simple layer/transition support.
 - [ ] Revisit pedestrians, bicycles, parking and import/export only against an actual
   scenario; avoid promising these from lane connectivity alone.
 
