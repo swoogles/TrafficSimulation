@@ -1,6 +1,6 @@
 # Road-building sandbox: creativity plan
 
-Status: first discussion draft, 2026-09-18. This is a design conversation and
+Status: active design discussion, 2026-09-18. This is a design conversation and
 implementation checklist, not approval to implement every proposal below.
 Record answers here as they arrive; distinguish requirements, prior decisions,
 recommendations, and unresolved choices.
@@ -30,6 +30,9 @@ recommendations, and unresolved choices.
   (confirmed by the user).
 - Include simple bridge layers in the 2D editor for the first highway maps
   (confirmed by the user).
+- Prefer growing roads from endpoints as the main creation interaction (confirmed
+  by the user). Explore multitouch shaping and a quick choice of connection type
+  when the growing road contacts an existing road: intersection, merge, over/under.
 
 The user requested planning and brainstorming first. No road-model or UI changes
 are part of this draft.
@@ -73,18 +76,19 @@ queues and competing merges need a view of the connected network.
 | Rigid pieces freely positioned, snapping compatible ports | Less grid restriction; automatic alignment to an existing road | Closing loops and joining two existing branches may require a different piece or moving an assembly |
 | Adjustable curves with snapping endpoints | Natural geometry and arbitrary junction angles | Harder touch editing, curve generation, and geometry validation |
 
-**Working recommendation, awaiting confirmation:** make ports authoritative and
-compare grid assembly with growing roads from ports before choosing the default
-placement interaction. Optional grid/angle guides could organize space without
-constraining every road. Parameterized pieces spanning several cells remain a
-useful grid candidate. Mirroring must regenerate lane directions and mappings,
-not just flip the artwork.
+**Confirmed interaction:** grow roads from endpoints. **Working recommendation,
+awaiting confirmation:** make ports authoritative and offer optional grid/angle
+guides without constraining every road. Choosing endpoint growth does not itself
+settle grid versus free positioning. Parameterized pieces remain useful underneath
+the gesture; people should not need to choose every small section from a palette.
+Mirroring must regenerate lane directions and mappings, not just flip the artwork.
 
 ### Discussion: which placement system is more fun?
 
-The user explicitly values fun and engagement. Grid placement is still open;
-the initial grid recommendation has been broadened to compare port-first placement.
-The predictions below are design judgments to test on a phone.
+The user explicitly values fun and engagement and has chosen endpoint growth as
+the preferred interaction. Grid placement is still open. The comparison below
+records the trade-offs behind that discussion, rather than reopening the choice
+of endpoint growth. Predictions about usability need testing on a phone.
 
 Three independent choices are easy to confuse:
 
@@ -112,17 +116,17 @@ Neither placement system by itself solves merges, lane-count mismatches or
 intersection conflicts. Both produce the same lane graph. A grid only helps
 connections fit when the kit's dimensions and ports were designed to fit it.
 
-**Candidate interaction A: assemble pieces.** Choose a straight, bend or ramp;
+**Alternative interaction: assemble pieces.** Choose a straight, bend or ramp;
 preview it at a compatible grid location; tap to place; rotate using a button.
 Make common pieces adjustable in bounded increments so the fun is not interrupted
 by hunting through dozens of nearly identical tiles.
 
-**Candidate interaction B: grow from a connection.** Tap an open road end, choose
+**Preferred interaction: grow from a connection.** Tap an open road end, choose
 straight/bend/ramp, and drag or tap the desired extent. The starting end stays
 attached and its heading aligns automatically. Nearby compatible ends attract
 the preview. Length/radius adjustments create geometry within defined constraints.
-This is more guided than placing arbitrary floating pieces, and could be the more
-engaging highway interaction if it remains easy to control on a phone.
+This is more guided than placing arbitrary floating pieces. The user is also
+interested in multitouch gestures and choosing how a new contact connects.
 
 **Possible combination:** use ports as the connection authority, offer grid and
 angle guides for organizing space, and let a compatible port alignment override
@@ -138,12 +142,85 @@ storage, remove vehicles, or create an instantaneous merge to make a join appear
 successful. Curve speeds and acceleration-lane lengths need coherent world units,
 even if the displayed cars or selection handles are enlarged for readability.
 
-Before settling placement, compare A and B on the same touch tasks: extend a
-highway, attach an on-ramp, close a loop, build a block, then change a road already
-connected at both ends. Assess time to first working traffic, accidental edits,
-undo/correction frequency, and whether the user wants to keep experimenting.
+Prototype endpoint growth with and without grid guides on the same touch tasks:
+extend a highway, attach an on-ramp, close a loop, build a block, then change a road
+already connected at both ends. Assess time to first working traffic, accidental
+edits, undo/correction frequency, and whether the user wants to keep experimenting.
 Prototypes can initially use static roads and a preview vehicle; a full simulation
 rewrite is not needed to discover which editor interaction feels better.
+
+### Growing roads, gestures and choosing a connection
+
+The desired experience is growing a road and quickly deciding what happens when
+it meets another road. Exact gestures and the first intersection's scope are
+still open. A proposed sequence:
+
+```mermaid
+flowchart LR
+    A[Select endpoint] --> B[Grow and shape preview]
+    B --> C[Latch onto candidate road]
+    C --> D[Choose connection type]
+    D --> E[Inspect geometry and lane arrows]
+    E --> F[Apply valid change while traffic runs]
+```
+
+Contact is a proposal, not a connection. Briefly passing over a road while dragging
+must not modify it. Proposed trigger: hold the candidate highlight steady, then
+show the chooser when the finger lifts. This leaves the preview in place and puts
+the choice above the finger or in a compact sheet near the screen edge. Test this
+against a dwell/drag-through chooser; release-to-choose is not yet a user decision.
+
+| Choice | Preview and topology | Conditions to check |
+| --- | --- | --- |
+| Join an endpoint | Continue into a compatible lane group | Direction, tangent, lane mapping and layer |
+| Right-angle intersection | Square up the new approach; show a T-junction when it ends there, or a crossing if it continues beyond | Same level, allowed turns, space for the shape and conflict/right-of-way rules |
+| Merge | Curve into the selected traffic direction, with an acceleration or taper region | Mainline direction, target lanes, safe gaps and sufficient approach length |
+| Overpass | Continue across on a higher layer without a junction | Clearance footprint and space for explicit layer transitions |
+| Underpass | Continue across on a lower layer without a junction | Same checks, including conflicts with any roads already on that layer |
+
+Show small diagrams and labels, not only abstract icons. Rank plausible choices
+from approach angle, layers and lane directions, but let the user choose explicitly.
+A steep approach can suggest a curved merge; it cannot become an instantaneous
+right-angle merge. If a chosen shape does not fit, show the required space or a
+reason it is unavailable. Bridge choices must preview the full crossing and layer
+transitions rather than ending a road invisibly beneath the existing road.
+
+Touching an existing road's middle needs **contact insertion**: split its affected
+lane sections at the new junction/merge boundaries, create explicit ports and
+movements, and rebuild affected adjacency and routes. Preserve the geometry and
+lane ordering of unaffected sections. Remap vehicles by their physical position
+along the original road; preserve speed, destination and identity where feasible.
+In-progress lane changes and cars inside a proposed new conflict area require the
+live-edit safety policy before activation. Never instantly enable conflicting
+traffic through cars already occupying the new junction.
+
+The contact operation may generate a reusable junction/ramp assembly from several
+primitives. The gesture describes the intended result; it need not correspond to
+exactly one tile. The user should be able to inspect and adjust the generated
+result later. Any adjustment to existing roads must be visible in the preview;
+how much adjustment to allow is a pending user question.
+
+Multitouch candidates, all provisional:
+
+| Context | Proposed interaction | Alternative / risk |
+| --- | --- | --- |
+| Selected open endpoint | One finger pulls out the road preview; release leaves it editable | Tap an endpoint and then tap the intended end for more deliberate placement |
+| Camera navigation | Two fingers pan/pinch the camera, including while a road preview exists | Making generic pinch resize roads could interfere with required close editing zoom |
+| Explicit road shaping handles | A second finger on a visible bend or tangent handle adjusts curvature/heading while the first controls the endpoint | Requires deliberate handle acquisition; test occlusion and comfort on a small phone |
+| Candidate contact | Release reveals large connection choices; tapping one previews it | A radial flick may be a later shortcut, but needs forgiving sectors and an equivalent visible action |
+
+Choose gesture ownership from the initial targets and hold it for the gesture;
+adding/removing a finger must not make the preview jump or accidentally commit.
+Handle gestures and background camera gestures must be distinguishable. Keep the
+camera's automatic follow suspended during manipulation while traffic continues.
+Provide visible single-touch controls for all operations; gestures should improve
+speed without making the editor undiscoverable or unusable with one hand.
+
+Scope question: the user suggested right-angle intersections as a desired contact
+choice, but has not yet specified whether their traffic behavior belongs in the
+first highway release. Even a simple T-junction needs legal turns, conflict rules
+and yielding. If included initially, move that work into the first network slice;
+a chooser that draws crossing asphalt without those rules is not a working junction.
 
 ### Live edits while traffic keeps running
 
@@ -214,7 +291,7 @@ Suggested vocabulary, not a final Scala API:
 - **Piece definition:** parameterized straight, bend, merge, split, etc.; footprint,
   local lane geometry, connection points and allowed movements. Contains no live cars.
 - **Piece instance:** stable ID, definition/version, placement, rotation, parameters.
-- **Port:** stable ID, boundary side, local position/offset, travel tangent and
+- **Port:** stable ID, boundary side where applicable, local position/offset, travel tangent and
   ordered lane endpoints. Each endpoint has an ID, in/out direction relative to
   the piece, width and elevation layer. A side can have several ports or none.
 - **Connection:** explicit mapping from an outgoing lane endpoint to an incoming
@@ -440,7 +517,7 @@ demand and random seed. These are ideas, not commitments.
 | R3 | Required | Small-screen legibility is an architectural concern |
 | P1 | Prior decision in TILES.md; reconfirm | Grid placement with lane ports on each side |
 | P2 | Prior decision needs revision | Geometry-only joined paths cannot alone represent branching traffic |
-| D1 | Recommended; pending | Port-connected parameterized pieces compile to a directed lane graph; compare placement interactions before choosing a default |
+| D1 | Recommended; pending | Endpoint growth generates port-connected parameterized pieces compiled to a directed lane graph; grid constraints remain open |
 | D2 | Recommended; pending | Separate definitions/geometry, runtime traffic and viewport state |
 | D3 | Confirmed by user | Lane connections and available space determine capacity; traffic flow emerges naturally, with no initial per-piece throughput caps |
 | D4 | Confirmed by user | Build and watch on phones in the first version |
@@ -450,25 +527,16 @@ demand and random seed. These are ideas, not commitments.
 | D8 | Confirmed by user | Simple bridge layers in the 2D editor belong in the first highway kit |
 | D9 | Scenario confirmed; budgets open | Several highway merges and splits; exact piece/vehicle counts and target phone remain open |
 | D10 | Confirmed by user | Plausible individual drivers and believable congestion |
-| D11 | Confirmed priority; interaction open | Road creation should be fun and engaging; compare piece assembly with growing roads from ports |
+| D11 | Confirmed by user | Grow roads from endpoints as the preferred creation interaction |
+| D12 | Confirmed interest; mappings open | Explore multitouch gestures for shaping roads and interacting with pieces |
+| D13 | Desired interaction; detailed scope open | On contact with a road, quickly choose intersection, merge, overpass or underpass; decide when at-grade junction simulation ships |
 
 ## Questions for our next passes
 
-First batch has been asked: phone editing, placement style, fidelity, editing live
-traffic, first map/scale, and what capacity means. Second batch: mobile viewing,
-branch choices and overpasses. Phone building/viewing and plausible individual
-drivers with believable congestion, and live editing with vehicle preservation
-are confirmed. The first useful map shows multiple highway merges and splits,
-with close zoom available for detailed editing. Placement is under active
-discussion with fun and engagement as explicit priorities; other answers remain
-pending. Capacity is confirmed as lane connections and available space, with
-natural flow. Recommendations are not recorded as user decisions.
-The preferred phone viewing behavior is also confirmed: follow a vehicle or
-traffic hotspot with a small overview map.
-Destination-based routing is confirmed for the first version; branch percentages
-are not the driving model.
-Simple bridge layers are also confirmed for the first highway maps. The remaining
-placement discussion distinguishes fixed-piece assembly from shaping roads.
+Confirmed answers are in the decision register. Endpoint growth is now the chosen
+creation direction; grid constraints and exact gesture mappings remain open.
+Current questions: when simple intersections ship, how much existing roads may be
+reshaped to accommodate a connection, and how multitouch shaping coexists with zoom.
 
 Further questions to work through after those:
 
@@ -495,14 +563,16 @@ Further questions to work through after those:
 - [x] Inspect current path, lane, scene and rendering assumptions.
 - [x] Read the earlier tile proposal and identify the branching conflict.
 - [x] Record architectural alternatives and ask the first design questions.
-- [ ] Record the user's answers and resolve D1–D11 before treating them as settled.
+- [ ] Record the user's answers and resolve D1–D13 before treating them as settled.
 - [ ] Pick one demo map and explicit phone/network/vehicle performance targets.
 - [ ] Reconcile decisions with TILES.md without silently discarding earlier work.
 
 ### 1. Prove assembly and mobile readability
 
-- [ ] Compare grid assembly and growing from ports on the same phone editing tasks;
-  record which is more enjoyable and where each causes correction or confusion.
+- [ ] Prototype endpoint growth with optional grid/angle guides; evaluate gesture
+  ownership, finger occlusion, camera zoom and single-touch alternatives on a phone.
+- [ ] Prototype contact previews and the intersection/merge/over/under chooser;
+  test accidental crossings, rejected connections, cancellation and edge-of-screen use.
 - [ ] Define stable piece/port/lane IDs, units, transforms and connection rules.
 - [ ] Build a small static straight/bend/ramp arrangement with port visualization.
 - [ ] Validate rotated port positions, direction, lane mapping and curve continuity.
@@ -524,6 +594,8 @@ Further questions to work through after those:
   assumptions about whole-lane alignment or wrapping.
 - [ ] Implement cross-section leader lookup, body occupancy and residual-distance transfer.
 - [ ] Implement fixed-step advancement and deterministic conflict resolution.
+- [ ] Implement insertion into existing road interiors, stable ID lineage and
+  vehicle-position migration; validate affected route and lane-change state.
 - [ ] Validate an empty continuation, stopped queue across a seam, curved join,
   several short sections per step and a closed loop made from pieces.
 - [ ] Gate: splitting one physical road into more pieces does not materially change
@@ -540,6 +612,9 @@ Further questions to work through after those:
   verify that a planned road route is feasible through its lane connections.
 - [ ] Test simultaneous arrivals, yield fairness, queues reaching upstream forks,
   blocked sinks, missed exits and repeatability with the same seed.
+- [ ] If intersections are in the first release, implement turning movements,
+  conflict clearance and the selected stop/yield rules before enabling that contact
+  choice for running traffic. Otherwise defer it explicitly to the street phase.
 - [ ] Check conservation: admitted = active + departed + explicitly removed;
   requested demand is separately accounted for as admitted, pending or dropped.
 - [ ] Gate: the merge laboratory and split/rejoin experiments work without vehicle
