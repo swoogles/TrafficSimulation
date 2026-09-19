@@ -809,7 +809,7 @@ limit and a layer, and it owns no cars.
   straight, a 350 m-radius bend through 30 degrees, 100 m straight. Verified in
   a real browser over the devtools protocol, not only by spec.
 
-**Phase E · Demand and routes - E1, E2, E3 done; E4 in progress.**
+**Phase E · Demand and routes - complete.**
 
 - E1 `Source`/`Sink`. The refusal is the interesting part: no safe gap means the
   car is held in `queued` and retried, bounded, counting drops past the bound.
@@ -821,12 +821,43 @@ limit and a layer, and it owns no cars.
   the plan's stability requirement falls out rather than being bolted on. A
   missed exit replans; a failed replan sets a sticky `routeFailed` and the car
   keeps driving rather than vanishing.
+- E4 `TrafficAccounts`, keeping requested demand, queued and dropped arrivals,
+  active traffic, departures and edit removals distinct. A congested 2,000-tick
+  split balances on every tick, and a doubled admission fails the ledger check.
 
-**Phase F · Lane changes - F1 done, F2 in progress.**
+**Phase F · Lane changes - complete.**
 
 - F1 `LaneMapping.neighbourAt`, over B5's intervals rather than `transpose`.
+- F2 `NetworkLaneChange`, applying MOBIL against an immutable graph-traffic
+  snapshot, with mapped leaders/followers, animated lateral motion and cooldown.
+- F3 route and lane-ending urgency. Drivers prepare hundreds of metres ahead for
+  an exit or taper and still require a safe gap rather than moving instantly.
 
-**Phase H, I - started.** H1 conflicts and I1 camera are in progress.
+**Phase G · Merges and splits - not started.** G1 is the next simulation card.
+
+**Phase H · Intersections - H1-H3 complete; H4 is next.**
+
+- H1 `Conflicts.conflicts`, sampling traversable movement curves at edit time and
+  returning deterministic conflict points without confusing merges/diverges for
+  crossings.
+- H2 `Admission.stoppingConstraint`, feeding denied stop/yield movements into IDM
+  as stationary obstacles. It checks a full stop where required, deterministic
+  conflict priority and downstream room; an all-way-stop load test drains without
+  deadlock.
+- H3 `PriorityPreset`: all-way stop, two-way stop and minor-road yield are pure
+  network transformations. They produce distinct admission decisions, and a later
+  explicit per-movement override remains visible to the same runtime logic.
+
+**Phase I · Camera and phone view - I1-I2 complete; I3 code complete with real-device validation open.**
+
+- I1 persistent equal-scale `Camera`, including inverse screen-to-world mapping
+  and a fit that agrees with the existing projection.
+- I2 wall-time accumulation into fixed 0.1 s simulation steps, capped at five per
+  frame so frame rate no longer changes traffic behavior.
+- I3 two-finger pan/pinch with stable touch identifiers and no jump when a finger
+  is added or removed. Network rendering now reads persistent camera state and the
+  built JavaScript contains the gesture. Its arithmetic and ownership transitions
+  are covered by specs; the 360 CSS-pixel real-phone comfort check is still needed.
 
 ### What watching it in a browser changed
 
