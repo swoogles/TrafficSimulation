@@ -54,6 +54,58 @@ class NetworkTickSpec extends AnyFlatSpec with Matchers {
   private def continuation(id: String, from: SectionId, to: SectionId): Movement =
     Movement.continuation(MovementId(id), from, to)
 
+  private def diverge(id: String, from: SectionId, to: SectionId): Movement =
+    Movement(MovementId(id), from, to, MovementKind.Diverge, Control.Uncontrolled)
+
+  /**
+    * A vehicle built directly (not via [[NetworkVehicle.enteringAt]]) so a
+    * test can drop it mid-trip: already carrying whatever `next`/`route`/
+    * `destination`/`routeFailed` it would have if [[NetworkVehicle.chooseNext]]
+    * had already run once, without needing a whole journey to get there.
+    */
+  private def routedVehicleAt(
+    section: SectionId,
+    s: Length,
+    next: Option[MovementId] = None,
+    route: List[MovementId] = Nil,
+    destination: Option[SectionId] = None,
+    routeFailed: Boolean = false,
+    speed: Velocity = speedLimit
+  ): NetworkVehicle =
+    NetworkVehicle(commuterAt(s), section, s, speed, next = next, route = route, destination = destination, routeFailed = routeFailed)
+
+  /**
+    * `home` feeding a split at `hub`: `hub-right` (to `right`) declared
+    * first, `hub-left` (to `left`) declared second. The declared order matters
+    * only to prove a test isn't passing by accident - `chooseNext`'s
+    * placeholder always picks the first declared movement, so a vehicle that
+    * lands on `left` did so because of its `route`, not because of how these
+    * movements happen to be listed.
+    */
+  private def splitFixture(homeLength: Length = Meters(20)): (NetworkIndex, SectionId, SectionId, SectionId, SectionId, MovementId, MovementId, MovementId) = {
+    val hubLength = Meters(20)
+    val branchLength = Meters(160)
+    val home = SectionId("home")
+    val hub = SectionId("hub")
+    val right = SectionId("right")
+    val left = SectionId("left")
+    val homeHub = continuation("home-hub", home, hub)
+    val hubRight = diverge("hub-right", hub, right)
+    val hubLeft = diverge("hub-left", hub, left)
+    val hubEnd = (homeLength + hubLength).toMeters
+    val branchEnd = (homeLength + hubLength + branchLength).toMeters
+    val network = RoadNetwork(
+      sections = Map(
+        home -> straightSection("home", 0, homeLength.toMeters),
+        hub -> straightSection("hub", homeLength.toMeters, hubEnd),
+        right -> straightSection("right", hubEnd, branchEnd),
+        left -> straightSection("left", hubEnd, branchEnd)
+      ),
+      movements = List(homeHub, hubRight, hubLeft)
+    )
+    (NetworkIndex(network), home, hub, right, left, homeHub.id, hubRight.id, hubLeft.id)
+  }
+
   /**
     * The IDM's driver constants baked into `commuterAt` (`Driver.commuter`
     * and `VehicleStats.Commuter`), pulled out here so the expected-value
@@ -237,5 +289,107 @@ class NetworkTickSpec extends AnyFlatSpec with Matchers {
     result.traffic.all should have size 1
     result.traffic.all.head.section shouldBe onlySection
     result.traffic.all.head.s.toMeters should be > 0.0
+  }
+
+  it should "land on the route's chosen branch at a split, whichever branch that is" in {
+    val (index, home, hub, right, left, homeHub, hubRight, hubLeft) = splitFixture()
+
+    // 2 m from the home/hub seam; free road, so both vehicles comfortably cross into `hub`
+    // this tick. One is routed left, the other right - `hub-right` is declared first, so a
+    // vehicle that landed on `right` only because of declared order would pass the left-bound
+    // assertion below for the wrong reason if this second vehicle weren't also checked.
+    val toLeft = routedVehicleAt(home, Meters(18), next = Some(homeHub), route = List(hubLeft), destination = Some(left))
+    val toRight = routedVehicleAt(home, Meters(18), next = Some(homeHub), route = List(hubRight), destination = Some(right))
+    val traffic = NetworkTraffic.of(List(toLeft, toRight))
+
+    val result = NetworkTick.advance(traffic, index, Seconds(1))
+
+    result.departures shouldBe empty
+    val landedLeft = result.traffic.all.find(_.piloted.uuid == toLeft.piloted.uuid).get
+    val landedRight = result.traffic.all.find(_.piloted.uuid == toRight.piloted.uuid).get
+
+    landedLeft.section shouldBe hub
+    landedLeft.next shouldBe Some(hubLeft)
+    landedLeft.route shouldBe empty
+    landedLeft.routeFailed shouldBe false
+
+    landedRight.section shouldBe hub
+    landedRight.next shouldBe Some(hubRight)
+    landedRight.route shouldBe empty
+    landedRight.routeFailed shouldBe false
+  }
+
+  it should "keep `next` unchanged across ticks while a vehicle queues short of a split" in {
+    val (index, home, _, _, left, homeHub, _, hubLeft) = splitFixture(homeLength = Meters(55))
+
+    // Leader and follower both stopped, spaced so the physical gap (leaderS - followerS -
+    // carLength) is exactly s0 (6 m) - the IDM's equilibrium spacing at zero speed, so
+    // acceleration is ~0 and the follower stays queued in `home` for as many ticks as this
+    // test cares to run, never reaching the `home`/`hub` seam where `next` would be redrawn.
+    val follower =
+      routedVehicleAt(home, Meters(0), speed = MetersPerSecond(0), next = Some(homeHub), route = List(hubLeft), destination = Some(left))
+    val leader = routedVehicleAt(home, Meters(14), speed = MetersPerSecond(0))
+    val traffic = NetworkTraffic.of(List(follower, leader))
+
+    val ticked = (1 to 5).foldLeft(traffic) { (currentTraffic, _) =>
+      val result = NetworkTick.advance(currentTraffic, index, Seconds(1))
+      result.departures shouldBe empty
+
+      val stillFollower = result.traffic.all.find(_.piloted.uuid == follower.piloted.uuid).get
+      stillFollower.section shouldBe home
+      stillFollower.next shouldBe Some(homeHub)
+      stillFollower.route shouldBe List(hubLeft)
+      stillFollower.routeFailed shouldBe false
+
+      result.traffic
+    }
+
+    ticked.all should have size 2
+  }
+
+  it should "replan and complete when a vehicle's route ran out before reaching its destination" in {
+    val (index, home, hub, _, left, homeHub, _, hubLeft) = splitFixture()
+
+    // Route already exhausted (as if it had run out one seam early), but `destination` still
+    // set to `left` - `hub` still has outgoing movements, so this is exactly the "missed its
+    // exit" trigger the card names: exhausted route, section with outgoing movements.
+    val vehicle = routedVehicleAt(home, Meters(18), next = Some(homeHub), route = Nil, destination = Some(left))
+    val traffic = NetworkTraffic.of(List(vehicle))
+
+    val afterFirstSeam = NetworkTick.advance(traffic, index, Seconds(1))
+    afterFirstSeam.departures shouldBe empty
+    val replanned = afterFirstSeam.traffic.all.find(_.piloted.uuid == vehicle.piloted.uuid).get
+    replanned.section shouldBe hub
+    replanned.next shouldBe Some(hubLeft) // replanned from `hub`, not the placeholder `hub-right`
+    replanned.route shouldBe empty
+    replanned.routeFailed shouldBe false
+
+    // A further, generous tick to cross the remaining distance through `hub` onto `left`.
+    val afterSecondSeam = NetworkTick.advance(afterFirstSeam.traffic, index, Seconds(2))
+    afterSecondSeam.departures shouldBe empty
+    val completed = afterSecondSeam.traffic.all.find(_.piloted.uuid == vehicle.piloted.uuid).get
+    completed.section shouldBe left
+    completed.routeFailed shouldBe false
+  }
+
+  it should "mark a vehicle whose replan fails rather than remove it, and let it keep driving" in {
+    val (index, home, hub, _, _, homeHub, hubRight, _) = splitFixture()
+
+    // A destination that doesn't exist in this network at all: `Routing.planRoute` returns
+    // `None` immediately, so the replan this vehicle needs at `hub` fails outright.
+    val vehicle =
+      routedVehicleAt(home, Meters(18), next = Some(homeHub), route = Nil, destination = Some(SectionId("nowhere")))
+    val traffic = NetworkTraffic.of(List(vehicle))
+
+    val result = NetworkTick.advance(traffic, index, Seconds(1))
+
+    result.departures shouldBe empty
+    val landed = result.traffic.all.find(_.piloted.uuid == vehicle.piloted.uuid).get
+    landed.section shouldBe hub
+    landed.routeFailed shouldBe true
+    // Continues legally rather than teleporting or vanishing: the placeholder first declared
+    // outgoing movement, same as an unrouted vehicle would get.
+    landed.next shouldBe Some(hubRight)
+    landed.speed should be > MetersPerSecond(0)
   }
 }

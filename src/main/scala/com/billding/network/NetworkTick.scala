@@ -171,10 +171,14 @@ object NetworkTick {
     * While its `s` still exceeds its current section's length, subtract that
     * length and follow `next` into the successor, landing at the leftover
     * distance - the carry the plan asks for, extended across as many short
-    * sections as one step covers. `next` is refreshed to the landed
-    * section's own first declared outgoing movement, [[NetworkVehicle.enteringAt]]'s
-    * placeholder, the same reasoning applying here: phase C has no routing
-    * yet to choose it properly.
+    * sections as one step covers. `next` (and `route`/`routeFailed`) are
+    * then refreshed by [[NetworkVehicle.chooseNext]], the same policy
+    * [[NetworkVehicle.enteringAt]] uses for a car's first section: the head
+    * of whatever route remains, replanned from the landed section if that
+    * route ran out before reaching the destination, or the landed section's
+    * own first declared outgoing movement when there is no destination to
+    * route toward (or a replan failed) - E3's routing in place of phase C's
+    * placeholder.
     *
     * `Left` marks a vehicle that ran out of road - its `next` was `None` (a
     * dangling end, the implicit sink) - rather than landing inside a
@@ -194,10 +198,14 @@ object NetworkTick {
             val overflow = current.s - section.length
             current.next.flatMap(movement(index, _)) match {
               case Some(toNext) =>
+                val (next, remainingRoute, routeFailed) =
+                  NetworkVehicle.chooseNext(index, toNext.to, current.route, current.destination, current.routeFailed)
                 val landed = current.copy(
                   section = toNext.to,
                   s = overflow,
-                  next = index.outgoing.getOrElse(toNext.to, Nil).headOption.map(_.id)
+                  next = next,
+                  route = remainingRoute,
+                  routeFailed = routeFailed
                 )
                 go(landed, hop + 1)
               case None => Left(current) // No outgoing movement: this vehicle has left the network.
