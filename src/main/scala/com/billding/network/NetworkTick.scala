@@ -25,11 +25,20 @@ final case class NetworkTickResult(traffic: NetworkTraffic, departures: List[Net
 /**
   * Advances every vehicle on a [[RoadNetwork]] by one fixed timestep.
   *
-  * Three phases, run in this order, matching the card exactly:
+  * Four phases, run in this order:
   *
+  *   1. '''Lane change''' (card F2) - [[NetworkLaneChange.advance]] decides
+  *      and commits every discretionary lane change for the tick, reading
+  *      only the snapshot `advance` was given. A change decided against a
+  *      half-updated world is not the change the driver would have made,
+  *      which is exactly why this runs before anything below touches
+  *      positions or speeds - the same reason phases 2-4 themselves are kept
+  *      to one snapshot apiece rather than mutating as they go.
   *   1. '''Read''' - every vehicle's acceleration is computed from
-  *      [[Lookahead.leaderOf]] and the existing IDM call, reading only the
-  *      snapshot `advance` was given. Nothing moves yet.
+  *      [[Lookahead.leaderOf]] and the existing IDM call, reading the state
+  *      lane changes just committed (so a car that just moved reacts to its
+  *      new leader, not its old one) but nothing this phase itself touches.
+  *      Nothing moves yet.
   *   1. '''Integrate''' - a new speed and a new `s` are computed for every
   *      vehicle, still only from that same snapshot.
   *   1. '''Commit''' - any vehicle whose new `s` now exceeds its section's
@@ -37,9 +46,9 @@ final case class NetworkTickResult(traffic: NetworkTraffic, departures: List[Net
   *      until it lands inside a section or falls off a dangling end. Only
   *      then is `bySection` rebuilt, leader-first.
   *
-  * Doing this in one pass instead - mutating sections as you iterate them -
-  * would advance a vehicle twice the moment it crosses into a section that
-  * iteration has not reached yet: once when it was read out of its old
+  * Doing phases 2-4 in one pass instead - mutating sections as you iterate
+  * them - would advance a vehicle twice the moment it crosses into a section
+  * that iteration has not reached yet: once when it was read out of its old
   * section, and again if the pass later reaches the section it just landed
   * in. Keeping Read and Integrate working from one immutable snapshot, and
   * folding every vehicle through Commit exactly once
@@ -72,17 +81,19 @@ object NetworkTick {
   private val MaxSettleHops: Int = 20
 
   def advance(traffic: NetworkTraffic, index: NetworkIndex, dt: Time): NetworkTickResult = {
-    val vehicles = traffic.all
+    // 1. Lane change - committed from `traffic` exactly as given, before anything below reads it.
+    val afterLaneChanges = NetworkLaneChange.advance(traffic, index, dt)
+    val vehicles = afterLaneChanges.all
 
-    // 1. Read - every acceleration comes from `traffic`, untouched throughout.
+    // 2. Read - every acceleration comes from `afterLaneChanges`, untouched throughout the rest of this method.
     val accelerationByUuid: Map[UUID, Acceleration] =
-      vehicles.map(vehicle => vehicle.piloted.uuid -> accelerationOf(traffic, index, vehicle)).toMap
+      vehicles.map(vehicle => vehicle.piloted.uuid -> accelerationOf(afterLaneChanges, index, vehicle)).toMap
 
-    // 2. Integrate - new speed and s, still only a function of the snapshot above.
+    // 3. Integrate - new speed and s, still only a function of the snapshot above.
     val integrated: List[NetworkVehicle] =
       vehicles.map(vehicle => integrate(vehicle, accelerationByUuid(vehicle.piloted.uuid), dt))
 
-    // 3. Commit - resolve overshoot section-by-section, then rebuild leader-first.
+    // 4. Commit - resolve overshoot section-by-section, then rebuild leader-first.
     val settled: List[Either[NetworkVehicle, NetworkVehicle]] = integrated.map(settle(_, index))
     val departures: List[NetworkVehicle] = settled.collect { case Left(departed) => departed }
     val remaining: List[NetworkVehicle] = settled.collect { case Right(stayed) => stayed }
@@ -98,7 +109,7 @@ object NetworkTick {
     * itself - zero closing speed, against the free-road gap - the same
     * substitution `TrackLane.accelerationAt` makes.
     */
-  private def accelerationOf(traffic: NetworkTraffic, index: NetworkIndex, vehicle: NetworkVehicle): Acceleration = {
+  private[network] def accelerationOf(traffic: NetworkTraffic, index: NetworkIndex, vehicle: NetworkVehicle): Acceleration = {
     val speedLimit = index.network
       .section(vehicle.section)
       .map(_.speedLimit)
