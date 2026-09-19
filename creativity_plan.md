@@ -50,10 +50,12 @@ are part of this draft.
 [TILES.md](TILES.md) contains earlier decisions: grid placement, multiple lane
 ports on each side, and tiles that describe geometry rather than owning cars.
 It also proposes overlays in free space; that is a related workstream, not an
-assumed prerequisite for the new road system. Keep that document intact while
-reconciling its decisions here.
+assumed prerequisite for the new road system. That document has since been
+trimmed to what it still holds, with a ledger at its end recording what this
+plan superseded and where - so its earlier decisions stay findable without
+standing as live guidance.
 
-Its unresolved question 8 is fundamental: can lanes remain single joined paths,
+Its question 8 was the fundamental one: can lanes remain single joined paths,
 or must they become a graph? A branch cannot be represented by one unambiguous
 path. Prebuilding a separate whole path per route duplicates shared road unless
 vehicle occupancy and interactions are still indexed on common lane sections.
@@ -643,7 +645,7 @@ tested against a real network rather than a mockup.
 - [x] Record architectural alternatives and ask the first design questions.
 - [ ] Record the user's answers and resolve D1–D16 before treating them as settled.
 - [ ] Pick one demo map and explicit phone/network/vehicle performance targets.
-- [ ] Reconcile decisions with TILES.md without silently discarding earlier work.
+- [x] Reconcile decisions with TILES.md without silently discarding earlier work.
 
 ### 1. Prove assembly and mobile readability
 
