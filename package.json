@@ -1,0 +1,10 @@
+{
+  "name": "traffic-simulation",
+  "private": true,
+  "scripts": {
+    "dev": "browser-sync start --config bs-config.cjs"
+  },
+  "devDependencies": {
+    "browser-sync": "3.0.4"
+  }
+}
