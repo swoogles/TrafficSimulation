@@ -1,6 +1,7 @@
 package com.billding
 
 import com.billding.svgRendering.{
+  Camera,
   CountingLine,
   DividerArc,
   DividerRing,
@@ -13,7 +14,7 @@ import com.billding.svgRendering.{
   RoadShape,
   RoadStrip
 }
-import com.billding.traffic.Scene
+import com.billding.traffic.{NetworkScene, Scene}
 import org.scalajs.dom
 import org.scalajs.dom.svg.{G, SVG}
 import scalatags.JsDom
@@ -305,10 +306,21 @@ object Window {
     math.max(1.0, roadWidthInPixels * 0.12)
 }
 
-class Window(scene: Scene, canvasWidth: Int, availableHeight: Int) {
+/**
+  * `camera` is only ever consulted for a [[NetworkScene]] - a ring or a street still lays
+  * itself out fresh every tick via [[Scene.project]], exactly as before I3. A network scene
+  * used to do the same (`NetworkScene.project` refits its whole extent every tick), which is
+  * wrong for a network someone is panning around: taking the persistent [[Camera]] instead,
+  * kept beside the scene rather than inside it, is what stops a pan or a pinch being undone by
+  * the very next tick's refit.
+  */
+class Window(scene: Scene, canvasWidth: Int, availableHeight: Int, camera: Camera) {
   import Window.{edgeLineWidth, CountingLinePaint, DividerLine, EdgeLine, EdgeLineInset, Tarmac}
 
-  private val projection: Projection = scene.project(canvasWidth, availableHeight)
+  private val projection: Projection = scene match {
+    case _: NetworkScene => camera.projection(canvasWidth, availableHeight)
+    case other           => other.project(canvasWidth, availableHeight)
+  }
 
   val svgNode: JsDom.TypedTag[SVG] =
     svgTags

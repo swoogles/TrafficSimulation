@@ -1,7 +1,8 @@
 package com.billding.uimodules
 
 import com.billding.{NamedScene, SerializationFeatures}
-import com.billding.physics.Spatial
+import com.billding.physics.{PathExtent, Spatial}
+import com.billding.svgRendering.Camera
 import com.billding.traffic.{
   CompletionTally,
   IntelligentDriverModelImpl,
@@ -15,7 +16,9 @@ import com.billding.traffic.{
   TrackRoad
 }
 import com.raquo.laminar.api.L.{Signal, Var}
-import squants.Time
+import squants.motion.Distance
+import squants.space.Meters
+import squants.{QuantityVector, Time}
 import squants.motion.{KilometersPerHour, Velocity}
 import squants.time.{Milliseconds, Seconds}
 import play.api.libs.json.Format
@@ -124,6 +127,103 @@ case class Model(
   val sceneVar: Var[Scene] = Var(originalScene)
 
   /**
+    * The viewport onto a network scene (I3), kept beside `sceneVar` rather than folded into it
+    * - see [[com.billding.svgRendering.Camera]]'s own doc for why: a camera that lived inside
+    * the scene would be thrown away and rebuilt every tick, exactly the churn that would make a
+    * pan or a pinch jump back to wherever the scene last refit itself.
+    *
+    * Only [[NetworkScene]] ever reads this - a ring or a street still lay themselves out fresh
+    * every tick the way [[Scene.project]] always has, untouched by anything below. The value
+    * here at construction is a placeholder; [[fitCameraToScene]] below replaces it with a real
+    * fit the moment a network scene is actually loaded.
+    */
+  val camera: Var[Camera] = Var(
+    Camera(QuantityVector[Distance](Meters(0), Meters(0), Meters(0)), 1.0)
+  )
+
+  /**
+    * The canvas size last reported from the DOM, in the same pixel units [[Scene.project]] and
+    * [[Camera.projection]] take. Model has no window of its own to measure, so [[Client]] hands
+    * this over roughly once a frame from `Client`, via [[noteCanvasSize]]; [[fitCameraToScene]] borrows
+    * whatever was last reported to frame a freshly loaded network. W7's 360 CSS px portrait
+    * target until the page has reported anything at all.
+    */
+  private val lastCanvasSize: Var[(Int, Int)] = Var((360, 360))
+
+  def noteCanvasSize(pixelWidth: Int, pixelHeight: Int): Unit =
+    lastCanvasSize.set((pixelWidth, pixelHeight))
+
+  /**
+    * Frame `scene`'s own extent, if it is a network with one to fit - a ring or a street's
+    * camera is never read, so there is nothing to do for those, and a network with no sections
+    * at all has no extent to fit either.
+    */
+  private def fitCameraToScene(scene: Scene): Unit = scene match {
+    case network: NetworkScene =>
+      PathExtent.covering(network.network.sections.values.map(_.path)).foreach { extent =>
+        val (pixelWidth, pixelHeight) = lastCanvasSize.now()
+        camera.set(Camera.fitting(extent, pixelWidth, pixelHeight, NetworkScene.Padding))
+      }
+    case _ => ()
+  }
+
+  fitCameraToScene(originalScene)
+
+  /**
+    * Which touch (by the browser's own identifier) is at which pixel position, as of the last
+    * touchstart/touchmove/touchend heard - see [[touchChanged]] and [[touchMoved]]. Two of
+    * these drive the camera; any other count (0, 1, or 3+) drives nothing, which is what keeps
+    * a spare finger from disturbing an ongoing pinch and keeps a single finger free for phase
+    * J's editor gestures.
+    */
+  private val activeTouches: Var[Map[Int, (Double, Double)]] = Var(Map.empty)
+
+  /**
+    * A finger touching down or lifting off. Never moves the camera by itself - it only resets
+    * the baseline [[touchMoved]] measures the next movement against, so gaining or losing a
+    * finger changes how many fingers are down without ever being mistaken for the remaining
+    * fingers having moved. That is the whole of what keeps a gesture from jumping when a third
+    * finger lands or one of two lifts away.
+    */
+  def touchChanged(touches: List[(Int, Double, Double)]): Unit =
+    activeTouches.set(touches.map { case (id, x, y) => id -> (x, y) }.toMap)
+
+  /**
+    * Two fingers moving drive the camera, matched up with where they were by the browser's own
+    * touch identifier - never by position or by list order, so which finger is "first" never
+    * matters and a slow finger can't be mistaken for a fast one. Any other current or previous
+    * touch count leaves the camera alone: one finger on the background does nothing yet (phase
+    * J claims it), and a third finger simply suspends the gesture rather than steering it, per
+    * the plan's two-fingers-only camera rule.
+    *
+    * The arithmetic itself is [[Camera.followingTouches]]; this only turns this event's touches
+    * and the last-known ones into the two coordinate pairs that takes.
+    */
+  def touchMoved(touches: List[(Int, Double, Double)], pixelWidth: Int, pixelHeight: Int): Unit = {
+    val previous = activeTouches.now()
+    val current = touches.map { case (id, x, y) => id -> (x, y) }.toMap
+
+    if (previous.size == 2 && current.keySet == previous.keySet) {
+      val ids = previous.keySet.toList
+      val firstId = ids.head
+      val secondId = ids(1)
+      camera.set(
+        Camera.followingTouches(
+          camera.now(),
+          previous(firstId),
+          previous(secondId),
+          current(firstId),
+          current(secondId),
+          pixelWidth,
+          pixelHeight
+        )
+      )
+    }
+
+    activeTouches.set(current)
+  }
+
+  /**
     * How much traffic the road has got through, and how fast it is getting through it.
     *
     * Kept here rather than in the scene because only half of it belongs to the simulation. The
@@ -222,6 +322,7 @@ case class Model(
     scene.density.foreach(density.set)
     tally.set(CompletionTally())
     paused.set(false)
+    fitCameraToScene(scene)
   }
 
   private def reset: Unit = {
@@ -229,6 +330,7 @@ case class Model(
     originalScene.density.foreach(density.set)
     tally.set(CompletionTally())
     resetScene.set(false)
+    fitCameraToScene(originalScene)
   }
 
   private def resetIfNecessary(): Unit =

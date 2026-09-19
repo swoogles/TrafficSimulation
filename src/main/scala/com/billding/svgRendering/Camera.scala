@@ -71,4 +71,78 @@ object Camera {
     val fitted = Projection.fitting(extent, pixelWidth, pixelHeight, padding)
     Camera(extent.center, fitted.metersPerPixelAcross)
   }
+
+  /**
+    * How close two fingers can be, in pixels, before their spacing stops being trustworthy for
+    * a zoom ratio - closer than this (two fingers landing on nearly the same point, or a stray
+    * event with duplicate coordinates) and dividing by that spacing would send the scale
+    * towards infinity. Holding the scale steady instead is the safe, unsurprising thing to do
+    * with a measurement that has stopped meaning anything.
+    */
+  private val MinGestureSpanPixels = 1.0
+
+  /**
+    * The camera two fingers drive, given where they were (`...Before`) and where they are now
+    * (`...After`), under `before` - the camera as it stood a moment ago.
+    *
+    * Pan and pinch are the same arithmetic, not two gestures to distinguish: find the world
+    * point each finger was over (via `before.worldAt`), then solve for the one center and one
+    * scale that puts those same world points back under wherever the fingers are now. Two
+    * fingers translating together (same distance, same direction) leaves the world span between
+    * them unchanged, so the scale falls out unchanged and only the center moves; two fingers
+    * changing how far apart they are changes the scale, growing or shrinking around the
+    * gesture's own midpoint rather than the screen's center or either finger alone - which is
+    * what keeps a pinch feeling anchored to the fingers doing it.
+    *
+    * Called once per touch-move with `before` and the "...Before" points taken from the last
+    * event (not from however the gesture originally started) - since each call already anchors
+    * the world points under the fingers exactly, chaining calls this way holds the gesture
+    * steady for as long as the same two fingers are down, with nothing to keep between calls
+    * beyond the camera and the touches' last positions. That is what lets a finger being added
+    * or removed just restart the chain from the current touches, with nothing to jump from or
+    * back to.
+    *
+    * Pure and DOM-free on purpose: a spec drives this directly with plain coordinate tuples, so
+    * the only thing left for the DOM layer to get right is turning a `TouchEvent` into these
+    * eight numbers.
+    */
+  def followingTouches(
+    before: Camera,
+    firstBefore: (Double, Double),
+    secondBefore: (Double, Double),
+    firstAfter: (Double, Double),
+    secondAfter: (Double, Double),
+    pixelWidth: Int,
+    pixelHeight: Int
+  ): Camera = {
+    val worldFirst = before.worldAt(firstBefore._1, firstBefore._2, pixelWidth, pixelHeight)
+    val worldSecond = before.worldAt(secondBefore._1, secondBefore._2, pixelWidth, pixelHeight)
+
+    val worldFirstX = worldFirst.coordinates.head.toMeters
+    val worldFirstY = worldFirst.coordinates(1).toMeters
+    val worldSecondX = worldSecond.coordinates.head.toMeters
+    val worldSecondY = worldSecond.coordinates(1).toMeters
+
+    val worldSpan = math.hypot(worldFirstX - worldSecondX, worldFirstY - worldSecondY)
+    val screenSpan = math.hypot(firstAfter._1 - secondAfter._1, firstAfter._2 - secondAfter._2)
+
+    val metersPerPixel =
+      if (screenSpan < MinGestureSpanPixels) before.metersPerPixel else worldSpan / screenSpan
+
+    // Anchoring the gesture's own midpoint, not the screen's center - a pinch that keeps one
+    // finger still and moves the other should visibly pivot around the two fingers, not slide
+    // the whole world towards the middle of the canvas.
+    val screenMidX = (firstAfter._1 + secondAfter._1) / 2.0
+    val screenMidY = (firstAfter._2 + secondAfter._2) / 2.0
+    val worldMidX = (worldFirstX + worldSecondX) / 2.0
+    val worldMidY = (worldFirstY + worldSecondY) / 2.0
+
+    val centerX = worldMidX - (screenMidX - pixelWidth / 2.0) * metersPerPixel
+    val centerY = worldMidY - (screenMidY - pixelHeight / 2.0) * metersPerPixel
+
+    Camera(
+      QuantityVector[Distance](Meters(centerX), Meters(centerY), before.center.coordinates(2)),
+      metersPerPixel
+    )
+  }
 }

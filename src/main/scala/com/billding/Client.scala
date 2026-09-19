@@ -175,14 +175,39 @@ object Client {
   /** Below this the drawing is not worth looking at, whatever the window is doing. */
   private val MinimumCanvasHeight = 200
 
+  /**
+    * Every current touch, in the pixel coordinate space [[Window]] and [[Camera]] share -
+    * `svgContainer.clientWidth` by [[availableHeight]] - rather than in the raw `clientX`/
+    * `clientY` a `Touch` reports, which are page pixels and only agree with that space if the
+    * container happens to render at exactly its own client size.
+    */
+  private def touchPoints(
+    touchList: dom.TouchList,
+    svgContainer: Element
+  ): List[(Int, Double, Double)] = {
+    val rect = svgContainer.getBoundingClientRect()
+    val scaleX = if (rect.width <= 0) 1.0 else svgContainer.clientWidth / rect.width
+    val scaleY = if (rect.height <= 0) 1.0 else availableHeight(svgContainer) / rect.height
+
+    (0 until touchList.length).map { i =>
+      val touch = touchList(i)
+      // `identifier` comes back as a Double (every JS number does) even though it's always a
+      // small whole number in practice - Model's touch maps key on Int.
+      (touch.identifier.toInt, (touch.clientX - rect.left) * scaleX, (touch.clientY - rect.top) * scaleY)
+    }.toList
+  }
+
   // Currently this needs access to the window
   def setupSvgAndButtonResponses(svgContainer: Element): Int = {
     println("!1 svgContainer height: " + svgContainer.clientHeight)
     println("!1 svgContainer width: " + svgContainer.clientWidth)
 
-    // Create a reactive window that updates when scene changes
-    val windowSignal: Signal[Window] = sceneVar.map { scene =>
-      new Window(scene, svgContainer.clientWidth, availableHeight(svgContainer))
+    // Create a reactive window that updates when the scene advances or the camera moves -
+    // I3's pan/pinch only ever touches model.camera, so a window that watched sceneVar alone
+    // would sit on the old view until the next simulation tick happened to redraw it.
+    val windowSignal: Signal[Window] = sceneVar.combineWith(model.camera.signal).map {
+      case (scene, camera) =>
+        new Window(scene, svgContainer.clientWidth, availableHeight(svgContainer), camera)
     }
 
     // Subscribe to scene changes and update SVG
@@ -196,6 +221,36 @@ object Client {
     }
     val subscription = windowSignal.addObserver(observer)
 
+    /*
+    Two-finger pan/pinch (I3, creativity_plan's camera-navigation row). Listeners live on
+    `svgContainer` itself rather than on the `<svg>` `windowSignal` swaps in and out - that
+    inner node is torn down and rebuilt on every scene tick (and now on every camera move too),
+    so touch identifiers tracked against it would be lost mid-gesture the moment a tick landed.
+    `svgContainer` is the one node that survives every rebuild.
+
+    Ownership is decided by touch count alone, per the plan: exactly two fingers drive the
+    camera, any other count (0, 1, or 3+) leaves it alone. Model.touchChanged resets the
+    baseline on every start/end/cancel without moving the camera, so a finger added or removed
+    can't make the view jump; Model.touchMoved is the only thing that ever calls
+    Camera.followingTouches.
+     */
+    svgContainer.addEventListener("touchstart", { event: dom.TouchEvent =>
+      model.touchChanged(touchPoints(event.touches, svgContainer))
+    })
+    svgContainer.addEventListener("touchend", { event: dom.TouchEvent =>
+      model.touchChanged(touchPoints(event.touches, svgContainer))
+    })
+    svgContainer.addEventListener("touchcancel", { event: dom.TouchEvent =>
+      model.touchChanged(touchPoints(event.touches, svgContainer))
+    })
+    svgContainer.addEventListener("touchmove", { event: dom.TouchEvent =>
+      val points = touchPoints(event.touches, svgContainer)
+      // Only a two-finger move is ours to consume - a single finger is left free to scroll
+      // the page (phase J will give it a job of its own; nothing does yet).
+      if (points.size == 2) event.preventDefault()
+      model.touchMoved(points, svgContainer.clientWidth, availableHeight(svgContainer))
+    })
+
     // requestAnimationFrame hands the callback a DOMHighResTimeStamp (ms since navigation
     // start), not a delta - the delta since the previous callback is what the accumulator in
     // Model.respondToAllInput wants. There's no previous callback on the very first frame, so
@@ -207,6 +262,10 @@ object Client {
       val elapsed = Milliseconds(lastFrameTimeMillis.fold(0.0)(timeMillis - _))
       lastFrameTimeMillis = Some(timeMillis)
 
+      // Measured every frame, the same reasoning availableHeight itself documents: a camera
+      // fit made against a stale size would be wrong the moment the window (or a phone's
+      // orientation) changed.
+      model.noteCanvasSize(svgContainer.clientWidth, availableHeight(svgContainer))
       model.respondToAllInput(elapsed)
 
       dom.window.requestAnimationFrame(callback)
