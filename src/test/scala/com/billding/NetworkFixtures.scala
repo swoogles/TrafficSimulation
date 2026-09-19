@@ -1,7 +1,7 @@
 package com.billding
 
 import com.billding.network._
-import com.billding.physics.{Path, PathGrowth}
+import com.billding.physics.{Path, PathGrowth, StraightPath}
 import squants.motion.{Distance, KilometersPerHour}
 import squants.space.{Length, Meters}
 import squants.{DoubleVector, QuantityVector}
@@ -281,5 +281,61 @@ object NetworkFixtures {
     )
 
     assemble(List(majorWest, majorEast, minorExit, minorApproach), movements)
+  }
+
+  /**
+    * A symmetric four-way crossing: two one-way lanes per axis (a two-way road is two
+    * one-way sections side by side, per W4), each lane offset half a lane width to the
+    * right of its direction of travel the way real right-hand-traffic lanes are.
+    *
+    * Sections, each `armLength` long: `SectionId("south-in")`/`SectionId("north-out")` (the
+    * northbound through movement), `SectionId("north-in")`/`SectionId("south-out")`
+    * (southbound), `SectionId("east-in")`/`SectionId("west-out")` (westbound), and
+    * `SectionId("west-in")`/`SectionId("east-out")` (eastbound). Movements:
+    * `MovementId("northbound")`, `MovementId("southbound")`, `MovementId("westbound")` and
+    * `MovementId("eastbound")`, every one a `Continuation`. The north/south lanes sit on the
+    * vertical lines `x = +-laneWidth/2`, the east/west lanes on the horizontal lines
+    * `y = +-laneWidth/2`, so every north/south lane crosses every east/west lane exactly
+    * once near the centre; the two north/south lanes never cross each other (parallel,
+    * offset apart), and likewise for the two east/west lanes - `Conflicts.conflicts` reports
+    * exactly those four crossings and nothing else (H1's `ConflictsSpec`).
+    *
+    * `controlOverrides` assigns `Control` per movement (by [[MovementId]]), defaulting every
+    * movement not named to [[Control.Uncontrolled]] - `H1`'s original private fixture (an
+    * all-through, all-uncontrolled crossing used only to test conflict geometry) is exactly
+    * `fourWayCrossing(armLength)` with no overrides. `H2` (`AdmissionSpec`) passes `Stop` or
+    * `Yield` for whichever approaches its scenario needs controlled, e.g.
+    * `Map(MovementId("northbound") -> Control.Yield)` for a single yielding approach, or
+    * every one of the four for an all-way stop.
+    */
+  def fourWayCrossing(armLength: Length, controlOverrides: Map[MovementId, Control] = Map.empty): (RoadNetwork, NetworkIndex) = {
+    val offset = laneWidth / 2.0
+    val negOffset = Meters(0) - offset
+    val negArmLength = Meters(0) - armLength
+
+    def point(x: Length, y: Length): QuantityVector[Distance] =
+      origin + QuantityVector[Distance](x, y, Meters(0))
+
+    val southIn = section(SectionId("south-in"), StraightPath(point(offset, negArmLength), point(offset, Meters(0))))
+    val northOut = section(SectionId("north-out"), StraightPath(point(offset, Meters(0)), point(offset, armLength)))
+    val northIn = section(SectionId("north-in"), StraightPath(point(negOffset, armLength), point(negOffset, Meters(0))))
+    val southOut = section(SectionId("south-out"), StraightPath(point(negOffset, Meters(0)), point(negOffset, negArmLength)))
+    val eastIn = section(SectionId("east-in"), StraightPath(point(armLength, offset), point(Meters(0), offset)))
+    val westOut = section(SectionId("west-out"), StraightPath(point(Meters(0), offset), point(negArmLength, offset)))
+    val westIn = section(SectionId("west-in"), StraightPath(point(negArmLength, negOffset), point(Meters(0), negOffset)))
+    val eastOut = section(SectionId("east-out"), StraightPath(point(Meters(0), negOffset), point(armLength, negOffset)))
+
+    def movement(id: MovementId, from: SectionId, to: SectionId): Movement =
+      Movement(id, from, to, MovementKind.Continuation, controlOverrides.getOrElse(id, Control.Uncontrolled))
+
+    val northbound = movement(MovementId("northbound"), SectionId("south-in"), SectionId("north-out"))
+    val southbound = movement(MovementId("southbound"), SectionId("north-in"), SectionId("south-out"))
+    val westbound = movement(MovementId("westbound"), SectionId("east-in"), SectionId("west-out"))
+    val eastbound = movement(MovementId("eastbound"), SectionId("west-in"), SectionId("east-out"))
+
+    assemble(
+      List(southIn, northOut, northIn, southOut, eastIn, westOut, westIn, eastOut),
+      List(northbound, southbound, westbound, eastbound)
+    )
   }
 }

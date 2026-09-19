@@ -115,9 +115,25 @@ object NetworkTick {
       .map(_.speedLimit)
       .getOrElse(vehicle.piloted.driver.desiredSpeed)
 
-    Lookahead.leaderOf(traffic, index, vehicle, lookaheadDistance(vehicle)) match {
+    val leaderAcceleration = Lookahead.leaderOf(traffic, index, vehicle, lookaheadDistance(vehicle)) match {
       case Some((leader, gap)) => reactTo(vehicle, leader.speed, atLeastMinimum(gap), speedLimit)
       case None                => reactTo(vehicle, vehicle.speed, FreeRoadGap, speedLimit)
+    }
+
+    // H2: a movement under `Stop`/`Yield` control that has not admitted this vehicle yet
+    // becomes a second, independent obstacle - a stationary one, sitting exactly at the
+    // line - fed through the very same IDM call a real leader is. `Uncontrolled` movements
+    // (every ordinary road seam) get `None` back from `Admission.stoppingConstraint` on its
+    // very first check, so this is a genuine no-op for them: `leaderAcceleration` alone
+    // reaches `settle` unchanged, which is what keeps `SeamInvarianceSpec` (C5) passing.
+    // Where a stop line *does* apply, taking whichever of the two obstacles calls for more
+    // braking is what lets a vehicle already easing up for a real leader keep doing exactly
+    // that, while a vehicle with a clear road ahead still brakes comfortably for the line.
+    Admission.stoppingConstraint(traffic, index, vehicle) match {
+      case None => leaderAcceleration
+      case Some(distanceToLine) =>
+        val lineAcceleration = reactTo(vehicle, Stopped, atLeastMinimum(distanceToLine), speedLimit)
+        if (lineAcceleration < leaderAcceleration) lineAcceleration else leaderAcceleration
     }
   }
 

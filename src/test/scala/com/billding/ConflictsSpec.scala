@@ -10,15 +10,17 @@ import squants.{DoubleVector, QuantityVector}
 
 /**
   * H1: conflicts are a property of a pair of movements, computed from geometry, not
-  * from the graph's endpoint connectivity. These fixtures are built locally rather
-  * than added to `NetworkFixtures` (the card restricts this session to the two new
-  * files); see the report for what a shared four-way-crossing fixture would look
-  * like if it moved there later.
+  * from the graph's endpoint connectivity. The four-way crossing used below now lives
+  * in `NetworkFixtures.fourWayCrossing` (promoted there by H2, which needed the same
+  * geometry with `Stop`/`Yield` control assigned to some of its movements) - every test
+  * in this file just derives its `junction` as the fixture's whole movement set, since
+  * that fixture declares no movement outside this crossing.
   *
-  * None of these networks are run through `NetworkValidation` - `Conflicts` only
-  * reads `RoadNetwork.sections`/`movements` and does its own sampling, so the
-  * geometry here only needs to be right, not continuous the way a driveable network
-  * would need to be.
+  * The T-junction cases below still go through `NetworkValidation` via
+  * `NetworkFixtures.tJunction`, but the crossing itself does not need to: `Conflicts`
+  * only reads `RoadNetwork.sections`/`movements` and does its own sampling, so this
+  * geometry only ever needed to be right, not separately asserted continuous - which is
+  * exactly what `NetworkFixtures.assemble`'s validation now checks for it too, for free.
   */
 class ConflictsSpec extends AnyFlatSpec with Matchers {
 
@@ -39,7 +41,8 @@ class ConflictsSpec extends AnyFlatSpec with Matchers {
   // A symmetric four-way crossing: two one-way lanes per axis (a two-way road is two
   // one-way sections side by side, per W4), each lane offset half a lane width to the
   // right of its direction of travel the way real right-hand-traffic lanes are. Arm
-  // length 40 m, offset 1.75 m (half of `laneWidth`).
+  // length 40 m, offset 1.75 m (half of `laneWidth`) - see
+  // `NetworkFixtures.fourWayCrossing` for the geometry itself.
   //
   // Through movements only - straight lines, so whether they cross is checkable by
   // hand: the two north/south lanes sit on the vertical lines x = +-1.75, the two
@@ -51,28 +54,8 @@ class ConflictsSpec extends AnyFlatSpec with Matchers {
   private val offset = 1.75
 
   private def fourWayCrossing(): (RoadNetwork, Set[MovementId]) = {
-    val southIn = section("south-in", StraightPath(point(offset, -40), point(offset, 0)))
-    val northOut = section("north-out", StraightPath(point(offset, 0), point(offset, 40)))
-    val northIn = section("north-in", StraightPath(point(-offset, 40), point(-offset, 0)))
-    val southOut = section("south-out", StraightPath(point(-offset, 0), point(-offset, -40)))
-    val eastIn = section("east-in", StraightPath(point(40, offset), point(0, offset)))
-    val westOut = section("west-out", StraightPath(point(0, offset), point(-40, offset)))
-    val westIn = section("west-in", StraightPath(point(-40, -offset), point(0, -offset)))
-    val eastOut = section("east-out", StraightPath(point(0, -offset), point(40, -offset)))
-
-    val northbound = Movement.continuation(MovementId("northbound"), SectionId("south-in"), SectionId("north-out"))
-    val southbound = Movement.continuation(MovementId("southbound"), SectionId("north-in"), SectionId("south-out"))
-    val westbound = Movement.continuation(MovementId("westbound"), SectionId("east-in"), SectionId("west-out"))
-    val eastbound = Movement.continuation(MovementId("eastbound"), SectionId("west-in"), SectionId("east-out"))
-
-    val network = RoadNetwork(
-      sections = List(southIn, northOut, northIn, southOut, eastIn, westOut, westIn, eastOut)
-        .map(s => s.id -> s)
-        .toMap,
-      movements = List(northbound, southbound, westbound, eastbound)
-    )
-
-    (network, Set(northbound.id, southbound.id, westbound.id, eastbound.id))
+    val (network, _) = NetworkFixtures.fourWayCrossing(Meters(40))
+    (network, network.movements.map(_.id).toSet)
   }
 
   "a four-way crossing" should "report a conflict between every north/south lane and every east/west lane" in {
