@@ -186,6 +186,43 @@ class NetworkTickSpec extends AnyFlatSpec with Matchers {
     result.traffic.on(solo) shouldBe empty
   }
 
+  it should "brake for a stopped leader whose rear has not cleared the seam, not treat the road as free" in {
+    val home = SectionId("home")
+    val b = SectionId("b")
+    val toB = continuation("home-b", home, b)
+    val network = RoadNetwork(
+      sections = Map(home -> straightSection("home", 0, 55), b -> straightSection("b", 55, 255)),
+      movements = List(toB)
+    )
+    val index = NetworkIndex(network)
+
+    // A stationary follower's lookahead floors to NetworkTick.MinimumLookahead (50 m), short of
+    // `home`'s own 55 m length - so a leader only found by walking off the end of `home` would
+    // be invisible to it. The leader is stopped at b's very start, so all of carLength (8 m)
+    // overhangs backward into `home`, landing its rear at home's s = 47, inside that 50 m.
+    val follower = vehicleAt(home, Meters(0), speed = MetersPerSecond(0), next = Some(toB.id))
+    val leader = vehicleAt(b, Meters(0), speed = MetersPerSecond(0))
+    val traffic = NetworkTraffic.of(List(follower, leader))
+
+    val dt = Seconds(1)
+    val gap = Meters(47)
+    val expectedAcceleration =
+      idm.deltaVDimensionallySafe(MetersPerSecond(0), speedLimit, MetersPerSecond(0), T, accel, braking, gap, s0)
+    val (_, expectedTravelled) = ballisticStep(MetersPerSecond(0), expectedAcceleration, dt)
+    val freeRoadAcceleration =
+      idm.deltaVDimensionallySafe(MetersPerSecond(0), speedLimit, MetersPerSecond(0), T, accel, braking, NetworkTick.FreeRoadGap, s0)
+
+    // Sanity check that the two scenarios really would diverge - otherwise the assertions below
+    // would pass even if the seam-spanning leader were invisible to `advance`.
+    expectedAcceleration should not be freeRoadAcceleration
+
+    val result = NetworkTick.advance(traffic, index, dt)
+
+    val landedFollower = result.traffic.all.find(_.piloted.uuid == follower.piloted.uuid).get
+    landedFollower.section shouldBe home
+    landedFollower.s.toMeters shouldBe (Meters(0) + expectedTravelled).toMeters +- 1e-9
+  }
+
   it should "leave a vehicle that stays within its section untouched in section and next" in {
     val onlySection = SectionId("solo")
     val network = RoadNetwork(sections = Map(onlySection -> straightSection("solo", 0, 1000)), movements = Nil)

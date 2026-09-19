@@ -219,4 +219,173 @@ class LookaheadSpec extends AnyFlatSpec with Matchers {
 
     result shouldBe None
   }
+
+  "occupiedSpan" should "report a single entry for a vehicle whose rear has already cleared its head section" in {
+    val section = SectionId("a")
+    val vehicle = vehicleAt(section, Meters(40))
+
+    val span = Lookahead.occupiedSpan(vehicle, NetworkIndex(RoadNetwork(Map(section -> straightSection("a", 0, 200)), Nil)))
+
+    span shouldBe List((section, Meters(40) - carLength, Meters(40)))
+  }
+
+  it should "report the seam-crossing vehicle's overhang in the section its rear is still in" in {
+    val a = SectionId("a")
+    val b = SectionId("b")
+    val toB = continuation("a-b", a, b)
+    val network = RoadNetwork(
+      sections = Map(a -> straightSection("a", 0, 20), b -> straightSection("b", 20, 220)),
+      movements = List(toB)
+    )
+    val index = NetworkIndex(network)
+
+    // 3 m past the seam; carLength (8 m) means 5 m of it is still behind the seam, in `a`.
+    val vehicle = vehicleAt(b, Meters(3))
+
+    val span = Lookahead.occupiedSpan(vehicle, index)
+
+    span shouldBe List((b, Meters(0), Meters(3)), (a, Meters(20) - (carLength - Meters(3)), Meters(20)))
+  }
+
+  it should "no longer report a vehicle in the upstream section once its rear has cleared the seam" in {
+    val a = SectionId("a")
+    val b = SectionId("b")
+    val toB = continuation("a-b", a, b)
+    val network = RoadNetwork(
+      sections = Map(a -> straightSection("a", 0, 20), b -> straightSection("b", 20, 220)),
+      movements = List(toB)
+    )
+    val index = NetworkIndex(network)
+
+    // Exactly carLength past the seam: the rear sits precisely on the seam, clear of `a`.
+    val vehicle = vehicleAt(b, carLength)
+
+    val span = Lookahead.occupiedSpan(vehicle, index)
+
+    span shouldBe List((b, Meters(0), carLength))
+    span.map(_._1) should not contain a
+  }
+
+  it should "carry a long body's overhang back through a fully-swallowed middle section" in {
+    val home = SectionId("home")
+    val s1 = SectionId("s1")
+    val s2 = SectionId("s2")
+    val toS1 = continuation("home-s1", home, s1)
+    val s1ToS2 = continuation("s1-s2", s1, s2)
+    val network = RoadNetwork(
+      sections = Map(
+        home -> straightSection("home", 0, 20),
+        s1 -> straightSection("s1", 20, 25),
+        s2 -> straightSection("s2", 25, 30)
+      ),
+      movements = List(toS1, s1ToS2)
+    )
+    val index = NetworkIndex(network)
+
+    // 2 m into s2; carLength (8 m) means s1 (5 m long) is entirely swallowed, with 1 m of
+    // overhang left over to land in `home`.
+    val vehicle = vehicleAt(s2, Meters(2))
+
+    val span = Lookahead.occupiedSpan(vehicle, index)
+
+    span shouldBe List((s2, Meters(0), Meters(2)), (s1, Meters(0), Meters(5)), (home, Meters(19), Meters(20)))
+  }
+
+  "leaderOf" should "see a leader whose rear has not yet cleared the seam ahead, at the gap to its rear bumper" in {
+    val a = SectionId("a")
+    val b = SectionId("b")
+    val toB = continuation("a-b", a, b)
+    val network = RoadNetwork(
+      sections = Map(a -> straightSection("a", 0, 20), b -> straightSection("b", 20, 220)),
+      movements = List(toB)
+    )
+    val index = NetworkIndex(network)
+
+    // carLength is 8 m; 3 m past the seam leaves 5 m of overhang behind it, landing the rear
+    // at a's s = 15. A follower 7 m behind the seam (a's s = 13) is 2 m short of that rear.
+    val follower = vehicleAt(a, Meters(13), next = Some(toB.id))
+    val leader = vehicleAt(b, Meters(3))
+    val traffic = NetworkTraffic.of(List(follower, leader))
+
+    val result = Lookahead.leaderOf(traffic, index, follower, within = Meters(100))
+
+    result.map(_._1.piloted.uuid) shouldBe Some(leader.piloted.uuid)
+    result.map(_._2) shouldBe Some(Meters(2))
+  }
+
+  it should "no longer see a leader in the upstream section once its rear has cleared the seam" in {
+    val a = SectionId("a")
+    val b = SectionId("b")
+    val toB = continuation("a-b", a, b)
+    val network = RoadNetwork(
+      sections = Map(a -> straightSection("a", 0, 20), b -> straightSection("b", 20, 220)),
+      movements = List(toB)
+    )
+    val index = NetworkIndex(network)
+
+    val follower = vehicleAt(a, Meters(13), next = Some(toB.id))
+    // Rear exactly at the seam: no longer any overhang into `a`.
+    val leader = vehicleAt(b, carLength)
+    val traffic = NetworkTraffic.of(List(follower, leader))
+
+    val result = Lookahead.leaderOf(traffic, index, follower, within = Meters(100))
+
+    // Found normally instead, by walking forward into `b` - not via the seam shortcut - and
+    // at the ordinary point-leader gap.
+    result.map(_._1.piloted.uuid) shouldBe Some(leader.piloted.uuid)
+    result.map(_._2) shouldBe Some(Meters(20) - Meters(13))
+  }
+
+  it should "find a straddling leader even when reaching its own section's end alone would exceed `within`" in {
+    val home = SectionId("home")
+    val b = SectionId("b")
+    val toB = continuation("home-b", home, b)
+    val network = RoadNetwork(
+      sections = Map(home -> straightSection("home", 0, 55), b -> straightSection("b", 55, 255)),
+      movements = List(toB)
+    )
+    val index = NetworkIndex(network)
+
+    // Reaching the far end of `home` alone (55 m) already exceeds `within` (50 m), so a search
+    // that only ever walks forward hop by hop would give up before ever trying `b` - the exact
+    // failure mode the plan calls out. The leader parked at b's very start overhangs backward
+    // by its full carLength (8 m), landing its rear at home's s = 47, inside the 50 m budget.
+    val follower = vehicleAt(home, Meters(0), next = Some(toB.id))
+    val leader = vehicleAt(b, Meters(0))
+    val traffic = NetworkTraffic.of(List(follower, leader))
+
+    val result = Lookahead.leaderOf(traffic, index, follower, within = Meters(50))
+
+    result.map(_._1.piloted.uuid) shouldBe Some(leader.piloted.uuid)
+    result.map(_._2) shouldBe Some(Meters(47))
+  }
+
+  it should "find a leader whose overhang swallows a whole middle section, without double-counting its length" in {
+    val home = SectionId("home")
+    val s1 = SectionId("s1")
+    val s2 = SectionId("s2")
+    val toS1 = continuation("home-s1", home, s1)
+    val s1ToS2 = continuation("s1-s2", s1, s2)
+    val network = RoadNetwork(
+      sections = Map(
+        home -> straightSection("home", 0, 20),
+        s1 -> straightSection("s1", 20, 25),
+        s2 -> straightSection("s2", 25, 30)
+      ),
+      movements = List(toS1, s1ToS2)
+    )
+    val index = NetworkIndex(network)
+
+    // 2 m into s2; carLength (8 m) swallows all of s1 (5 m) with 1 m left over, landing the
+    // rear at home's s = 19. A single lookup from `home` must land on that rear directly,
+    // rather than being found again (at a different value) once the walk reaches s1 or s2.
+    val follower = vehicleAt(home, Meters(10), next = Some(toS1.id))
+    val leader = vehicleAt(s2, Meters(2))
+    val traffic = NetworkTraffic.of(List(follower, leader))
+
+    val result = Lookahead.leaderOf(traffic, index, follower, within = Meters(100))
+
+    result.map(_._1.piloted.uuid) shouldBe Some(leader.piloted.uuid)
+    result.map(_._2) shouldBe Some(Meters(9))
+  }
 }
