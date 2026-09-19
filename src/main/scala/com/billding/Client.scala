@@ -196,8 +196,18 @@ object Client {
     }
     val subscription = windowSignal.addObserver(observer)
 
-    def callback: js.Function1[Double, Unit] = (double) => {
-      model.respondToAllInput()
+    // requestAnimationFrame hands the callback a DOMHighResTimeStamp (ms since navigation
+    // start), not a delta - the delta since the previous callback is what the accumulator in
+    // Model.respondToAllInput wants. There's no previous callback on the very first frame, so
+    // that one reports zero elapsed time rather than the time since navigation started, which
+    // would otherwise look like a startup stall and immediately burn through catch-up steps.
+    var lastFrameTimeMillis: Option[Double] = None
+
+    def callback: js.Function1[Double, Unit] = (timeMillis) => {
+      val elapsed = Milliseconds(lastFrameTimeMillis.fold(0.0)(timeMillis - _))
+      lastFrameTimeMillis = Some(timeMillis)
+
+      model.respondToAllInput(elapsed)
 
       dom.window.requestAnimationFrame(callback)
     }

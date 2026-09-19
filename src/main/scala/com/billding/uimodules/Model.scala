@@ -17,12 +17,60 @@ import com.billding.traffic.{
 import com.raquo.laminar.api.L.{Signal, Var}
 import squants.Time
 import squants.motion.{KilometersPerHour, Velocity}
-import squants.time.Seconds
+import squants.time.{Milliseconds, Seconds}
 import play.api.libs.json.Format
 
 trait Serialization {
   val serializeScene: Var[Boolean] = Var(false)
   val deserializeScene: Var[Boolean] = Var(false)
+}
+
+/**
+  * W8: the simulation advances in fixed 0.1s steps regardless of how often the page renders.
+  *
+  * A `requestAnimationFrame` callback reports wall-clock time, not simulation time, and it
+  * fires however often the browser feels like - a smooth tab calls back every ~16ms, a
+  * throttled or backgrounded one might not call back for seconds. Feeding that elapsed time
+  * straight into the scene would make traffic throughput and merge decisions depend on frame
+  * rate, which is exactly what the plan rules out.
+  *
+  * So wall time is banked in an accumulator instead, and the scene advances by whole fixed
+  * steps drawn from the bank. [[accumulate]] is the pure arithmetic of that bank: how many
+  * whole steps a given amount of newly-elapsed time (plus whatever was left over last time)
+  * buys, and what's left over afterwards. It has no DOM and no animation frame in it, so it's
+  * testable on its own.
+  */
+object Timestep {
+
+  /** W8's fixed step. */
+  val FixedStep: Time = Milliseconds(100)
+
+  /** W8's bound on catch-up: however long a stall was, at most this many steps run for it. */
+  val MaxStepsPerFrame: Int = 5
+
+  /**
+    * How many whole `step`s to run for this frame, and what remains for next time.
+    *
+    * `remainder` is the leftover from last time (always less than one `step`); `elapsed` is
+    * the wall time reported for this frame. Together they're spent on as many whole steps as
+    * they'll buy, up to `maxSteps` - a stall long enough to want more than that is not made
+    * up later: the steps beyond the cap are spent, not banked, so the remainder coming back
+    * out is always less than one `step` too. That's what keeps a backgrounded tab falling
+    * behind by a bounded amount instead of either freezing on resume (running every missed
+    * step at once) or slowly crawling back to real time over many later frames.
+    */
+  def accumulate(
+    remainder: Time,
+    elapsed: Time,
+    step: Time = FixedStep,
+    maxSteps: Int = MaxStepsPerFrame
+  ): (Int, Time) = {
+    val total = remainder + elapsed
+    val rawSteps = math.floor(total / step).toInt.max(0)
+    val steps = rawSteps.min(maxSteps)
+    val spent = step * rawSteps.toDouble
+    (steps, total - spent)
+  }
 }
 
 case class Disruptions(
@@ -34,7 +82,9 @@ case class Disruptions(
 trait ModelTrait {
   def togglePause(): Unit
   def pause(): Unit
-  def respondToAllInput()(implicit format: Format[StreetScene]): Unit
+
+  /** `elapsed` is wall-clock time since the last frame callback; see [[Timestep]]. */
+  def respondToAllInput(elapsed: Time)(implicit format: Format[StreetScene]): Unit
 }
 
 /**
@@ -274,12 +324,33 @@ case class Model(
       ring.forceLaneChange()
     } else ring
 
-  private def updateLanesAndScene(): Unit =
+  private def updateLanesAndScene(): Unit = {
+    val newScene = applyInputTo(this.sceneVar.now())
+    this.sceneVar.set(newScene)
+    this.updateScene(this.sceneVar.now().speedLimit)
+    this.countFinishers()
+  }
+
+  /**
+    * Wall time not yet spent on a fixed step, carried from frame to frame.
+    *
+    * Only grows while the scene is actually running - a paused scene doesn't accumulate a
+    * backlog of steps to unleash the moment it's unpaused.
+    */
+  private val elapsedRemainder: Var[Time] = Var(Milliseconds(0))
+
+  /**
+    * Turn this frame's elapsed wall time into whole fixed steps and run them.
+    *
+    * The DOM-driven caller only has to measure elapsed time between callbacks and hand it
+    * here; how many times the scene actually advances - zero, one, or up to
+    * [[Timestep.MaxStepsPerFrame]] - is decided by the pure [[Timestep.accumulate]].
+    */
+  private def stepSimulation(elapsed: Time): Unit =
     if (this.paused.now() == false) {
-      val newScene = applyInputTo(this.sceneVar.now())
-      this.sceneVar.set(newScene)
-      this.updateScene(this.sceneVar.now().speedLimit)
-      this.countFinishers()
+      val (steps, remainder) = Timestep.accumulate(this.elapsedRemainder.now(), elapsed)
+      this.elapsedRemainder.set(remainder)
+      (1 to steps).foreach(_ => this.updateLanesAndScene())
     }
 
   /**
@@ -294,9 +365,9 @@ case class Model(
     this.tally.update(_.observing(scene.completed, scene.t))
   }
 
-  def respondToAllInput()(implicit format: Format[StreetScene]): Unit = {
+  def respondToAllInput(elapsed: Time)(implicit format: Format[StreetScene]): Unit = {
     this.resetIfNecessary()
-    this.updateLanesAndScene()
+    this.stepSimulation(elapsed)
     serializationFeatures.serializeIfNecessary(this)
     serializationFeatures.deserializeIfNecessary(this)
   }
