@@ -19,6 +19,9 @@ recommendations, and unresolved choices.
 - Make creating and arranging roads fun and engaging, not merely possible.
 - Keep traffic running during geometry edits and preserve vehicles wherever
   possible (confirmed by the user).
+- Comfortably view several highway merges and splits together; allow creators
+  to zoom in closely for detailed editing (confirmed by the user). Exact road
+  piece counts, vehicle counts and target device remain open.
 
 The user requested planning and brainstorming first. No road-model or UI changes
 are part of this draft.
@@ -306,9 +309,12 @@ intersection behavior.
 
 ## Geometry and five-inch screens
 
-**Unresolved product choice:** must the whole map and every car remain visible at
-once, or may people zoom into detail? Arbitrarily large maps cannot satisfy both
-on a small screen. Physical diagonal size also does not specify CSS viewport size.
+**Confirmed viewing goal:** several highway merges and splits should be comfortably
+visible together; creators may zoom in closely to edit. An overview and detailed
+editing view therefore fit the stated goal. Exactly how much individual-car detail
+must remain visible in the overview is still open. Arbitrarily large maps cannot
+show every car readably on a small screen. Physical diagonal size also does not
+specify CSS viewport size.
 
 Recommended starting direction, awaiting confirmation:
 
@@ -323,6 +329,10 @@ Recommended starting direction, awaiting confirmation:
   schematic display mode; decide this deliberately rather than hiding it in scale.
 - Provide overview, pinch zoom, pan, fit-map and focus-selection. Preserve camera
   position between ticks. A follow-vehicle mode is an optional experiment.
+- Keep selection stable across large zoom changes. At overview scale, select a
+  road or junction and focus it; at close scale, expose its lane connections and
+  geometry handles. Returning to overview should restore useful context. Zooming
+  while editing must not change the running simulation's speed or physical scale.
 - At detail scale, show individual cars, lanes and merge signals. At overview
   scale, simplify cars to markers or show congestion/flow on roads. If markers
   need to be enlarged for visibility, their display size must not affect collision
@@ -383,10 +393,10 @@ demand and random seed. These are ideas, not commitments.
 | D3 | Recommended; pending | Physical following and receiving space determine flow; meters are explicit optional rules |
 | D4 | Confirmed by user | Build and watch on phones in the first version |
 | D5 | Confirmed by user; migration policy open | Keep traffic running and preserve vehicles wherever possible during geometry edits |
-| D6 | Open | Fit-everything bounded play area versus zoomable overview/detail |
+| D6 | Confirmed goal; visual detail open | View multiple merges/splits comfortably and zoom in closely to edit; overview car detail and map limits remain open |
 | D7 | Open | Split probabilities versus destinations and route planning |
 | D8 | Open | Overpasses in the first highway kit |
-| D9 | Open | First useful scenario, network size, vehicle count and target phone |
+| D9 | Scenario confirmed; budgets open | Several highway merges and splits; exact piece/vehicle counts and target phone remain open |
 | D10 | Confirmed by user | Plausible individual drivers and believable congestion |
 | D11 | Confirmed priority; interaction open | Road creation should be fun and engaging; compare piece assembly with growing roads from ports |
 
@@ -396,7 +406,8 @@ First batch has been asked: phone editing, placement style, fidelity, editing li
 traffic, first map/scale, and what capacity means. Second batch: mobile viewing,
 branch choices and overpasses. Phone building/viewing and plausible individual
 drivers with believable congestion, and live editing with vehicle preservation
-are confirmed. Placement is under active
+are confirmed. The first useful map shows multiple highway merges and splits,
+with close zoom available for detailed editing. Placement is under active
 discussion with fun and engagement as explicit priorities; other answers remain
 pending. Recommendations are not recorded as user decisions.
 
@@ -437,6 +448,8 @@ Further questions to work through after those:
 - [ ] Build a small static straight/bend/ramp arrangement with port visualization.
 - [ ] Validate rotated port positions, direction, lane mapping and curve continuity.
 - [ ] Prototype camera and selected-piece controls at the agreed phone sizes.
+- [ ] Demonstrate several merges/splits in one useful overview, then focus a lane
+  connection for detailed touch editing and return without losing context.
 - [ ] Decide physical scale, minimum readable detail and overview representation.
 - [ ] Gate: using touch alone, a person can place and rotate a ramp, connect it,
   inspect its lanes, move the camera without accidental edits, and undo a mistake.
