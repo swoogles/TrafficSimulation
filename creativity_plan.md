@@ -752,7 +752,7 @@ need agreed scenarios and measurements, not assumptions embedded in the API.
 
 ## Build state
 
-Updated 2026-09-19, against [IMPLEMENTATION_TASKS.md](IMPLEMENTATION_TASKS.md).
+Updated 2026-09-22, against [IMPLEMENTATION_TASKS.md](IMPLEMENTATION_TASKS.md).
 Cards are listed by that file's ids. Everything below is committed and pushed to
 `master`, each card its own commit, and every commit left `sbt test` at the
 documented six baseline failures and nothing more.
@@ -835,7 +835,7 @@ limit and a layer, and it owns no cars.
 
 **Phase G · Merges and splits - not started.** G1 is the next simulation card.
 
-**Phase H · Intersections - H1-H3 complete; H4 is next.**
+**Phase H · Intersections - complete, and gated.**
 
 - H1 `Conflicts.conflicts`, sampling traversable movement curves at edit time and
   returning deterministic conflict points without confusing merges/diverges for
@@ -847,6 +847,12 @@ limit and a layer, and it owns no cars.
 - H3 `PriorityPreset`: all-way stop, two-way stop and minor-road yield are pure
   network transformations. They produce distinct admission decisions, and a later
   explicit per-movement override remains visible to the same runtime logic.
+- H4 **gate passed.** `"network, ramp to T-junction"` is in the scene picker. A
+  highway ramp's left turn yields across an uncontrolled eastbound neighbourhood
+  lane and joins its westbound lane, using the same route, conflict, admission and
+  tick code as every other network. The deterministic opening stream makes the ramp
+  car slow below 2 m/s before it turns; sustained two-source traffic conserves every
+  admitted vehicle. The optimized browser bundle contains the scene and movement.
 
 **Phase I · Camera and phone view - I1-I2 complete; I3 code complete with real-device validation open.**
 

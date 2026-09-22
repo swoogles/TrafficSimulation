@@ -3,10 +3,11 @@ package com.billding
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import squants.motion.MetersPerSecond
 import squants.space.Kilometers
 import squants.time.{Milliseconds, Time}
 
-import com.billding.network.{NetworkValidation, SectionId}
+import com.billding.network.{Conflicts, Control, MovementId, NetworkValidation, SectionId}
 import com.billding.physics.Spatial
 import com.billding.svgRendering.{RoadArc, RoadStrip}
 
@@ -79,5 +80,69 @@ class SampleSceneCreationNetworkSpec extends AnyFlatSpec with Matchers {
 
     advanced.sources.head.admitted should be > 0
     advanced.traffic.all should not be empty
+  }
+
+  "the ramp-to-T-junction gate scene" should "be registered and use one validated lane graph" in {
+    val scene = scenes.rampToTJunctionScene
+
+    scenes.rampToTJunction.name shouldBe "network, ramp to T-junction"
+    NetworkValidation.faults(scene.network) shouldBe empty
+    scene.network.sections.keySet should contain allOf (
+      SectionId("junction-eastbound-approach"),
+      SectionId("junction-eastbound-departure"),
+      SectionId("junction-ramp-approach"),
+      SectionId("junction-ramp-left-turn"),
+      SectionId("junction-westbound-departure")
+    )
+  }
+
+  it should "make the ramp yield at a real crossing while leaving the main road uncontrolled" in {
+    val network = scenes.rampToTJunctionScene.network
+    val through = network.movements.find(_.id == MovementId("junction-eastbound-through")).get
+    val rampTurn = network.movements.find(_.id == MovementId("junction-ramp-yield-left")).get
+
+    through.control shouldBe Control.Uncontrolled
+    rampTurn.control shouldBe Control.Yield
+    Conflicts
+      .conflicts(network, Set(through.id, rampTurn.id))
+      .map(conflict => Set(conflict.a, conflict.b)) should contain(Set(through.id, rampTurn.id))
+  }
+
+  it should "let a ramp vehicle wait, turn, and leave while conservation continues to balance" in {
+    val start = scenes.rampToTJunctionScene
+    val rampApproach = SectionId("junction-ramp-approach")
+    val rampTurn = SectionId("junction-ramp-left-turn")
+    val westboundDeparture = SectionId("junction-westbound-departure")
+    val watched = start.traffic.on(rampApproach).maxBy(_.s.toMeters)
+    val watchedUuid = watched.piloted.uuid
+    val initialPopulation = start.traffic.all.size
+
+    var scene = start
+    var minimumApproachSpeed = watched.speed
+    var reachedTurn = false
+    var reachedDeparture = false
+
+    for (_ <- 1 to 1600) {
+      scene = scene.updateWithSpeedLimit(scene.speedLimit)
+      scene.traffic.vehicleWith(watchedUuid).foreach { vehicle =>
+        if (vehicle.section == rampApproach && vehicle.speed < minimumApproachSpeed)
+          minimumApproachSpeed = vehicle.speed
+        if (vehicle.section == rampTurn) reachedTurn = true
+        if (vehicle.section == westboundDeparture) reachedDeparture = true
+      }
+    }
+
+    withClue("the opening eastbound platoon never made the ramp car wait - ") {
+      minimumApproachSpeed should be < MetersPerSecond(2)
+    }
+    withClue("the ramp car never entered its turning arc - ") {
+      reachedTurn shouldBe true
+    }
+    withClue("the ramp car never completed the turn onto the neighbourhood road - ") {
+      reachedDeparture shouldBe true
+    }
+
+    val admitted = scene.sources.map(_.admitted).sum
+    scene.traffic.all.size + scene.completed shouldBe initialPopulation + admitted
   }
 }

@@ -1,12 +1,12 @@
 package com.billding
 
 import com.billding.network._
-import com.billding.physics.{PathGrowth, RingPath, Spatial}
+import com.billding.physics.{Path, PathGrowth, RingPath, Spatial}
 import com.billding.traffic._
 import squants.{DoubleVector, Length, QuantityVector}
-import squants.motion.{Distance, DistanceUnit, KilometersPerHour, Velocity, VelocityUnit}
+import squants.motion.{Distance, DistanceUnit, KilometersPerHour, MetersPerSecond, Velocity, VelocityUnit}
 import squants.space.{Kilometers, Meters}
-import squants.time.{Hertz, Milliseconds, Seconds, Time}
+import squants.time.{Hertz, Seconds, Time}
 
 class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
@@ -342,6 +342,159 @@ class SampleSceneCreation(endingSpatial: Spatial)(implicit val DT: Time) {
 
   val singleRoadNetwork: NamedScene =
     NamedScene("network, single road", singleRoadNetworkScene)
+
+  /*
+  H4's end-to-end experiment: a highway ramp finishes at a small, two-way neighbourhood
+  road. The scene deliberately models the ramp's left turn rather than only a right turn:
+  the left-turn curve crosses the eastbound lane before joining the westbound lane, so a
+  yielding ramp car has a genuine geometric conflict to wait for. A right turn into the
+  eastbound lane would only be a shared-destination merge, which `Conflicts` correctly does
+  not call a crossing and therefore would not prove the intersection engine on this gate.
+
+  The two directions of the neighbourhood road are offset by half a lane width, following
+  the same right-hand-traffic convention as `NetworkFixtures.fourWayCrossing`. Only the
+  eastbound direction needs an incoming arm for this experiment; the westbound road is the
+  ramp's departure. Together they read as a T on the page without inventing a second traffic
+  engine or a junction-only vehicle type:
+
+                         westbound departure  <-----
+                                                 /
+      eastbound approach  --------------------->
+                                        ^
+                                        |
+                                  highway ramp
+
+  Main-road cars take one uncontrolled continuation. Ramp cars take a Yield-controlled Turn
+  into a quarter-circle and then an ordinary continuation onto the westbound departure. Both
+  sources name destinations, so the same E2/E3 route planning used everywhere else makes the
+  choice stable while a car waits at the line.
+   */
+  private val junctionSpeedLimit: Velocity = KilometersPerHour(45)
+  private val rampSpeedLimit: Velocity = KilometersPerHour(50)
+
+  private def buildRampToTJunctionNetwork(): NetworkScene = {
+    val east = DoubleVector(1.0, 0.0, 0.0)
+    val west = DoubleVector(-1.0, 0.0, 0.0)
+    val north = DoubleVector(0.0, 1.0, 0.0)
+    val laneWidth = Meters(3.5)
+    val offset = laneWidth / 2.0
+    val armLength = Meters(120)
+    val rampLength = Meters(100)
+
+    def point(x: Length, y: Length): QuantityVector[Distance] =
+      QuantityVector[Distance](x, y, Meters(0))
+
+    val eastboundApproachId = SectionId("junction-eastbound-approach")
+    val eastboundDepartureId = SectionId("junction-eastbound-departure")
+    val rampApproachId = SectionId("junction-ramp-approach")
+    val rampTurnId = SectionId("junction-ramp-left-turn")
+    val westboundDepartureId = SectionId("junction-westbound-departure")
+
+    val eastboundApproachPath =
+      PathGrowth.straightFrom(point(Meters(0) - armLength, Meters(0) - offset), east, armLength)
+    val eastboundDeparturePath =
+      PathGrowth.straightFrom(PathGrowth.endPoint(eastboundApproachPath), east, armLength)
+
+    // Northbound traffic reaches the near (eastbound) lane first. A radius of one lane
+    // width carries a 90-degree left turn exactly onto the offset westbound lane.
+    val rampTurnStart = point(offset, Meters(0) - offset)
+    val rampApproachPath =
+      PathGrowth.straightFrom(point(offset, (Meters(0) - offset) - rampLength), north, rampLength)
+    val rampTurnPath = PathGrowth.arcFrom(rampTurnStart, north, laneWidth, math.Pi / 2)
+    val westboundDeparturePath =
+      PathGrowth.straightFrom(PathGrowth.endPoint(rampTurnPath), west, armLength)
+
+    def section(id: SectionId, path: Path, speedLimit: Velocity): LaneSection =
+      LaneSection(id, path, laneWidth, speedLimit, layer = 0)
+
+    val sections = Map(
+      eastboundApproachId -> section(eastboundApproachId, eastboundApproachPath, junctionSpeedLimit),
+      eastboundDepartureId -> section(eastboundDepartureId, eastboundDeparturePath, junctionSpeedLimit),
+      rampApproachId -> section(rampApproachId, rampApproachPath, rampSpeedLimit),
+      rampTurnId -> section(rampTurnId, rampTurnPath, junctionSpeedLimit),
+      westboundDepartureId -> section(westboundDepartureId, westboundDeparturePath, junctionSpeedLimit)
+    )
+
+    val mainMovement = Movement.continuation(
+      MovementId("junction-eastbound-through"),
+      eastboundApproachId,
+      eastboundDepartureId
+    )
+    val rampYieldTurn = Movement(
+      MovementId("junction-ramp-yield-left"),
+      rampApproachId,
+      rampTurnId,
+      MovementKind.Turn,
+      Control.Yield
+    )
+    val finishTurn = Movement.continuation(
+      MovementId("junction-turn-westbound"),
+      rampTurnId,
+      westboundDepartureId
+    )
+
+    val network = RoadNetwork(sections, List(mainMovement, rampYieldTurn, finishTurn))
+    val faults = NetworkValidation.faults(network)
+    require(faults.isEmpty, s"ramp-to-T demo produced a broken network: ${faults.map(_.message).mkString("; ")}")
+
+    val index = NetworkIndex(network)
+
+    def vehicle(
+      sectionId: SectionId,
+      s: Length,
+      speed: Velocity,
+      destination: SectionId
+    ): NetworkVehicle =
+      NetworkVehicle.enteringAt(
+        networkVehicleAt(s),
+        sectionId,
+        s,
+        speed,
+        index,
+        destination = Some(destination)
+      )
+
+    // The 22 m eastbound spacing keeps a visible stream over the crossing long enough for
+    // the leading ramp car to brake and wait, while the source below sustains the experiment
+    // after this deterministic opening platoon has left.
+    val mainlineSeed = List(Meters(22), Meters(44), Meters(66), Meters(88), Meters(110)).map { s =>
+      vehicle(eastboundApproachId, s, MetersPerSecond(11), eastboundDepartureId)
+    }
+    val rampSeed = List(Meters(40), Meters(75)).map { s =>
+      vehicle(rampApproachId, s, MetersPerSecond(9), westboundDepartureId)
+    }
+    val alreadyTurning = vehicle(rampTurnId, rampTurnPath.totalLength / 2.0, MetersPerSecond(6), westboundDepartureId)
+
+    val sources = List(
+      Source(
+        at = eastboundApproachId,
+        meanRate = Hertz(0.45),
+        seed = 20260920L,
+        destination = Some(eastboundDepartureId)
+      ),
+      Source(
+        at = rampApproachId,
+        meanRate = Hertz(0.14),
+        seed = 20260921L,
+        destination = Some(westboundDepartureId)
+      )
+    )
+
+    NetworkScene(
+      network,
+      index,
+      NetworkTraffic.of(mainlineSeed ::: rampSeed ::: List(alreadyTurning)),
+      Seconds(0),
+      DT,
+      junctionSpeedLimit,
+      sources = sources
+    )
+  }
+
+  val rampToTJunctionScene: NetworkScene = buildRampToTJunctionNetwork()
+
+  val rampToTJunction: NamedScene =
+    NamedScene("network, ramp to T-junction", rampToTJunctionScene)
 }
 
 object SampleSceneCreation {

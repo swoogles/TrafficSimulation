@@ -68,7 +68,8 @@ object Client {
         scenes.quietTwoLaneRing,
         scenes.waveProneTwoLaneRing,
         scenes.lopsidedTwoLaneRing,
-        scenes.singleRoadNetwork
+        scenes.singleRoadNetwork,
+        scenes.rampToTJunction
       ),
       new SerializationFeatures("localhost", 8080, "http")
     )
